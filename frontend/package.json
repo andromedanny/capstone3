@@ -13,6 +13,7 @@
     "@craftjs/utils": "^0.2.5",
     "@heroicons/react": "^2.2.0",
     "axios": "^1.9.0",
+    "phil-reg-prov-mun-brgy": "^1.1.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-hook-form": "^7.56.3",
