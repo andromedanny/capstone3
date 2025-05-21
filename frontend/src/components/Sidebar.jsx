@@ -17,28 +17,8 @@ const Sidebar = () => {
           </Link>
         </li>
         <li>
-          <Link to="/products" className="text-gray-700 hover:text-gray-900 transition-colors">
-            🛠️ Products
-          </Link>
-        </li>
-        <li>
-          <Link to="/categories" className="text-gray-700 hover:text-gray-900 transition-colors">
-            📂 Categories
-          </Link>
-        </li>
-        <li>
-          <Link to="/collections" className="text-gray-700 hover:text-gray-900 transition-colors">
-            🧺 Collections
-          </Link>
-        </li>
-        <li>
           <Link to="/settings" className="text-gray-700 hover:text-gray-900 transition-colors">
             ⚙️ Settings
-          </Link>
-        </li>
-        <li>
-          <Link to="/reports" className="text-gray-700 hover:text-gray-900 transition-colors">
-            📊 Reports
           </Link>
         </li>
         <li>
