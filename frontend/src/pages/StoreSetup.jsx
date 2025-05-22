@@ -66,17 +66,21 @@ const StoreSetup = () => {
         setError('You must be logged in to create a store');
         return;
       }
-      await axios.post('http://localhost:5000/api/stores', {
+      const payload = {
         templateId,
         ...formData
-      }, {
+      };
+      console.log('Sending payload:', payload);
+      const response = await axios.post('http://localhost:5000/api/stores', payload, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
+      console.log('Response:', response.data);
       navigate('/dashboard');
     } catch (error) {
+      console.error('Error details:', error.response?.data || error.message);
       setError('An error occurred while creating your store. Please try again.');
     } finally {
       setIsLoading(false);
@@ -120,15 +124,19 @@ const StoreSetup = () => {
           </div>
           <div className="form-group">
             <label htmlFor="domainName">Desired Domain Name</label>
-            <input
-              type="text"
-              id="domainName"
-              name="domainName"
-              value={formData.domainName}
-              onChange={handleChange}
-              required
-              placeholder="Enter your desired domain name"
-            />
+            <div className="domain-input-container">
+              <input
+                type="text"
+                id="domainName"
+                name="domainName"
+                value={formData.domainName}
+                onChange={handleChange}
+                required
+                placeholder="Enter your domain name"
+                style={{ width: '70%' }}
+              />
+              <span className="domain-suffix">.structura.com</span>
+            </div>
           </div>
           <div className="form-group">
             <label htmlFor="region">Region</label>
@@ -188,8 +196,13 @@ const StoreSetup = () => {
               disabled={!barangaysList.length}
             >
               <option value="">Select Barangay</option>
-              {barangaysList.map(brgy => (
-                <option key={brgy.brgy_code} value={brgy.brgy_code}>{brgy.name}</option>
+              {barangaysList.map((brgy, idx) => (
+                <option
+                  key={brgy.brgy_code || brgy.code || brgy.brgyName || brgy.name || idx}
+                  value={brgy.name}
+                >
+                  {brgy.name}
+                </option>
               ))}
             </select>
           </div>

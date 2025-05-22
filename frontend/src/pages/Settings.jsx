@@ -25,15 +25,25 @@ const Settings = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [hasStore, setHasStore] = useState(false);
 
   useEffect(() => {
     // Fetch current store info
     const fetchStore = async () => {
       try {
         const token = localStorage.getItem('token');
+        if (!token) {
+          setError('Please log in to view your store settings');
+          return;
+        }
+
         const response = await axios.get('http://localhost:5000/api/stores', {
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
         });
+
         if (response.data && response.data.length > 0) {
           const store = response.data[0];
           setFormData({
@@ -57,9 +67,18 @@ const Settings = () => {
               name: (brgy.name || brgy.brgy_name || brgy.brgyName || '').toUpperCase()
             })) : []);
           }
+          setHasStore(true);
+        } else {
+          setHasStore(false);
         }
       } catch (err) {
-        setError('Failed to fetch store info.');
+        console.error('Error fetching store:', err);
+        if (err.response?.status === 401) {
+          localStorage.removeItem('token');
+          window.location.href = '/login';
+        } else {
+          setError('Failed to fetch store info. Please try again.');
+        }
       }
     };
     fetchStore();
@@ -97,12 +116,23 @@ const Settings = () => {
     setIsLoading(true);
     try {
       const token = localStorage.getItem('token');
-      // Fetch store id
-      const getRes = await axios.get('http://localhost:5000/api/stores', {
-        headers: { 'Authorization': `Bearer ${token}` }
+      if (!token) {
+        setError('Please log in to update your store');
+        return;
+      }
+
+      const response = await axios.get('http://localhost:5000/api/stores', {
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
-      if (!getRes.data || getRes.data.length === 0) throw new Error('No store found');
-      const storeId = getRes.data[0].id;
+
+      if (!response.data || response.data.length === 0) {
+        throw new Error('No store found');
+      }
+
+      const storeId = response.data[0].id;
       await axios.put(`http://localhost:5000/api/stores/${storeId}`, formData, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -111,7 +141,13 @@ const Settings = () => {
       });
       setSuccess('Store information updated successfully!');
     } catch (err) {
-      setError('Failed to update store information.');
+      console.error('Error updating store:', err);
+      if (err.response?.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      } else {
+        setError('Failed to update store information. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -127,68 +163,75 @@ const Settings = () => {
         </div>
         {error && <div className="error-message">{error}</div>}
         {success && <div className="success-message">{success}</div>}
-        <form className="setup-form" onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="storeName">Store Name</label>
-            <input type="text" id="storeName" name="storeName" value={formData.storeName} onChange={handleChange} required />
+        {!hasStore ? (
+          <div className="no-store-message">
+            <p>You haven't created a store yet. Create one to get started!</p>
+            <button onClick={() => navigate('/create-store')} className="create-store-button">Create Store</button>
           </div>
-          <div className="form-group">
-            <label htmlFor="description">Store Description</label>
-            <textarea id="description" name="description" value={formData.description} onChange={handleChange} required />
-          </div>
-          <div className="form-group">
-            <label htmlFor="domainName">Desired Domain Name</label>
-            <input type="text" id="domainName" name="domainName" value={formData.domainName} onChange={handleChange} required />
-          </div>
-          <div className="form-group">
-            <label htmlFor="region">Region</label>
-            <select id="region" name="region" value={formData.region} onChange={handleChange} required>
-              <option value="">Select Region</option>
-              {regionsList.map(region => (
-                <option key={region.reg_code} value={region.reg_code}>{region.name}</option>
-              ))}
-            </select>
-          </div>
-          <div className="form-group">
-            <label htmlFor="province">Province</label>
-            <select id="province" name="province" value={formData.province} onChange={handleChange} required disabled={!provincesList.length}>
-              <option value="">Select Province</option>
-              {provincesList.map(province => (
-                <option key={province.prov_code} value={province.prov_code}>{province.name}</option>
-              ))}
-            </select>
-          </div>
-          <div className="form-group">
-            <label htmlFor="municipality">Municipality/City</label>
-            <select id="municipality" name="municipality" value={formData.municipality} onChange={handleChange} required disabled={!municipalitiesList.length}>
-              <option value="">Select Municipality/City</option>
-              {municipalitiesList.map(mun => (
-                <option key={mun.mun_code} value={mun.mun_code}>{mun.name}</option>
-              ))}
-            </select>
-          </div>
-          <div className="form-group">
-            <label htmlFor="barangay">Barangay</label>
-            <select id="barangay" name="barangay" value={formData.barangay} onChange={handleChange} required disabled={!barangaysList.length}>
-              <option value="">Select Barangay</option>
-              {barangaysList.map(brgy => (
-                <option key={brgy.brgy_code} value={brgy.brgy_code}>{brgy.name}</option>
-              ))}
-            </select>
-          </div>
-          <div className="form-group">
-            <label htmlFor="contactEmail">Contact Email</label>
-            <input type="email" id="contactEmail" name="contactEmail" value={formData.contactEmail} onChange={handleChange} required />
-          </div>
-          <div className="form-group">
-            <label htmlFor="phone">Phone Number</label>
-            <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleChange} required />
-          </div>
-          <div className="form-actions">
-            <button type="submit" className="submit-button" disabled={isLoading}>{isLoading ? 'Saving...' : 'Save Changes'}</button>
-            <button type="button" className="cancel-button" onClick={() => navigate('/dashboard')}>Cancel</button>
-          </div>
-        </form>
+        ) : (
+          <form className="setup-form" onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label htmlFor="storeName">Store Name</label>
+              <input type="text" id="storeName" name="storeName" value={formData.storeName} onChange={handleChange} required />
+            </div>
+            <div className="form-group">
+              <label htmlFor="description">Store Description</label>
+              <textarea id="description" name="description" value={formData.description} onChange={handleChange} required />
+            </div>
+            <div className="form-group">
+              <label htmlFor="domainName">Desired Domain Name</label>
+              <input type="text" id="domainName" name="domainName" value={formData.domainName} onChange={handleChange}  required />
+            </div>
+            <div className="form-group">
+              <label htmlFor="region">Region</label>
+              <select id="region" name="region" value={formData.region} onChange={handleChange} required>
+                <option value="">Select Region</option>
+                {regionsList.map(region => (
+                  <option key={region.reg_code} value={region.reg_code}>{region.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group">
+              <label htmlFor="province">Province</label>
+              <select id="province" name="province" value={formData.province} onChange={handleChange} required disabled={!provincesList.length}>
+                <option value="">Select Province</option>
+                {provincesList.map(province => (
+                  <option key={province.prov_code} value={province.prov_code}>{province.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group">
+              <label htmlFor="municipality">Municipality/City</label>
+              <select id="municipality" name="municipality" value={formData.municipality} onChange={handleChange} required disabled={!municipalitiesList.length}>
+                <option value="">Select Municipality/City</option>
+                {municipalitiesList.map(mun => (
+                  <option key={mun.mun_code} value={mun.mun_code}>{mun.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group">
+              <label htmlFor="barangay">Barangay</label>
+              <select id="barangay" name="barangay" value={formData.barangay} onChange={handleChange} required disabled={!barangaysList.length}>
+                <option value="">Select Barangay</option>
+                {barangaysList.map(brgy => (
+                  <option key={brgy.brgy_code} value={brgy.brgy_code}>{brgy.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group">
+              <label htmlFor="contactEmail">Contact Email</label>
+              <input type="email" id="contactEmail" name="contactEmail" value={formData.contactEmail} onChange={handleChange} required />
+            </div>
+            <div className="form-group">
+              <label htmlFor="phone">Phone Number</label>
+              <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleChange} required />
+            </div>
+            <div className="form-actions">
+              <button type="submit" className="submit-button" disabled={isLoading}>{isLoading ? 'Saving...' : 'Save Changes'}</button>
+              <button type="button" className="cancel-button" onClick={() => navigate('/dashboard')}>Cancel</button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );

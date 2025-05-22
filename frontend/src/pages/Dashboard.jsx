@@ -29,26 +29,46 @@ const Payment = () => (
 const Dashboard = () => {
   const [storeName, setStoreName] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchStore = async () => {
       try {
         const token = localStorage.getItem('token');
+        if (!token) {
+          console.error('No token found');
+          setError('Please log in to view your store');
+          setLoading(false);
+          return;
+        }
+
         console.log('Fetching store data...');
         const response = await axios.get('http://localhost:5000/api/stores', {
           headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
           }
         });
+        
         console.log('Store data response:', response.data);
         if (response.data && response.data.length > 0) {
           console.log('Setting store name to:', response.data[0].storeName);
           setStoreName(response.data[0].storeName);
+          setError(null);
         } else {
           console.log('No store data found');
+          setStoreName('Your Store');
+          setError('No store found. Please create a store first.');
         }
       } catch (error) {
-        console.error('Error fetching store:', error);
+        console.error('Error fetching store:', error.response?.data || error.message);
+        if (error.response?.status === 401) {
+          localStorage.removeItem('token');
+          window.location.href = '/login';
+        } else {
+          setError('Failed to fetch store information. Please try again.');
+          setStoreName('Your Store');
+        }
       } finally {
         setLoading(false);
       }
@@ -63,6 +83,9 @@ const Dashboard = () => {
         <h1 className="text-3xl font-bold mb-2">
           {loading ? 'Loading...' : `Welcome to ${storeName}`}
         </h1>
+        {error && (
+          <p className="text-red-600 mb-4">{error}</p>
+        )}
         <p className="text-gray-600">Here are some tips to help you get started.</p>
       </div>
 

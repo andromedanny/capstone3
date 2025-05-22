@@ -1,41 +1,30 @@
 import Store from '../models/store.js';
 import User from '../models/user.js';
 
+// Create a new store for a user
 export const createStore = async (req, res) => {
   try {
-    console.log('Request body:', req.body);
-    console.log('User from token:', req.user);
-
-    const {
-      templateId,
-      storeName,
-      description,
-      domainName,
-      region,
-      province,
-      municipality,
-      barangay,
-      contactEmail,
-      phone
-    } = req.body;
-
-    // Get user from the authenticated request
-    const user = await User.findByPk(req.user.id);
-    console.log('Found user:', user ? 'Yes' : 'No');
+    const { templateId, storeName, description, domainName, region, province, municipality, barangay, contactEmail, phone } = req.body;
     
+    // Get userId from the authenticated request
+    const userId = req.user?.id;
+    
+    if (!userId) {
+      console.error('No user ID found in request:', req.user);
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+
+    // Verify user exists
+    const user = await User.findByPk(userId);
     if (!user) {
+      console.error('User not found with ID:', userId);
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Check if domain name is already taken
-    const existingStore = await Store.findOne({ where: { domainName } });
-    if (existingStore) {
-      return res.status(400).json({ message: 'Domain name is already taken' });
-    }
-
-    // Create the store
-    const storeData = {
-      userId: user.id,
+    console.log('Creating store for user:', userId);
+    
+    const store = await Store.create({
+      userId,
       templateId,
       storeName,
       description,
@@ -46,49 +35,88 @@ export const createStore = async (req, res) => {
       barangay,
       contactEmail,
       phone
-    };
-    console.log('Attempting to create store with data:', storeData);
-
-    const store = await Store.create(storeData);
+    });
+    
     console.log('Store created successfully:', store.id);
-
-    res.status(201).json({
-      message: 'Store created successfully',
-      store
-    });
+    res.status(201).json(store);
   } catch (error) {
-    console.error('Store creation error details:', {
+    console.error('Error creating store:', error);
+    res.status(400).json({ 
       message: error.message,
-      stack: error.stack,
-      name: error.name
-    });
-    res.status(500).json({
-      message: 'Error creating store',
-      error: error.message
+      details: error.parent?.message || 'Unknown error occurred'
     });
   }
 };
 
+// Get all stores for a specific user
 export const getUserStores = async (req, res) => {
   try {
-    console.log('Fetching stores for user:', req.user);
+    const userId = req.user?.id;
     
-    const stores = await Store.findAll({
-      where: { userId: req.user.id },
+    if (!userId) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+
+    console.log('Fetching stores for user:', userId);
+    
+    const stores = await Store.findAll({ 
+      where: { userId },
       include: [{
         model: User,
         attributes: ['email', 'firstName', 'lastName']
       }]
     });
-
-    console.log('Found stores:', stores);
-    res.json(stores);
+    
+    console.log('Found stores:', stores.length);
+    res.status(200).json(stores);
   } catch (error) {
     console.error('Error fetching stores:', error);
-    res.status(500).json({
-      message: 'Error fetching stores',
-      error: error.message
+    res.status(400).json({ 
+      message: error.message,
+      details: error.parent?.message || 'Unknown error occurred'
     });
+  }
+};
+
+// Update a store
+export const updateStore = async (req, res) => {
+  const { id } = req.params;
+  const { templateId, storeName, description, domainName, region, province, municipality, barangay, contactEmail, phone } = req.body;
+  try {
+    const store = await Store.findByPk(id);
+    if (!store) {
+      return res.status(404).json({ message: 'Store not found' });
+    }
+    await store.update({
+      templateId,
+      storeName,
+      description,
+      domainName,
+      region,
+      province,
+      municipality,
+      barangay,
+      contactEmail,
+      phone
+    });
+    res.status(200).json(store);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// Delete a store
+export const deleteStore = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const store = await Store.findByPk(id);
+    if (!store) {
+      return res.status(404).json({ message: 'Store not found' });
+    }
+    await store.destroy();
+    res.status(204).send();
+  } catch (error) {
+    res.status(400).json({ message: error.message });
   }
 };
 

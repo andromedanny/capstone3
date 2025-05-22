@@ -61,7 +61,7 @@ const Payment = () => {
         )}
         {activeTab === 'paypal' && (
           <form onSubmit={handlePaypalSubmit} className="space-y-4">
-            <div>
+      <div>
               <label className="block text-sm font-medium text-gray-700">PayPal Email</label>
               <input
                 type="email"
@@ -106,8 +106,8 @@ const Payment = () => {
           </table>
         )}
       </div>
-    </div>
-  );
+  </div>
+);
 };
 
 export default Payment; 
