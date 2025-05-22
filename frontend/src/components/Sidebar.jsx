@@ -17,8 +17,38 @@ const Sidebar = () => {
           </Link>
         </li>
         <li>
-          <Link to="/settings" className="text-gray-700 hover:text-gray-900 transition-colors">
-            ⚙️ Settings
+          <Link to="/customers" className="text-gray-700 hover:text-gray-900 transition-colors">
+            👥 Customers
+          </Link>
+        </li>
+        <li>
+          <Link to="/dashboard/analytics" className="text-gray-700 hover:text-gray-900 transition-colors">
+            📊 Analytics
+          </Link>
+        </li>
+        <li>
+          <Link to="/dashboard/inventory" className="text-gray-700 hover:text-gray-900 transition-colors">
+            📦 Inventory
+          </Link>
+        </li>
+        <li>
+          <Link to="/dashboard/discounts" className="text-gray-700 hover:text-gray-900 transition-colors">
+            💸 Discounts
+          </Link>
+        </li>
+        <li>
+          <Link to="/dashboard/reviews" className="text-gray-700 hover:text-gray-900 transition-colors">
+            ⭐ Reviews
+          </Link>
+        </li>
+        <li>
+          <Link to="/dashboard/notifications" className="text-gray-700 hover:text-gray-900 transition-colors">
+            🔔 Notifications
+          </Link>
+        </li>
+        <li>
+          <Link to="/dashboard/integrations" className="text-gray-700 hover:text-gray-900 transition-colors">
+            🔗 Integrations
           </Link>
         </li>
         <li>
@@ -27,8 +57,13 @@ const Sidebar = () => {
           </Link>
         </li>
         <li>
-          <Link to="/site-settings" className="text-gray-700 hover:text-gray-900 transition-colors">
-            🔧 Site Settings
+          <Link to="/dashboard/help" className="text-gray-700 hover:text-gray-900 transition-colors">
+            🆘 Help Center
+          </Link>
+        </li>
+        <li>
+          <Link to="/logout" className="text-gray-700 hover:text-gray-900 transition-colors">
+            🚪 Logout
           </Link>
         </li>
       </ul>

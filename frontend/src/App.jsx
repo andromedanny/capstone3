@@ -14,6 +14,7 @@ import AddProduct from './pages/AddProduct';
 import Payment from './pages/Payment';
 import Shipping from './pages/Shipping';
 import SiteBuilder from './pages/SiteBuilder';
+import Settings from './pages/Settings'; 
 import './App.css';
 
 const DynamicStore = () => {
@@ -41,6 +42,7 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
+          
           <Route path="/" element={<WelcomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
@@ -53,11 +55,12 @@ function App() {
             <Route path="addproducts" element={<AddProduct />} />
             <Route path="payment" element={<Payment />} />
             <Route path="shipping" element={<Shipping />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
 
           {/* Site Builder route */}
           <Route path="/site-builder" element={<PrivateRoute><SiteBuilder /></PrivateRoute>} />
-
+          
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>

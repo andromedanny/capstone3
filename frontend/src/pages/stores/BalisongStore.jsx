@@ -140,9 +140,9 @@ const BalisongStore = ({
     update('hero', { ...hero, bgImage: img });
   };
 
-  return (
-    <div className="balisong-store">
-      <header className="header">
+    return (
+        <div className="balisong-store">
+            <header className="header">
         <div className="logo">
           <EditableText
             value={footer.logo || 'BladeCraft'}
@@ -150,7 +150,7 @@ const BalisongStore = ({
             className="logo-text"
           />
         </div>
-        <nav className="nav">
+                <nav className="nav">
           {footer.quickLinks.map((link, idx) => (
             <span key={link.name + idx} style={{ display: 'inline-block', marginRight: 8 }}>
               <Link to={link.link}>{link.name}</Link>
@@ -160,8 +160,8 @@ const BalisongStore = ({
               />
             </span>
           ))}
-        </nav>
-      </header>
+                </nav>
+            </header>
 
       <section
         className="hero"
@@ -172,7 +172,7 @@ const BalisongStore = ({
         }}
       >
         <EditableHeroBg bgImage={hero.bgImage} onChange={handleHeroBgChange} />
-        <div className="hero-content">
+                <div className="hero-content">
           <EditableText
             tag="h1"
             value={hero.title}
@@ -191,15 +191,15 @@ const BalisongStore = ({
             className="cta-button"
             onChange={val => update('hero', { ...hero, cta: val })}
           />
-        </div>
-      </section>
+                </div>
+            </section>
 
-      <section className="featured-products">
-        <h2>Featured Pieces</h2>
-        <div className="products-grid">
+            <section className="featured-products">
+                <h2>Featured Pieces</h2>
+                <div className="products-grid">
           {featuredProducts.map((product, idx) => (
-            <div key={product.id} className="product-card">
-              <div className="product-image">
+                        <div key={product.id} className="product-card">
+                            <div className="product-image">
                 <EditableImage
                   src={product.image}
                   onChange={val => {
@@ -208,8 +208,8 @@ const BalisongStore = ({
                     update('featuredProducts', newProducts);
                   }}
                 />
-              </div>
-              <div className="product-info">
+                            </div>
+                            <div className="product-info">
                 <EditableText
                   tag="h3"
                   value={product.name}
@@ -239,9 +239,9 @@ const BalisongStore = ({
                     update('featuredProducts', newProducts);
                   }}
                 />
-                <div className="specifications">
-                  <h4>Specifications</h4>
-                  <ul>
+                                <div className="specifications">
+                                    <h4>Specifications</h4>
+                                    <ul>
                     {Object.entries(product.specifications).map(([spec, val]) => (
                       <li key={spec}>
                         <strong>{spec.charAt(0).toUpperCase() + spec.slice(1)}:</strong>{' '}
@@ -258,8 +258,8 @@ const BalisongStore = ({
                         />
                       </li>
                     ))}
-                  </ul>
-                </div>
+                                    </ul>
+                                </div>
                 <div className="price">
                   <EditableText
                     value={product.price}
@@ -270,18 +270,18 @@ const BalisongStore = ({
                     }}
                   />
                 </div>
-                <button className="add-to-cart">Add to Cart</button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+                                <button className="add-to-cart">Add to Cart</button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </section>
 
-      <section className="categories">
-        <h2>Browse Categories</h2>
-        <div className="categories-grid">
+            <section className="categories">
+                <h2>Browse Categories</h2>
+                <div className="categories-grid">
           {categories.map((category, idx) => (
-            <div key={category.id} className="category-card">
+                        <div key={category.id} className="category-card">
               <EditableImage
                 src={category.image}
                 onChange={val => {
@@ -290,7 +290,7 @@ const BalisongStore = ({
                   update('categories', newCategories);
                 }}
               />
-              <div className="category-overlay">
+                            <div className="category-overlay">
                 <EditableText
                   tag="h3"
                   value={category.name}
@@ -300,16 +300,16 @@ const BalisongStore = ({
                     update('categories', newCategories);
                   }}
                 />
-                <Link to={`/category/${category.id}`} className="category-link">
-                  View Collection
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+                                <Link to={`/category/${category.id}`} className="category-link">
+                                    View Collection
+                                </Link>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </section>
 
-      <section className="features">
+            <section className="features">
         {features.map((feature, idx) => (
           <div className="feature" key={idx}>
             <i className={feature.icon}></i>
@@ -331,12 +331,12 @@ const BalisongStore = ({
                 update('features', newFeatures);
               }}
             />
-          </div>
+                </div>
         ))}
-      </section>
+            </section>
 
-      <section className="tutorials">
-        <div className="tutorials-content">
+            <section className="tutorials">
+                <div className="tutorials-content">
           <EditableText
             tag="h2"
             value={tutorials.title}
@@ -347,7 +347,7 @@ const BalisongStore = ({
             value={tutorials.subtitle}
             onChange={val => update('tutorials', { ...tutorials, subtitle: val })}
           />
-          <div className="tutorial-types">
+                    <div className="tutorial-types">
             {tutorials.types.map((type, idx) => (
               <div className="tutorial-type" key={idx}>
                 <EditableText
@@ -378,15 +378,15 @@ const BalisongStore = ({
                     }}
                   />
                 </Link>
-              </div>
+                        </div>
             ))}
-          </div>
-        </div>
-      </section>
+                    </div>
+                </div>
+            </section>
 
-      <footer className="footer">
-        <div className="footer-content">
-          <div className="footer-section">
+            <footer className="footer">
+                <div className="footer-content">
+                    <div className="footer-section">
             <EditableText
               tag="h3"
               value={footer.aboutTitle}
@@ -397,17 +397,17 @@ const BalisongStore = ({
               value={footer.aboutText}
               onChange={val => update('footer', { ...footer, aboutText: val })}
             />
-          </div>
-          <div className="footer-section">
-            <h3>Quick Links</h3>
-            <ul>
+                    </div>
+                    <div className="footer-section">
+                        <h3>Quick Links</h3>
+                        <ul>
               {footer.quickLinks.map(link => (
                 <li key={link.name}><Link to={link.link}>{link.name}</Link></li>
               ))}
-            </ul>
-          </div>
-          <div className="footer-section">
-            <h3>Contact Us</h3>
+                        </ul>
+                    </div>
+                    <div className="footer-section">
+                        <h3>Contact Us</h3>
             <EditableText
               tag="p"
               value={footer.contact.email}
@@ -423,18 +423,18 @@ const BalisongStore = ({
               value={footer.contact.address}
               onChange={val => update('footer', { ...footer, contact: { ...footer.contact, address: val } })}
             />
-          </div>
-        </div>
-        <div className="footer-bottom">
+                    </div>
+                </div>
+                <div className="footer-bottom">
           <EditableText
             tag="p"
             value={footer.copyright}
             onChange={val => update('footer', { ...footer, copyright: val })}
           />
+                </div>
+            </footer>
         </div>
-      </footer>
-    </div>
-  );
+    );
 };
 
 export default BalisongStore; 

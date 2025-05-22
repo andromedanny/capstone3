@@ -69,6 +69,21 @@ const Dashboard = () => {
       <div className="grid gap-6">
         <TodoCard
           icon={
+            <div className="bg-red-100 p-3 rounded-full">
+              <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          }
+          title="Store Information"
+          description="Let's add some details."
+          subDescription="Fill in your store's basic information to get started."
+          actionText="Edit Organization Profile"
+          actionLink="/dashboard/settings"
+          variant="outline"
+        />
+        <TodoCard
+          icon={
             <div className="bg-blue-100 p-3 rounded-full">
               <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -82,7 +97,6 @@ const Dashboard = () => {
           actionLink="/dashboard/addproducts"
           variant="outline"
         />
-
         <TodoCard
           icon={
             <div className="bg-purple-100 p-3 rounded-full">
@@ -98,7 +112,6 @@ const Dashboard = () => {
           actionLink="/dashboard/payment"
           variant="solid"
         />
-
         <TodoCard
           icon={
             <div className="bg-indigo-100 p-3 rounded-full">
@@ -114,7 +127,6 @@ const Dashboard = () => {
           actionLink="/dashboard/shipping"
           variant="outline"
         />
-
         <TodoCard
           icon={
             <div className="bg-green-100 p-3 rounded-full">
@@ -130,27 +142,7 @@ const Dashboard = () => {
           actionLink="/publish"
           variant="solid"
         />
-
-        <TodoCard
-          icon={
-            <div className="bg-red-100 p-3 rounded-full">
-              <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-          }
-          title="Store Information"
-          description="Let's add some details."
-          subDescription="Fill in your store's basic information to get started."
-          actionText="Edit Organization Profile"
-          actionLink="/settings"
-          variant="outline"
-        />
       </div>
-
-      <Routes>
-        <Route path="payment" element={<Payment />} />
-      </Routes>
     </div>
   );
 };
