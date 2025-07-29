@@ -1,21 +1,78 @@
-// src/pages/WelcomePage.jsx
+import React from 'react';
 import { Link } from 'react-router-dom';
-import PublicHeader from '../components/PublicHeader';
+import './WelcomePage.css';
 
 const WelcomePage = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <PublicHeader />
-      <div className="flex flex-col justify-center items-center h-screen text-gray-800">
-        <h1 className="text-5xl font-bold mb-6">Welcome to Structura</h1>
-        <p className="text-2xl mb-8 text-gray-600">Your one-stop platform for creating beautiful online stores</p>
-        <Link
-          to="/login"
-          className="bg-indigo-600 text-white py-3 px-8 rounded-lg text-lg font-semibold hover:bg-indigo-700 transition duration-200 shadow-lg"
-        >
-          Get Started
-        </Link>
+    <div className="welcome-page">
+      {/* Background with mountains and landscape */}
+      <div className="landscape-background">
+        <div className="moon"></div>
+        <div className="stars">
+          <div className="star star-1"></div>
+          <div className="star star-2"></div>
+          <div className="star star-3"></div>
+          <div className="star star-4"></div>
+          <div className="star star-5"></div>
+        </div>
+        <div className="mountains">
+          <div className="mountain-layer mountain-1"></div>
+          <div className="mountain-layer mountain-2"></div>
+          <div className="mountain-layer mountain-3"></div>
+        </div>
+        <div className="trees">
+          <div className="tree tree-1"></div>
+          <div className="tree tree-2"></div>
+          <div className="tree tree-3"></div>
+          <div className="tree tree-4"></div>
+          <div className="tree tree-5"></div>
+          <div className="tree tree-6"></div>
+        </div>
+        <div className="cliff"></div>
+        <div className="fog-layer"></div>
       </div>
+
+      {/* Header */}
+      <header className="welcome-header">
+        <div className="logo-container">
+          <img src="/logoweb.png" alt="Structura Logo" className="logo-image" />
+        </div>
+        <div className="logo-text">Structura</div>
+        <nav className="welcome-nav">
+          <Link to="/" className="nav-link active">Home</Link>
+          <Link to="/about" className="nav-link">About us</Link>
+          <Link to="/services" className="nav-link">Service</Link>
+          <Link to="/contact" className="nav-link">Contact</Link>
+        </nav>
+      </header>
+
+      {/* Main Content */}
+      <main className="welcome-content">
+        <div className="welcome-text">
+          <h1 className="welcome-title">Welcome Home</h1>
+          <div className="separator"></div>
+          <p className="welcome-description">
+            Create your dream store in a warm, welcoming environment.
+            <br />
+            Where every business feels like home.
+          </p>
+          <div className="cta-container">
+            <Link to="/register" className="cta-button primary">
+              Start Your Journey
+            </Link>
+            <Link to="/login" className="cta-button secondary">
+              Welcome Back
+            </Link>
+          </div>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="welcome-footer">
+        <p className="footer-text">
+          Made with ❤️ by the Structura team
+        </p>
+      </footer>
     </div>
   );
 };

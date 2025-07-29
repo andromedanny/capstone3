@@ -1,6 +1,6 @@
 // src/App.jsx
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import WelcomePage from './pages/WelcomePage';
 import LoginPage from './pages/LoginPage';
@@ -14,7 +14,12 @@ import AddProduct from './pages/AddProduct';
 import Payment from './pages/Payment';
 import Shipping from './pages/Shipping';
 import SiteBuilder from './pages/SiteBuilder';
-import Settings from './pages/Settings'; 
+import Settings from './pages/Settings';
+import BladesmithStore from './pages/stores/BladesmithStore';
+import PotteryStore from './pages/stores/PotteryStore';
+import BalisongStore from './pages/stores/BalisongStore';
+import WeaveryStore from './pages/stores/WeaveryStore';
+import WoodCarvingStore from './pages/stores/WoodCarvingStore';
 import './App.css';
 
 const DynamicStore = () => {
