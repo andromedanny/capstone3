@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import PublicHeader from '../components/PublicHeader';
 import axios from 'axios';
+import { FaUserCircle } from 'react-icons/fa';
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -63,125 +64,76 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <PublicHeader />
-      <div className="flex flex-col justify-center items-center h-screen">
-        <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-lg">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900">Create Account</h1>
-            <p className="mt-2 text-gray-600">Join Structura and start building your store</p>
-          </div>
-
-          {error && (
-            <div className="p-4 text-sm text-red-700 bg-red-100 rounded-lg">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
-                    First Name
-                  </label>
-                  <input
-                    id="firstName"
-                    name="firstName"
-                    type="text"
-                    required
-                    value={formData.firstName}
-                    onChange={handleChange}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="Enter your first name"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
-                    Last Name
-                  </label>
-                  <input
-                    id="lastName"
-                    name="lastName"
-                    type="text"
-                    required
-                    value={formData.lastName}
-                    onChange={handleChange}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="Enter your last name"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  Email address
-                </label>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #7f53ac 0%, #647dee 100%)' }}>
+      <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', width: '900px', height: '550px', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)' }}>
+          {/* Left Panel */}
+          <div style={{ background: '#181c2f', color: '#fff', width: '50%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 32px' }}>
+            <FaUserCircle size={64} style={{ marginBottom: 32, color: '#7f53ac' }} />
+            <form onSubmit={handleSubmit} style={{ width: '100%' }}>
+              <div style={{ marginBottom: 24 }}>
                 <input
-                  id="email"
-                  name="email"
-                  type="email"
+                  type="text"
+                  name="firstName"
+                  placeholder="First Name"
+                  value={formData.firstName}
+                  onChange={handleChange}
                   required
+                  style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: 'none', background: '#23264a', color: '#fff', marginBottom: 12, fontSize: 16 }}
+                />
+                <input
+                  type="text"
+                  name="lastName"
+                  placeholder="Last Name"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  required
+                  style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: 'none', background: '#23264a', color: '#fff', marginBottom: 12, fontSize: 16 }}
+                />
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  placeholder="Enter your email"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Password
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
                   required
+                  style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: 'none', background: '#23264a', color: '#fff', marginBottom: 12, fontSize: 16 }}
+                />
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="Password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  placeholder="Create a password"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                  Confirm Password
-                </label>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
                   required
+                  style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: 'none', background: '#23264a', color: '#fff', marginBottom: 12, fontSize: 16 }}
+                />
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  placeholder="Confirm Password"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  placeholder="Confirm your password"
+                  required
+                  style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: 'none', background: '#23264a', color: '#fff', fontSize: 16 }}
                 />
               </div>
+              <button type="submit" disabled={isLoading} style={{ width: '100%', padding: '12px', borderRadius: '8px', background: 'linear-gradient(90deg, #ff267a 0%, #7f53ac 100%)', color: '#fff', fontWeight: 'bold', fontSize: 16, border: 'none', marginBottom: 16, cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.7 : 1 }}>
+                {isLoading ? 'Creating Account...' : 'SIGN UP'}
+              </button>
+            </form>
+            <div style={{ marginTop: 24, fontSize: 14, color: '#aaa' }}>
+              Already have an account?{' '}
+              <Link to="/login" style={{ color: '#7f53ac', fontWeight: 'bold', textDecoration: 'none' }}>Sign in</Link>
             </div>
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
-                isLoading ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-            >
-              {isLoading ? 'Creating Account...' : 'Create Account'}
-            </button>
-
-            <div className="text-center mt-4">
-              <p className="text-sm text-gray-600">
-                Already have an account?{' '}
-                <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
-                  Sign in
-                </Link>
-              </p>
-            </div>
-          </form>
+            {error && <div style={{ color: '#ff267a', marginTop: 16 }}>{error}</div>}
+          </div>
+          {/* Right Panel */}
+          <div style={{ background: 'rgba(24,28,47,0.95)', color: '#fff', width: '50%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+            <div style={{ fontSize: 36, fontWeight: 'bold', marginBottom: 16 }}>Create Account</div>
+            <div style={{ fontSize: 18, color: '#aaa', textAlign: 'center', maxWidth: 320 }}>Join Structura and start building your store with a beautiful, modern experience.</div>
+            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, background: 'radial-gradient(circle at 60% 40%, #7f53ac55 0%, transparent 70%)' }} />
+          </div>
         </div>
       </div>
     </div>

@@ -4,6 +4,7 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import PublicHeader from '../components/PublicHeader';
 import axios from 'axios';
+import { FaUserCircle } from 'react-icons/fa';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -59,98 +60,54 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <PublicHeader />
-      <div className="flex flex-col justify-center items-center h-screen">
-        <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-lg">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900">Welcome Back</h1>
-            <p className="mt-2 text-gray-600">Please sign in to your account</p>
-          </div>
-
-          {error && (
-            <div className="p-4 text-sm text-red-700 bg-red-100 rounded-lg">
-              {error}
-            </div>
-          )}
-
-          {success && (
-            <div className="p-4 text-sm text-green-700 bg-green-100 rounded-lg">
-              {success}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  Email address
-                </label>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #7f53ac 0%, #647dee 100%)' }}>
+      <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', width: '900px', height: '500px', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)' }}>
+          {/* Left Panel */}
+          <div style={{ background: '#181c2f', color: '#fff', width: '50%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 32px' }}>
+            <FaUserCircle size={64} style={{ marginBottom: 32, color: '#7f53ac' }} />
+            <form onSubmit={handleSubmit} style={{ width: '100%' }}>
+              <div style={{ marginBottom: 24 }}>
                 <input
-                  id="email"
                   type="email"
-                  required
+                  placeholder="Username"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  placeholder="Enter your email"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Password
-                </label>
-                <input
-                  id="password"
-                  type="password"
+                  onChange={e => setEmail(e.target.value)}
                   required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  placeholder="Enter your password"
+                  style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: 'none', background: '#23264a', color: '#fff', marginBottom: 16, fontSize: 16 }}
                 />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
                 <input
-                  id="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
+                  style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: 'none', background: '#23264a', color: '#fff', fontSize: 16 }}
                 />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                  Remember me
-                </label>
               </div>
-
-              <div className="text-sm">
-                <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
-                  Forgot your password?
-                </a>
+              <button type="submit" disabled={isLoading} style={{ width: '100%', padding: '12px', borderRadius: '8px', background: 'linear-gradient(90deg, #ff267a 0%, #7f53ac 100%)', color: '#fff', fontWeight: 'bold', fontSize: 16, border: 'none', marginBottom: 16, cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.7 : 1 }}>
+                {isLoading ? 'Signing in...' : 'LOGIN'}
+              </button>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: '#aaa' }}>
+                <span>
+                  <input type="checkbox" id="remember-me" style={{ marginRight: 6 }} /> Remember me
+                </span>
+                <a href="#" style={{ color: '#7f53ac', textDecoration: 'none' }}>Forgot password?</a>
               </div>
+            </form>
+            <div style={{ marginTop: 24, fontSize: 14, color: '#aaa' }}>
+              Don't have an account?{' '}
+              <Link to="/register" style={{ color: '#7f53ac', fontWeight: 'bold', textDecoration: 'none' }}>Sign up</Link>
             </div>
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
-                isLoading ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-            >
-              {isLoading ? 'Signing in...' : 'Sign in'}
-            </button>
-
-            <div className="text-center mt-4">
-              <p className="text-sm text-gray-600">
-                Don't have an account?{' '}
-                <Link to="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
-                  Sign up
-                </Link>
-              </p>
-            </div>
-          </form>
+            {error && <div style={{ color: '#ff267a', marginTop: 16 }}>{error}</div>}
+            {success && <div style={{ color: '#4ade80', marginTop: 16 }}>{success}</div>}
+          </div>
+          {/* Right Panel */}
+          <div style={{ background: 'rgba(24,28,47,0.95)', color: '#fff', width: '50%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+            <div style={{ fontSize: 40, fontWeight: 'bold', marginBottom: 16 }}>Welcome.</div>
+            <div style={{ fontSize: 18, color: '#aaa', textAlign: 'center', maxWidth: 320 }}>Sign in to access your dashboard and manage your store with ease.</div>
+            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, background: 'radial-gradient(circle at 60% 40%, #7f53ac55 0%, transparent 70%)' }} />
+          </div>
         </div>
       </div>
     </div>
