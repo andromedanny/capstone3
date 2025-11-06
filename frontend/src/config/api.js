@@ -2,8 +2,8 @@
 // Uses environment variable in production, localhost in development
 
 const getApiUrl = () => {
-  // In production, use VITE_API_URL from environment
-  if (import.meta.env.VITE_API_URL) {
+  // In production, use VITE_API_URL from environment if set
+  if (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL !== 'https://your-project.vercel.app/api') {
     return import.meta.env.VITE_API_URL;
   }
   
@@ -12,7 +12,8 @@ const getApiUrl = () => {
     return 'http://localhost:5000/api';
   }
   
-  // Fallback: assume API is on same domain in production
+  // Fallback: use relative path (same domain) in production
+  // This works because API routes are on the same Vercel deployment
   return '/api';
 };
 
