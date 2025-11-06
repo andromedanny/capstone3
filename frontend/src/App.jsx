@@ -11,10 +11,18 @@ import StoreTemplates from './pages/StoreTemplates';
 import PrivateRoute from './components/PrivateRoute';
 import DashboardLayout from './components/DashboardLayout';
 import AddProduct from './pages/AddProduct';
+import EditProduct from './pages/EditProduct';
 import Payment from './pages/Payment';
 import Shipping from './pages/Shipping';
 import SiteBuilder from './pages/SiteBuilder';
 import Settings from './pages/Settings';
+import TemplatePreview from './pages/TemplatePreview';
+import PublishPage from './pages/PublishPage';
+import PublishedStore from './pages/PublishedStore';
+import Products from './pages/Products';
+import Orders from './pages/Orders';
+import SalesAnalytics from './pages/SalesAnalytics';
+import MyStores from './pages/MyStores';
 import BladesmithStore from './pages/stores/BladesmithStore';
 import PotteryStore from './pages/stores/PotteryStore';
 import BalisongStore from './pages/stores/BalisongStore';
@@ -51,13 +59,23 @@ function App() {
           <Route path="/" element={<WelcomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          
+          {/* Public route for published websites */}
+          <Route path="/published/:domain" element={<PublishedStore />} />
+          
           <Route path="/store-templates" element={<PrivateRoute><StoreTemplates /></PrivateRoute>} />
-          <Route path="/store-setup/:templateId" element={<PrivateRoute><StoreSetup /></PrivateRoute>} />
+          <Route path="/store/:templateId" element={<PrivateRoute><TemplatePreview /></PrivateRoute>} />
+          <Route path="/store-setup" element={<PrivateRoute><StoreSetup /></PrivateRoute>} />
+          <Route path="/my-stores" element={<PrivateRoute><MyStores /></PrivateRoute>} />
           
           {/* Dashboard routes */}
           <Route path="/dashboard" element={<PrivateRoute><DashboardLayout /></PrivateRoute>}>
             <Route index element={<Dashboard />} />
             <Route path="addproducts" element={<AddProduct />} />
+            <Route path="products" element={<Products />} />
+            <Route path="products/:id/edit" element={<EditProduct />} />
+            <Route path="orders" element={<Orders />} />
+            <Route path="analytics" element={<SalesAnalytics />} />
             <Route path="payment" element={<Payment />} />
             <Route path="shipping" element={<Shipping />} />
             <Route path="settings" element={<Settings />} />
@@ -65,6 +83,9 @@ function App() {
 
           {/* Site Builder route */}
           <Route path="/site-builder" element={<PrivateRoute><SiteBuilder /></PrivateRoute>} />
+          
+          {/* Publish page */}
+          <Route path="/publish" element={<PrivateRoute><PublishPage /></PrivateRoute>} />
           
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

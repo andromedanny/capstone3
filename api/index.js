@@ -1,0 +1,100 @@
+// Vercel serverless function entry point
+// This file handles all API routes for Vercel deployment
+
+import express from 'express';
+import cors from 'cors';
+import bodyParser from 'body-parser';
+import dotenv from 'dotenv';
+
+// Import routes
+import authRoutes from '../backend/routes/authRoutes.js';
+import storeRoutes from '../backend/routes/storeRoutes.js';
+import productRoutes from '../backend/routes/productRoutes.js';
+import orderRoutes from '../backend/routes/orderRoutes.js';
+import paymentRoutes from '../backend/routes/paymentRoutes.js';
+import { servePublishedStoreHTML } from '../backend/controllers/publicStoreController.js';
+
+// Import models to ensure they are registered
+import User from '../backend/models/user.js';
+import Store from '../backend/models/store.js';
+import Product from '../backend/models/product.js';
+import Order from '../backend/models/order.js';
+import OrderItem from '../backend/models/orderItem.js';
+
+// Set up model associations
+Store.hasMany(Product, {
+  foreignKey: 'storeId',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+
+dotenv.config();
+
+const app = express();
+
+// CORS configuration
+const allowedOrigins = [
+  process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
+  process.env.FRONTEND_URL,
+  'http://localhost:5173',
+  'http://localhost:3000'
+].filter(Boolean);
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
+
+// Body parser with increased limits for file uploads
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
+
+// Serve static files from Supabase Storage (via public URLs)
+// Note: In production, files are served from Supabase Storage, not local filesystem
+
+// Standalone store pages
+app.get('/store/:domain', servePublishedStoreHTML);
+
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/stores', storeRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/payments', paymentRoutes);
+
+// Health check
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ 
+    error: 'Route not found', 
+    method: req.method, 
+    path: req.path 
+  });
+});
+
+// Error handler
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  res.status(err.status || 500).json({
+    error: err.message || 'Internal server error',
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+  });
+});
+
+// Export for Vercel serverless
+export default function handler(req, res) {
+  return app(req, res);
+}
+

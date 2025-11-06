@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import PublicHeader from '../components/PublicHeader';
-import axios from 'axios';
+import apiClient from '../utils/axios';
 import { FaUserCircle } from 'react-icons/fa';
 
 const RegisterPage = () => {
@@ -39,7 +39,7 @@ const RegisterPage = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/register', {
+      const response = await apiClient.post('/auth/register', {
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
@@ -64,7 +64,8 @@ const RegisterPage = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #7f53ac 0%, #647dee 100%)' }}>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #FF6B9D 0%, #C44569 25%, #8B5CF6 50%, #4C1D95 75%, #1E1B4B 100%)' }}>
+      <PublicHeader />
       <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ display: 'flex', width: '900px', height: '550px', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)' }}>
           {/* Left Panel */}

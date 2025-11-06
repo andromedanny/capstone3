@@ -1,15 +1,24 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { regions, getProvincesByRegion, getCityMunByProvince, getBarangayByMun } from 'phil-reg-prov-mun-brgy';
 import Header from '../components/Header';
 import '../styles/StoreSetup.css';
-import axios from 'axios';
+import apiClient from '../utils/axios';
 import { useAuth } from '../context/AuthContext';
 
 const StoreSetup = () => {
-  const { templateId } = useParams();
+  const location = useLocation();
+  const templateId = location.state?.templateId;
+  const storeId = location.state?.storeId || new URLSearchParams(location.search).get('storeId');
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  // Redirect if no template ID is provided
+  useEffect(() => {
+    if (!templateId && !storeId) {
+      navigate('/store-templates');
+    }
+  }, [templateId, storeId, navigate]);
   const [formData, setFormData] = useState({
     storeName: '',
     description: '',
@@ -27,6 +36,62 @@ const StoreSetup = () => {
   const [barangaysList, setBarangaysList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [existingStore, setExistingStore] = useState(null);
+
+  // Only check for existing store if we're in edit mode (storeId provided)
+  useEffect(() => {
+    const checkExistingStore = async () => {
+      // Only check if we're editing an existing store
+      if (!storeId) {
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const response = await apiClient.get(`/stores/${storeId}`);
+
+        if (response.data) {
+          const store = response.data;
+          setExistingStore(store);
+          
+          // Pre-fill form with existing store data
+          setFormData({
+            storeName: store.storeName || '',
+            description: store.description || '',
+            domainName: store.domainName || '',
+            region: store.region || '',
+            province: store.province || '',
+            municipality: store.municipality || '',
+            barangay: store.barangay || '',
+            contactEmail: store.contactEmail || '',
+            phone: store.phone || ''
+          });
+          
+          // Load location dropdowns based on existing data
+          if (store.region) {
+            setProvincesList(getProvincesByRegion(store.region));
+            if (store.province) {
+              setMunicipalitiesList(getCityMunByProvince(store.province));
+              if (store.municipality) {
+                const barangaysData = getBarangayByMun(store.municipality);
+                const barangaysArray = barangaysData?.data || barangaysData || [];
+                setBarangaysList(Array.isArray(barangaysArray) ? barangaysArray.map(brgy => ({
+                  brgy_code: brgy.brgy_code || brgy.code || brgy.brgyCode || '',
+                  name: (brgy.name || brgy.brgy_name || brgy.brgyName || '').toUpperCase()
+                })) : []);
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error checking existing store:', error);
+      }
+    };
+
+    checkExistingStore();
+  }, [storeId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -61,27 +126,62 @@ const StoreSetup = () => {
     setError('');
     setIsLoading(true);
     try {
+      if (!templateId) {
+        setError('No template selected. Please go back and select a template.');
+        setIsLoading(false);
+        return;
+      }
       const token = localStorage.getItem('token');
       if (!token) {
         setError('You must be logged in to create a store');
         return;
       }
-      const payload = {
-        templateId,
-        ...formData
-      };
-      console.log('Sending payload:', payload);
-      const response = await axios.post('http://localhost:5000/api/stores', payload, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+      // If we're editing an existing store (storeId provided), update it
+      if (existingStore && storeId) {
+        const payload = {
+          templateId: templateId || existingStore.templateId,
+          ...formData
+        };
+        
+        const response = await apiClient.put(`/stores/${storeId}`, payload);
+        
+        console.log('Store updated:', response.data);
+        navigate('/my-stores');
+      } else {
+        // Create new store
+        if (!templateId) {
+          setError('No template selected. Please go back and select a template.');
+          setIsLoading(false);
+          return;
         }
-      });
-      console.log('Response:', response.data);
-      navigate('/dashboard');
+        
+        const payload = {
+          templateId,
+          ...formData
+        };
+        console.log('Sending payload:', payload);
+        const response = await apiClient.post('/stores', payload);
+        console.log('Response:', response.data);
+        navigate('/my-stores');
+      }
     } catch (error) {
       console.error('Error details:', error.response?.data || error.message);
-      setError('An error occurred while creating your store. Please try again.');
+      
+      const errorData = error.response?.data;
+      let errorMessage = 'An error occurred while saving your store. Please try again.';
+      
+      if (errorData?.details) {
+        // Check for duplicate domain name error
+        if (errorData.details.includes('Duplicate entry') && errorData.details.includes('domainName')) {
+          errorMessage = `A store with the domain name "${formData.domainName}" already exists. Please choose a different domain name or update your existing store.`;
+        } else {
+          errorMessage = errorData.details || errorData.message || errorMessage;
+        }
+      } else if (errorData?.message) {
+        errorMessage = errorData.message;
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -92,11 +192,33 @@ const StoreSetup = () => {
       <Header />
       <div className="store-setup-content">
         <div className="setup-header">
-          <h1>Set Up Your Store</h1>
-          <p>Fill in your store details to get started</p>
+          <h1>{existingStore ? 'Update Your Store' : 'Set Up Your Store'}</h1>
+          <p>{existingStore ? 'Update your store details below' : 'Fill in your store details to get started'}</p>
+          {existingStore && (
+            <div style={{ 
+              marginTop: '1rem', 
+              padding: '0.75rem', 
+              background: '#dbeafe', 
+              border: '1px solid #93c5fd', 
+              borderRadius: '0.5rem',
+              color: '#1e40af',
+              fontSize: '0.875rem'
+            }}>
+              You already have a store. Updating it will modify your existing store information.
+            </div>
+          )}
         </div>
         {error && (
-          <div className="error-message">{error}</div>
+          <div className="error-message" style={{ 
+            padding: '1rem', 
+            background: '#fee2e2', 
+            border: '1px solid #fca5a5', 
+            borderRadius: '0.5rem',
+            color: '#dc2626',
+            marginBottom: '1rem'
+          }}>
+            {error}
+          </div>
         )}
         <form className="setup-form" onSubmit={handleSubmit}>
           <div className="form-group">
@@ -231,7 +353,7 @@ const StoreSetup = () => {
             />
           </div>
           <button type="submit" className="submit-button" disabled={isLoading}>
-            {isLoading ? 'Saving...' : 'Save Store Details'}
+            {isLoading ? 'Saving...' : existingStore ? 'Update Store Details' : 'Create Store'}
           </button>
         </form>
       </div>

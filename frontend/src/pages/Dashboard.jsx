@@ -1,7 +1,7 @@
 // src/pages/Dashboard.jsx
 import React, { useState, useEffect } from 'react';
-import { Route, Routes } from 'react-router-dom';
-import axios from 'axios';
+import { Route, Routes, useNavigate, useLocation } from 'react-router-dom';
+import apiClient from '../utils/axios';
 import TodoCard from '../components/TodoCard';
 
 const Payment = () => (
@@ -28,8 +28,12 @@ const Payment = () => (
 
 const Dashboard = () => {
   const [storeName, setStoreName] = useState('');
+  const [templateId, setTemplateId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showCreateStorePrompt, setShowCreateStorePrompt] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const fetchStore = async () => {
@@ -42,23 +46,39 @@ const Dashboard = () => {
           return;
         }
 
+        // If a store was selected from MyStores, use it directly
+        if (location.state?.selectedStore && location.state?.skipRedirect) {
+          const selectedStore = location.state.selectedStore;
+          setStoreName(selectedStore.storeName || 'Your Store');
+          setTemplateId(selectedStore.templateId);
+          setError(null);
+          setLoading(false);
+          return;
+        }
+
         console.log('Fetching store data...');
-        const response = await axios.get('http://localhost:5000/api/stores', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
+        const response = await apiClient.get('/stores');
         
         console.log('Store data response:', response.data);
         if (response.data && response.data.length > 0) {
-          console.log('Setting store name to:', response.data[0].storeName);
-          setStoreName(response.data[0].storeName);
-          setError(null);
+          // If one or more stores and not explicitly skipping redirect, redirect to My Stores page
+          if (!location.state?.skipRedirect) {
+            navigate('/my-stores');
+            return;
+          }
+          // Otherwise, use the first store
+          const firstStore = response.data[0];
+          setStoreName(firstStore.storeName || 'Your Store');
+          setTemplateId(firstStore.templateId);
         } else {
           console.log('No store data found');
           setStoreName('Your Store');
-          setError('No store found. Please create a store first.');
+          setError(null);
+          
+          // Show create store prompt if coming from login
+          if (location.state?.hasStore === false || location.state?.storeCount === 0) {
+            setShowCreateStorePrompt(true);
+          }
         }
       } catch (error) {
         console.error('Error fetching store:', error.response?.data || error.message);
@@ -75,50 +95,199 @@ const Dashboard = () => {
     };
 
     fetchStore();
-  }, []);
+  }, [location.state, navigate]);
+
+  const handleCreateStore = () => {
+    navigate('/store-templates');
+  };
+
+  const handleDismissPrompt = () => {
+    setShowCreateStorePrompt(false);
+  };
 
   return (
-    <div className="p-6">
+    <div style={{ 
+      minHeight: 'calc(100vh - 80px)',
+      width: '100%',
+      padding: '2rem',
+      margin: 0
+    }}>
+      {/* Create Store Prompt Modal */}
+      {showCreateStorePrompt && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '1rem',
+            padding: '2rem',
+            maxWidth: '500px',
+            width: '90%',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }}>
+            <h2 style={{
+              fontSize: '1.5rem',
+              fontWeight: 'bold',
+              marginBottom: '1rem',
+              color: '#1f2937'
+            }}>
+              Welcome! 👋
+            </h2>
+            <p style={{
+              fontSize: '1rem',
+              color: '#6b7280',
+              marginBottom: '1.5rem',
+              lineHeight: '1.6'
+            }}>
+              You don't have a store yet. Would you like to create a new one?
+            </p>
+            <div style={{
+              display: 'flex',
+              gap: '1rem',
+              justifyContent: 'flex-end'
+            }}>
+              <button
+                onClick={handleDismissPrompt}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  background: '#f3f4f6',
+                  color: '#374151',
+                  border: 'none',
+                  borderRadius: '0.5rem',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'background 0.2s'
+                }}
+                onMouseEnter={(e) => e.target.style.background = '#e5e7eb'}
+                onMouseLeave={(e) => e.target.style.background = '#f3f4f6'}
+              >
+                Maybe Later
+              </button>
+              <button
+                onClick={handleCreateStore}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  background: 'linear-gradient(45deg, #8B5CF6, #4C1D95)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '0.5rem',
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                  transition: 'transform 0.2s, box-shadow 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-1px)';
+                  e.target.style.boxShadow = '0 6px 8px rgba(0, 0, 0, 0.15)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+                }}
+              >
+                Create Store
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="empty-state-container text-center mb-8">
-        <h1 className="text-3xl font-bold mb-2">
+        <h1 style={{
+          fontSize: '3rem',
+          fontWeight: 'bold',
+          marginBottom: '0.5rem',
+          color: 'white',
+          textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)'
+        }}>
           {loading ? 'Loading...' : `Welcome to ${storeName}`}
         </h1>
         {error && (
-          <p className="text-red-600 mb-4">{error}</p>
+          <p style={{ color: '#fca5a5', marginBottom: '1rem', fontSize: '1.125rem' }}>{error}</p>
         )}
-        <p className="text-gray-600">Here are some tips to help you get started.</p>
+        {!error && !showCreateStorePrompt && (
+          <p style={{ 
+            color: 'white', 
+            opacity: 0.9,
+            fontSize: '1.125rem',
+            textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)'
+          }}>
+            Here are some tips to help you get started.
+          </p>
+        )}
       </div>
 
-      <div className="grid gap-6">
+      <div className="grid gap-6" style={{ maxWidth: '1200px', margin: '0 auto' }}>
         <TodoCard
           icon={
-            <div className="bg-red-100 p-3 rounded-full">
-              <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <div className="bg-gradient-to-br from-purple-100 to-pink-100 p-3 rounded-full">
+              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
             </div>
           }
-          title="Store Information"
-          description="Let's add some details."
-          subDescription="Fill in your store's basic information to get started."
-          actionText="Edit Organization Profile"
-          actionLink="/dashboard/settings"
-          variant="outline"
+          title="Edit Store & Products"
+          description="Customize your store template and manage products."
+          subDescription="Edit your store information, customize the template design, and add or manage your products all in one place."
+          actionText={templateId ? "Edit Template" : "Set Up Your Store"}
+          actionLink={templateId ? `/site-builder?template=${templateId}` : "/store-templates"}
+          variant="solid"
         />
         <TodoCard
           icon={
             <div className="bg-blue-100 p-3 rounded-full">
               <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
               </svg>
             </div>
           }
-          title="Add Products"
-          description="Let's roll your products out!"
-          subDescription="Showcase your products with great descriptions. The more detailed you are, the better."
-          actionText="Add More Products"
-          actionLink="/dashboard/addproducts"
-          variant="outline"
+          title="Products"
+          description="Manage your products."
+          subDescription="Add, edit, and manage your store products with images, pricing, and descriptions."
+          actionText="Manage Products"
+          actionLink="/dashboard/products"
+          variant="solid"
+        />
+        <TodoCard
+          icon={
+            <div className="bg-orange-100 p-3 rounded-full">
+              <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+              </svg>
+            </div>
+          }
+          title="Orders"
+          description="Manage customer orders."
+          subDescription="View and manage orders with real-time status updates (Processing, Shipped, Completed)."
+          actionText="View Orders"
+          actionLink="/dashboard/orders"
+          variant="solid"
+        />
+        <TodoCard
+          icon={
+            <div className="bg-teal-100 p-3 rounded-full">
+              <svg className="w-6 h-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+          }
+          title="Sales Analytics"
+          description="Track your sales performance."
+          subDescription="View monthly sales graphs, revenue trends, and order statistics."
+          actionText="View Analytics"
+          actionLink="/dashboard/analytics"
+          variant="solid"
         />
         <TodoCard
           icon={

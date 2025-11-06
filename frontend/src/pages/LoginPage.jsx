@@ -1,9 +1,9 @@
 // src/pages/LoginPage.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import PublicHeader from '../components/PublicHeader';
-import axios from 'axios';
+import apiClient from '../utils/axios';
 import { FaUserCircle } from 'react-icons/fa';
 
 const LoginPage = () => {
@@ -17,7 +17,7 @@ const LoginPage = () => {
   const { login } = useAuth();
 
   // Check for success message from registration
-  useState(() => {
+  useEffect(() => {
     if (location.state?.message) {
       setSuccess(location.state.message);
       // Clear the message from location state
@@ -32,20 +32,70 @@ const LoginPage = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
+      const response = await apiClient.post('/auth/login', {
         email,
         password
       });
 
       if (response.data.token) {
         // Store the token in localStorage
-        localStorage.setItem('token', response.data.token);
+        const token = response.data.token;
+        localStorage.setItem('token', token);
         
-        // Update auth context with user data
+        // Update auth context with user data first
         login(response.data.user);
         
-        // Redirect to store templates page
-        navigate('/store-templates');
+        // Small delay to ensure auth context is updated before navigation
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Check if user has a store
+        try {
+          const storesResponse = await apiClient.get('/stores');
+
+          const storeCount = storesResponse.data ? storesResponse.data.length : 0;
+          console.log('Store count after login:', storeCount);
+
+          // Redirect based on store count
+          if (storeCount === 0) {
+            // No stores - redirect to store templates with notification
+            console.log('No stores found, redirecting to store-templates');
+            navigate('/store-templates', { 
+              state: { 
+                showNotification: true,
+                notificationMessage: 'Welcome! Create your first store to get started.'
+              },
+              replace: true
+            });
+          } else {
+            // One or more stores - redirect to My Stores page
+            console.log(`${storeCount} store(s) found, redirecting to my-stores`);
+            navigate('/my-stores', { replace: true });
+          }
+        } catch (storeError) {
+          // If store check fails, check if it's a 404 (no stores) or actual error
+          console.error('Error checking stores:', storeError);
+          if (storeError.response?.status === 404 || (storeError.response?.data && Array.isArray(storeError.response.data) && storeError.response.data.length === 0)) {
+            // No stores found - redirect to store templates
+            console.log('No stores (404 or empty), redirecting to store-templates');
+            navigate('/store-templates', { 
+              state: { 
+                showNotification: true,
+                notificationMessage: 'Welcome! Create your first store to get started.'
+              },
+              replace: true
+            });
+          } else {
+            // Actual error - redirect to store templates as fallback for new users
+            console.log('Store check error, redirecting to store-templates as fallback');
+            navigate('/store-templates', { 
+              state: { 
+                showNotification: true,
+                notificationMessage: 'Welcome! Create your first store to get started.'
+              },
+              replace: true
+            });
+          }
+        }
       } else {
         setError('No token received from server');
       }
@@ -60,7 +110,8 @@ const LoginPage = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #7f53ac 0%, #647dee 100%)' }}>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #FF6B9D 0%, #C44569 25%, #8B5CF6 50%, #4C1D95 75%, #1E1B4B 100%)' }}>
+      <PublicHeader />
       <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ display: 'flex', width: '900px', height: '500px', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)' }}>
           {/* Left Panel */}

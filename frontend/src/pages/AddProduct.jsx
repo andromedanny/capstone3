@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import apiClient from '../utils/axios';
 import Header from '../components/Header';
 import '../styles/AddProduct.css';
 
@@ -15,6 +16,7 @@ const AddProduct = () => {
 
   const [imagePreview, setImagePreview] = useState(null);
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -58,25 +60,40 @@ const AddProduct = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
     try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError('Please log in to add products');
+        setIsLoading(false);
+        return;
+      }
+
       // Create FormData for file upload
       const productData = new FormData();
       productData.append('name', formData.name);
       productData.append('description', formData.description);
       productData.append('price', formData.price);
-      productData.append('stock', formData.stock);
+      productData.append('stock', formData.stock || 0);
       if (formData.image) {
         productData.append('image', formData.image);
       }
 
-      // Here you would make the API call to save the product
-      // const response = await axios.post('/api/products', productData);
-      
-      // For now, just navigate back to dashboard
-      navigate('/dashboard');
+      const response = await apiClient.post('/products', productData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      // Navigate to products page or dashboard
+      navigate('/dashboard/products');
     } catch (err) {
-      setError('Failed to add product. Please try again.');
+      const errorMessage = err.response?.data?.message || err.response?.data?.error || 'Failed to add product. Please try again.';
+      setError(errorMessage);
+      console.error('Error adding product:', err);
+      console.error('Error response:', err.response?.data);
+      setIsLoading(false);
     }
   };
 
@@ -180,8 +197,10 @@ const AddProduct = () => {
           </div>
 
           <div className="form-actions">
-            <button type="submit" className="submit-button">Add Product</button>
-            <button type="button" onClick={() => navigate('/dashboard')} className="cancel-button">
+            <button type="submit" className="submit-button" disabled={isLoading}>
+              {isLoading ? 'Adding Product...' : 'Add Product'}
+            </button>
+            <button type="button" onClick={() => navigate('/dashboard')} className="cancel-button" disabled={isLoading}>
               Cancel
             </button>
           </div>

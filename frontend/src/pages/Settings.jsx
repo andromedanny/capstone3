@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import apiClient from '../utils/axios';
 import { useNavigate } from 'react-router-dom';
 import { regions, getProvincesByRegion, getCityMunByProvince, getBarangayByMun } from 'phil-reg-prov-mun-brgy';
 import Header from '../components/Header';
@@ -37,12 +37,7 @@ const Settings = () => {
           return;
         }
 
-        const response = await axios.get('http://localhost:5000/api/stores', {
-          headers: { 
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
+        const response = await apiClient.get('/stores');
 
         if (response.data && response.data.length > 0) {
           const store = response.data[0];
@@ -121,7 +116,7 @@ const Settings = () => {
         return;
       }
 
-      const response = await axios.get('http://localhost:5000/api/stores', {
+      const response = await apiClient.get('/stores', {
         headers: { 
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -133,7 +128,7 @@ const Settings = () => {
       }
 
       const storeId = response.data[0].id;
-      await axios.put(`http://localhost:5000/api/stores/${storeId}`, formData, {
+      await apiClient.put(`/stores/${storeId}`, formData, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
