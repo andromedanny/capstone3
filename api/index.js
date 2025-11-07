@@ -122,34 +122,6 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ 
-    error: 'Route not found', 
-    method: req.method, 
-    path: req.path 
-  });
-});
-
-// Error handler
-app.use((err, req, res, next) => {
-  console.error('Error:', err);
-  console.error('Error Stack:', err.stack);
-  console.error('Request Path:', req.path);
-  console.error('Request Method:', req.method);
-  
-  res.status(err.status || 500).json({
-    error: err.message || 'Internal server error',
-    // Show stack trace and details for debugging (remove in production later)
-    stack: err.stack,
-    path: req.path,
-    method: req.method,
-    ...(process.env.NODE_ENV === 'development' && { 
-      fullError: err.toString()
-    })
-  });
-});
-
 // Test database connection endpoint
 app.get('/api/test-db', async (req, res) => {
   try {
@@ -183,6 +155,34 @@ app.get('/api/test-db', async (req, res) => {
       }
     });
   }
+});
+
+// 404 handler (must be after all routes)
+app.use((req, res) => {
+  res.status(404).json({ 
+    error: 'Route not found', 
+    method: req.method, 
+    path: req.path 
+  });
+});
+
+// Error handler (must be last)
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  console.error('Error Stack:', err.stack);
+  console.error('Request Path:', req.path);
+  console.error('Request Method:', req.method);
+  
+  res.status(err.status || 500).json({
+    error: err.message || 'Internal server error',
+    // Show stack trace and details for debugging (remove in production later)
+    stack: err.stack,
+    path: req.path,
+    method: req.method,
+    ...(process.env.NODE_ENV === 'development' && { 
+      fullError: err.toString()
+    })
+  });
 });
 
 // Export for Vercel serverless
