@@ -32,48 +32,29 @@ Store.hasMany(Product, {
 
 const app = express();
 
-// CORS configuration
-const allowedOrigins = [
-  process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
-  process.env.FRONTEND_URL,
-  'http://localhost:5173',
-  'http://localhost:3000'
-].filter(Boolean);
-
+// CORS configuration - Allow all Vercel domains
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
-    // Check exact matches
-    if (allowedOrigins.some(allowed => {
-      if (typeof allowed === 'string') {
-        return allowed === origin;
-      }
-      // Check regex patterns
-      if (allowed instanceof RegExp) {
-        return allowed.test(origin);
-      }
-      return false;
-    })) {
+    // Allow all Vercel domains (production and preview deployments)
+    if (origin.includes('.vercel.app')) {
       return callback(null, true);
     }
     
-    // Allow all Vercel domains in production
-    if (process.env.NODE_ENV === 'production' && origin && origin.includes('.vercel.app')) {
+    // Allow localhost for development
+    if (origin.includes('localhost')) {
       return callback(null, true);
     }
     
-    // Allow in development
-    if (process.env.NODE_ENV === 'development') {
-      return callback(null, true);
-    }
-    
+    // Log rejected origins for debugging
+    console.log('CORS rejected origin:', origin);
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
 }));
 
 // Body parser with increased limits for file uploads
