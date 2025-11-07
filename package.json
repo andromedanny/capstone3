@@ -1,6 +1,7 @@
 {
   "name": "structura",
   "version": "1.0.0",
+  "type": "module",
   "description": "Structura - E-commerce Store Builder",
   "scripts": {
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",

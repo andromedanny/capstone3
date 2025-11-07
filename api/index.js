@@ -6,7 +6,9 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 
-// Import routes
+dotenv.config();
+
+// Import routes (lazy import might help with cold starts)
 import authRoutes from '../backend/routes/authRoutes.js';
 import storeRoutes from '../backend/routes/storeRoutes.js';
 import productRoutes from '../backend/routes/productRoutes.js';
@@ -27,8 +29,6 @@ Store.hasMany(Product, {
   onDelete: 'CASCADE',
   onUpdate: 'CASCADE'
 });
-
-dotenv.config();
 
 const app = express();
 
@@ -110,10 +110,55 @@ app.use((req, res) => {
 // Error handler
 app.use((err, req, res, next) => {
   console.error('Error:', err);
+  console.error('Error Stack:', err.stack);
+  console.error('Request Path:', req.path);
+  console.error('Request Method:', req.method);
+  
   res.status(err.status || 500).json({
     error: err.message || 'Internal server error',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    // Show stack trace and details for debugging (remove in production later)
+    stack: err.stack,
+    path: req.path,
+    method: req.method,
+    ...(process.env.NODE_ENV === 'development' && { 
+      fullError: err.toString()
+    })
   });
+});
+
+// Test database connection endpoint
+app.get('/api/test-db', async (req, res) => {
+  try {
+    // Lazy import to avoid loading at module level
+    const dbModule = await import('../backend/config/db.js');
+    const sequelize = dbModule.default;
+    await sequelize.authenticate();
+    res.json({ 
+      status: 'success', 
+      message: 'Database connection successful',
+      env: {
+        hasDbUrl: !!process.env.DATABASE_URL,
+        hasSupabaseUrl: !!process.env.SUPABASE_DB_URL,
+        nodeEnv: process.env.NODE_ENV
+      }
+    });
+  } catch (error) {
+    console.error('Database connection error:', error);
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      status: 'error', 
+      message: 'Database connection failed',
+      error: error.message,
+      stack: error.stack,
+      env: {
+        hasDbUrl: !!process.env.DATABASE_URL,
+        hasSupabaseUrl: !!process.env.SUPABASE_DB_URL,
+        nodeEnv: process.env.NODE_ENV,
+        dbUrlLength: process.env.DATABASE_URL?.length || 0,
+        supabaseUrlLength: process.env.SUPABASE_DB_URL?.length || 0
+      }
+    });
+  }
 });
 
 // Export for Vercel serverless

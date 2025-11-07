@@ -2,7 +2,7 @@
   "version": 2,
   "buildCommand": "npm run build",
   "outputDirectory": "frontend/dist",
-  "installCommand": "cd frontend && npm install --production=false",
+  "installCommand": "npm install && cd backend && npm install && cd ../frontend && npm install --production=false",
   "rewrites": [
     {
       "source": "/api/(.*)",
