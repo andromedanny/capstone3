@@ -6,29 +6,70 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 
+// Load environment variables first
 dotenv.config();
 
-// Import routes (lazy import might help with cold starts)
-import authRoutes from '../backend/routes/authRoutes.js';
-import storeRoutes from '../backend/routes/storeRoutes.js';
-import productRoutes from '../backend/routes/productRoutes.js';
-import orderRoutes from '../backend/routes/orderRoutes.js';
-import paymentRoutes from '../backend/routes/paymentRoutes.js';
-import { servePublishedStoreHTML } from '../backend/controllers/publicStoreController.js';
-
-// Import models to ensure they are registered
-import User from '../backend/models/user.js';
-import Store from '../backend/models/store.js';
-import Product from '../backend/models/product.js';
-import Order from '../backend/models/order.js';
-import OrderItem from '../backend/models/orderItem.js';
-
-// Set up model associations
-Store.hasMany(Product, {
-  foreignKey: 'storeId',
-  onDelete: 'CASCADE',
-  onUpdate: 'CASCADE'
+// Log startup to help debug
+console.log('API function starting...');
+console.log('Environment check:', {
+  hasDbUrl: !!process.env.DATABASE_URL,
+  hasSupabaseUrl: !!process.env.SUPABASE_DB_URL,
+  hasJwtSecret: !!process.env.JWT_SECRET,
+  nodeEnv: process.env.NODE_ENV
 });
+
+let authRoutes, storeRoutes, productRoutes, orderRoutes, paymentRoutes;
+let servePublishedStoreHTML;
+let User, Store, Product, Order, OrderItem;
+
+try {
+  // Import routes with error handling
+  const authModule = await import('../backend/routes/authRoutes.js');
+  authRoutes = authModule.default;
+  
+  const storeModule = await import('../backend/routes/storeRoutes.js');
+  storeRoutes = storeModule.default;
+  
+  const productModule = await import('../backend/routes/productRoutes.js');
+  productRoutes = productModule.default;
+  
+  const orderModule = await import('../backend/routes/orderRoutes.js');
+  orderRoutes = orderModule.default;
+  
+  const paymentModule = await import('../backend/routes/paymentRoutes.js');
+  paymentRoutes = paymentModule.default;
+  
+  const publicStoreModule = await import('../backend/controllers/publicStoreController.js');
+  servePublishedStoreHTML = publicStoreModule.servePublishedStoreHTML;
+
+  // Import models
+  const UserModule = await import('../backend/models/user.js');
+  User = UserModule.default;
+  
+  const StoreModule = await import('../backend/models/store.js');
+  Store = StoreModule.default;
+  
+  const ProductModule = await import('../backend/models/product.js');
+  Product = ProductModule.default;
+  
+  const OrderModule = await import('../backend/models/order.js');
+  Order = OrderModule.default;
+  
+  const OrderItemModule = await import('../backend/models/orderItem.js');
+  OrderItem = OrderItemModule.default;
+
+  // Set up model associations
+  Store.hasMany(Product, {
+    foreignKey: 'storeId',
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
+  });
+  
+  console.log('All modules imported successfully');
+} catch (error) {
+  console.error('Error importing modules:', error);
+  console.error('Error stack:', error.stack);
+}
 
 const app = express();
 
@@ -65,14 +106,16 @@ app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 // Note: In production, files are served from Supabase Storage, not local filesystem
 
 // Standalone store pages
-app.get('/store/:domain', servePublishedStoreHTML);
+if (servePublishedStoreHTML) {
+  app.get('/store/:domain', servePublishedStoreHTML);
+}
 
 // API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/stores', storeRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/payments', paymentRoutes);
+if (authRoutes) app.use('/api/auth', authRoutes);
+if (storeRoutes) app.use('/api/stores', storeRoutes);
+if (productRoutes) app.use('/api/products', productRoutes);
+if (orderRoutes) app.use('/api/orders', orderRoutes);
+if (paymentRoutes) app.use('/api/payments', paymentRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -143,7 +186,16 @@ app.get('/api/test-db', async (req, res) => {
 });
 
 // Export for Vercel serverless
-export default function handler(req, res) {
-  return app(req, res);
+export default async function handler(req, res) {
+  try {
+    return app(req, res);
+  } catch (error) {
+    console.error('Handler error:', error);
+    return res.status(500).json({
+      error: 'Function handler error',
+      message: error.message,
+      stack: error.stack
+    });
+  }
 }
 
