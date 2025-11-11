@@ -25,7 +25,18 @@ export const uploadBackground = multer({
 // Create a new store for a user
 export const createStore = async (req, res) => {
   try {
-    const { templateId, storeName, description, domainName, region, province, municipality, barangay, contactEmail, phone } = req.body;
+    let { templateId, storeName, description, domainName, region, province, municipality, barangay, contactEmail, phone } = req.body;
+    
+    // Normalize domain name: lowercase, remove spaces, remove special characters except hyphens
+    if (domainName) {
+      domainName = domainName
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, '-') // Replace spaces with hyphens
+        .replace(/[^a-z0-9-]/g, '') // Remove special characters except hyphens
+        .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+        .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+    }
     
     // Get userId from the authenticated request
     const userId = req.user?.id;
@@ -43,6 +54,7 @@ export const createStore = async (req, res) => {
     }
 
     console.log('Creating store for user:', userId);
+    console.log('   Domain name (normalized):', domainName);
     
     const store = await Store.create({
       userId,
@@ -88,44 +100,63 @@ export const createStore = async (req, res) => {
 
 // Get all stores for a specific user
 export const getUserStores = async (req, res) => {
+  const startTime = Date.now();
   try {
     const userId = req.user?.id;
     
     if (!userId) {
       return res.status(401).json({ message: 'User not authenticated' });
     }
-
-    console.log('Fetching stores for user:', userId);
     
-    const stores = await Store.findAll({ 
-      where: { userId },
-      include: [{
-        model: User,
-        attributes: ['email', 'firstName', 'lastName']
-      }]
-    });
+    // Optimize query - remove User include if not needed, add timeout
+    const stores = await Promise.race([
+      Store.findAll({ 
+        where: { userId },
+        attributes: ['id', 'userId', 'templateId', 'storeName', 'description', 'domainName', 
+                     'region', 'province', 'municipality', 'barangay', 'contactEmail', 
+                     'phone', 'status', 'content', 'createdAt', 'updatedAt'],
+        limit: 100 // Limit to prevent large queries
+      }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Query timeout')), 25000)
+      )
+    ]);
     
-    console.log('Found stores:', stores.length);
-    
-    // Parse content for each store if it's a string
+    // Parse content for each store if it's a string (optimized)
     const storesData = stores.map(store => {
       const storeData = store.toJSON();
-      if (storeData.content && typeof storeData.content === 'string') {
+      // Only parse if it's a string and not too large
+      if (storeData.content && typeof storeData.content === 'string' && storeData.content.length < 1000000) {
         try {
           storeData.content = JSON.parse(storeData.content);
         } catch (e) {
-          console.error('Error parsing store content:', e);
+          // Keep as string if parsing fails
         }
       }
       return storeData;
     });
     
+    const duration = Date.now() - startTime;
+    if (duration > 5000) {
+      console.warn(`Slow query: getUserStores took ${duration}ms`);
+    }
+    
     res.status(200).json(storesData);
   } catch (error) {
-    console.error('Error fetching stores:', error);
-    res.status(400).json({ 
-      message: error.message,
-      details: error.parent?.message || 'Unknown error occurred'
+    const duration = Date.now() - startTime;
+    console.error(`Error fetching stores (${duration}ms):`, error.message);
+    
+    // Handle timeout specifically
+    if (error.message === 'Query timeout' || error.code === 'ETIMEDOUT') {
+      return res.status(504).json({ 
+        message: 'Request timeout - database query took too long',
+        error: 'TIMEOUT'
+      });
+    }
+    
+    res.status(500).json({ 
+      message: error.message || 'Error fetching stores',
+      error: error.name || 'UNKNOWN_ERROR'
     });
   }
 };
@@ -133,7 +164,19 @@ export const getUserStores = async (req, res) => {
 // Update a store
 export const updateStore = async (req, res) => {
   const { id } = req.params;
-  const { templateId, storeName, description, domainName, region, province, municipality, barangay, contactEmail, phone } = req.body;
+  let { templateId, storeName, description, domainName, region, province, municipality, barangay, contactEmail, phone } = req.body;
+  
+  // Normalize domain name if provided
+  if (domainName) {
+    domainName = domainName
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/[^a-z0-9-]/g, '') // Remove special characters except hyphens
+      .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+      .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+  }
+  
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -160,7 +203,7 @@ export const updateStore = async (req, res) => {
       });
       if (existingStore) {
         return res.status(400).json({ 
-          message: 'A store with this domain name already exists. Please choose a different domain name.',
+          message: `A store with the domain name "${domainName}" already exists. Please choose a different domain name.`,
           details: 'Duplicate domain name'
         });
       }

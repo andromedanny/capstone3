@@ -6,27 +6,65 @@ import { uploadToSupabase, deleteFromSupabase } from '../utils/supabaseStorage.j
 
 // Get all products for a store
 export const getProducts = async (req, res) => {
+  const startTime = Date.now();
   try {
     const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({ message: 'User not authenticated' });
     }
 
-    // Get user's store
-    const store = await Store.findOne({ where: { userId } });
+    // Get user's store with timeout
+    const store = await Promise.race([
+      Store.findOne({ 
+        where: { userId },
+        attributes: ['id'],
+        limit: 1
+      }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Query timeout')), 10000)
+      )
+    ]);
+
     if (!store) {
       return res.status(404).json({ message: 'Store not found' });
     }
 
-    const products = await Product.findAll({
-      where: { storeId: store.id },
-      order: [['createdAt', 'DESC']]
-    });
+    // Fetch products with timeout and limit
+    const products = await Promise.race([
+      Product.findAll({
+        where: { storeId: store.id },
+        attributes: ['id', 'storeId', 'name', 'description', 'price', 'stock', 
+                     'image', 'isActive', 'createdAt', 'updatedAt'],
+        order: [['createdAt', 'DESC']],
+        limit: 1000 // Limit to prevent large queries
+      }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Query timeout')), 15000)
+      )
+    ]);
+
+    const duration = Date.now() - startTime;
+    if (duration > 5000) {
+      console.warn(`Slow query: getProducts took ${duration}ms`);
+    }
 
     res.json(products);
   } catch (error) {
-    console.error('Error fetching products:', error);
-    res.status(500).json({ message: 'Error fetching products', error: error.message });
+    const duration = Date.now() - startTime;
+    console.error(`Error fetching products (${duration}ms):`, error.message);
+    
+    // Handle timeout specifically
+    if (error.message === 'Query timeout' || error.code === 'ETIMEDOUT') {
+      return res.status(504).json({ 
+        message: 'Request timeout - database query took too long',
+        error: 'TIMEOUT'
+      });
+    }
+    
+    res.status(500).json({ 
+      message: error.message || 'Error fetching products',
+      error: error.name || 'UNKNOWN_ERROR'
+    });
   }
 };
 

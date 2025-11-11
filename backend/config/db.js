@@ -23,10 +23,13 @@ const sequelize = new Sequelize(
     },
     logging: process.env.NODE_ENV === 'development' ? console.log : false,
     pool: {
-      max: 5,
+      max: 2, // Reduced for serverless
       min: 0,
-      acquire: 30000,
-      idle: 10000
+      acquire: 20000, // Reduced timeout
+      idle: 5000 // Reduced idle time
+    },
+    retry: {
+      max: 2 // Retry failed queries up to 2 times
     }
   }
 );
