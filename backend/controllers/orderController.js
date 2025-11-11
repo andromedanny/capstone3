@@ -112,16 +112,11 @@ export const createOrder = async (req, res) => {
       return res.status(400).json({ message: 'Complete shipping address is required' });
     }
 
-    // Validate store exists and is published with timeout
-    const store = await Promise.race([
-      Store.findOne({
-        where: { id: storeId, status: 'published' },
-        attributes: ['id', 'status']
-      }),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Database query timeout')), 8000)
-      )
-    ]);
+    // Validate store exists and is published
+    const store = await Store.findOne({
+      where: { id: storeId, status: 'published' },
+      attributes: ['id', 'status']
+    });
 
     if (!store) {
       return res.status(404).json({ message: 'Store not found or not published' });
@@ -136,15 +131,10 @@ export const createOrder = async (req, res) => {
         return res.status(400).json({ message: 'Each item must have productId and quantity' });
       }
 
-      const product = await Promise.race([
-        Product.findOne({
-          where: { id: item.productId, storeId, isActive: true },
-          attributes: ['id', 'name', 'price', 'stock']
-        }),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Database query timeout')), 8000)
-        )
-      ]);
+      const product = await Product.findOne({
+        where: { id: item.productId, storeId, isActive: true },
+        attributes: ['id', 'name', 'price', 'stock']
+      });
 
       if (!product) {
         return res.status(404).json({ message: `Product ${item.productId} not found` });
@@ -172,82 +162,62 @@ export const createOrder = async (req, res) => {
     const shippingCost = parseFloat(shipping) || 0;
     const total = subtotal + shippingCost;
 
-    // Create order with timeout
-    const order = await Promise.race([
-      Order.create({
-        storeId,
-        orderNumber: generateOrderNumber(),
-        status: 'pending',
-        paymentMethod: paymentMethod || 'gcash',
-        paymentStatus: 'pending',
-        subtotal,
-        shipping: shippingCost,
-        total,
-        shippingAddress: shippingAddress, // Store as JSON object (Sequelize handles JSON type)
-        customerName,
-        customerEmail,
-        customerPhone: customerPhone || ''
-      }),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Order creation timeout')), 8000)
-      )
-    ]);
+    // Create order
+    const order = await Order.create({
+      storeId,
+      orderNumber: generateOrderNumber(),
+      status: 'pending',
+      paymentMethod: paymentMethod || 'gcash',
+      paymentStatus: 'pending',
+      subtotal,
+      shipping: shippingCost,
+      total,
+      shippingAddress: shippingAddress, // Store as JSON object (Sequelize handles JSON type)
+      customerName,
+      customerEmail,
+      customerPhone: customerPhone || ''
+    });
 
-    // Create order items and update product stock with timeout
+    // Create order items and update product stock
     for (const item of orderItems) {
-      await Promise.race([
-        OrderItem.create({
-          orderId: order.id,
-          productId: item.productId,
-          quantity: item.quantity,
-          price: item.price,
-          subtotal: item.subtotal
-        }),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Order item creation timeout')), 8000)
-        )
-      ]);
+      await OrderItem.create({
+        orderId: order.id,
+        productId: item.productId,
+        quantity: item.quantity,
+        price: item.price,
+        subtotal: item.subtotal
+      });
 
       // Update product stock (non-blocking - don't fail order if stock update fails)
       try {
-        await Promise.race([
-          Product.decrement('stock', {
-            by: item.quantity,
-            where: { id: item.productId }
-          }),
-          new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Stock update timeout')), 5000)
-          )
-        ]);
+        await Product.decrement('stock', {
+          by: item.quantity,
+          where: { id: item.productId }
+        });
       } catch (stockError) {
         console.warn('Stock update failed (non-critical):', stockError.message);
         // Continue - don't fail the order if stock update fails
       }
     }
 
-    // Fetch complete order with items with timeout
-    const completeOrder = await Promise.race([
-      Order.findOne({
-        where: { id: order.id },
-        attributes: ['id', 'storeId', 'orderNumber', 'status', 'paymentMethod', 
-                     'paymentStatus', 'subtotal', 'shipping', 'total', 
-                     'shippingAddress', 'customerName', 'customerEmail', 
-                     'customerPhone', 'createdAt', 'updatedAt'],
-        include: [
-          {
-            model: OrderItem,
-            attributes: ['id', 'orderId', 'productId', 'quantity', 'price', 'subtotal'],
-            include: [{
-              model: Product,
-              attributes: ['id', 'name', 'price', 'image']
-            }]
-          }
-        ]
-      }),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Order fetch timeout')), 8000)
-      )
-    ]);
+    // Fetch complete order with items
+    const completeOrder = await Order.findOne({
+      where: { id: order.id },
+      attributes: ['id', 'storeId', 'orderNumber', 'status', 'paymentMethod', 
+                   'paymentStatus', 'subtotal', 'shipping', 'total', 
+                   'shippingAddress', 'customerName', 'customerEmail', 
+                   'customerPhone', 'createdAt', 'updatedAt'],
+      include: [
+        {
+          model: OrderItem,
+          attributes: ['id', 'orderId', 'productId', 'quantity', 'price', 'subtotal'],
+          include: [{
+            model: Product,
+            attributes: ['id', 'name', 'price', 'image']
+          }]
+        }
+      ]
+    });
 
     const duration = Date.now() - startTime;
     if (duration > 3000) {
@@ -259,20 +229,31 @@ export const createOrder = async (req, res) => {
     const duration = Date.now() - startTime;
     console.error(`Error creating order (${duration}ms):`, error.message);
     console.error('Error stack:', error.stack);
+    console.error('Error name:', error.name);
+    console.error('Error code:', error.code);
     console.error('Request body:', JSON.stringify(req.body, null, 2));
     
-    // Handle timeout specifically
-    if (error.message.includes('timeout') || error.code === 'ETIMEDOUT') {
-      return res.status(504).json({ 
-        message: 'Request timeout - please try again',
-        error: 'TIMEOUT'
+    // Handle database connection errors
+    if (error.name === 'SequelizeConnectionError' || 
+        error.name === 'SequelizeConnectionRefusedError' ||
+        error.code === 'ECONNREFUSED' ||
+        error.code === 'ENOTFOUND' ||
+        error.message?.includes('Connection') ||
+        error.message?.includes('connect')) {
+      console.error('Database connection error detected');
+      return res.status(503).json({ 
+        message: 'Database connection error - please try again',
+        error: 'DATABASE_ERROR'
       });
     }
     
-    // Handle database errors
-    if (error.name === 'SequelizeConnectionError' || error.name === 'SequelizeDatabaseError') {
+    // Handle database query errors
+    if (error.name === 'SequelizeDatabaseError' || 
+        error.name === 'SequelizeUniqueConstraintError' ||
+        error.name === 'SequelizeForeignKeyConstraintError') {
+      console.error('Database query error detected');
       return res.status(503).json({ 
-        message: 'Database connection error - please try again',
+        message: 'Database error - please try again',
         error: 'DATABASE_ERROR'
       });
     }
@@ -282,6 +263,14 @@ export const createOrder = async (req, res) => {
       return res.status(400).json({ 
         message: 'Validation error',
         error: error.errors?.map(e => e.message).join(', ') || error.message
+      });
+    }
+    
+    // Handle timeout errors (from network/connection level)
+    if (error.message?.includes('timeout') || error.code === 'ETIMEDOUT') {
+      return res.status(503).json({ 
+        message: 'Request timeout - please try again',
+        error: 'TIMEOUT'
       });
     }
     
