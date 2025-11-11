@@ -16,9 +16,13 @@ if (!databaseUrl) {
   console.error('⚠️ Please set SUPABASE_DB_URL or DATABASE_URL in your environment variables');
 } else {
   // Log connection info (without sensitive data)
-  const urlParts = new URL(databaseUrl);
-  console.log(`🔌 Database: ${urlParts.hostname}${urlParts.port ? ':' + urlParts.port : ''}`);
-  console.log(`🔌 Database: ${urlParts.pathname}`);
+  try {
+    const urlParts = new URL(databaseUrl);
+    console.log(`🔌 Database host: ${urlParts.hostname}${urlParts.port ? ':' + urlParts.port : ''}`);
+    console.log(`🔌 Database name: ${urlParts.pathname.replace('/', '')}`);
+  } catch (urlError) {
+    console.log('🔌 Database URL is set (format validation skipped)');
+  }
 }
 
 // Supabase PostgreSQL connection
