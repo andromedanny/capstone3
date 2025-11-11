@@ -511,26 +511,47 @@ const PublishedStore = () => {
             });
             
             // Add click handlers to ALL product buttons in the template (including existing ones)
+            // This ensures buttons that weren't updated in the loop above still get handlers
             const allProductButtons = iframeDoc.querySelectorAll('.product-button, .product-card button, .product button');
-            allProductButtons.forEach((button, index) => {
-              // Find the corresponding product for this button
+            allProductButtons.forEach((button) => {
+              // Find the corresponding product for this button by matching card content
               const card = button.closest('.product-card, .product');
-              if (card && displayProducts[index]) {
-                const product = displayProducts[index];
-                button.onclick = (e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  
-                  const productData = {
-                    type: 'OPEN_ORDER_MODAL',
-                    product: product
-                  };
-                  window.parent.postMessage(productData, '*');
-                };
+              if (card) {
+                // Try to find the product by matching title/name
+                const titleEl = card.querySelector('.product-title, h3, h4, .product-name');
+                const productName = titleEl ? titleEl.textContent.trim() : '';
                 
-                button.style.cursor = 'pointer';
-                button.style.pointerEvents = 'auto';
-                button.disabled = false;
+                // Find matching product
+                let matchingProduct = displayProducts.find(p => 
+                  p.name && p.name.trim() === productName
+                );
+                
+                // If no match by name, try by index position
+                if (!matchingProduct) {
+                  const allCards = Array.from(productContainer.querySelectorAll('.product-card, .product'));
+                  const cardIndex = allCards.indexOf(card);
+                  if (cardIndex >= 0 && cardIndex < displayProducts.length) {
+                    matchingProduct = displayProducts[cardIndex];
+                  }
+                }
+                
+                // If we found a matching product, attach the handler
+                if (matchingProduct) {
+                  button.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const productData = {
+                      type: 'OPEN_ORDER_MODAL',
+                      product: matchingProduct
+                    };
+                    window.parent.postMessage(productData, '*');
+                  };
+                  
+                  button.style.cursor = 'pointer';
+                  button.style.pointerEvents = 'auto';
+                  button.disabled = false;
+                }
               }
             });
             
