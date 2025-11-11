@@ -244,9 +244,9 @@ const Dashboard = () => {
               </svg>
             </div>
           }
-          title="Edit Store & Products"
-          description="Customize your store template and manage products."
-          subDescription="Edit your store information, customize the template design, and add or manage your products all in one place."
+          title="Edit Store"
+          description="Customize your store template and design."
+          subDescription="Edit your store information and customize the template design, including hero content, text styling, and background settings."
           actionText={templateId ? "Edit Template" : "Set Up Your Store"}
           actionLink={templateId ? `/site-builder?template=${templateId}` : "/store-templates"}
           variant="solid"
