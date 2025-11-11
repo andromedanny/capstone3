@@ -767,6 +767,73 @@ const PublishedStore = () => {
             }
             
             console.log(`✅ Updated/created ${displayProducts.length} products in published store`);
+            
+            // Inject click handler script after products are updated
+            try {
+              const script = iframeDoc.createElement('script');
+              script.textContent = `
+                (function() {
+                  function setupOrderButtons() {
+                    const buttons = document.querySelectorAll('.product-button, .product-card button, .product button');
+                    buttons.forEach(function(button) {
+                      if (button.hasAttribute('data-handler-attached-v2')) return;
+                      button.setAttribute('data-handler-attached-v2', 'true');
+                      
+                      // Remove existing onclick to avoid duplicates
+                      button.onclick = null;
+                      
+                      button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                        
+                        const card = button.closest('.product-card, .product');
+                        if (card) {
+                          const titleEl = card.querySelector('.product-title, h3, h4, .product-name');
+                          const productName = titleEl ? titleEl.textContent.trim() : '';
+                          
+                          // Send product name to parent via postMessage
+                          if (window.parent && window.parent !== window) {
+                            window.parent.postMessage({
+                              type: 'OPEN_ORDER_MODAL',
+                              productName: productName
+                            }, '*');
+                          }
+                        }
+                      }, true);
+                      
+                      // Also set onclick as backup
+                      button.onclick = function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const card = button.closest('.product-card, .product');
+                        if (card) {
+                          const titleEl = card.querySelector('.product-title, h3, h4, .product-name');
+                          const productName = titleEl ? titleEl.textContent.trim() : '';
+                          if (window.parent && window.parent !== window) {
+                            window.parent.postMessage({
+                              type: 'OPEN_ORDER_MODAL',
+                              productName: productName
+                            }, '*');
+                          }
+                        }
+                      };
+                      
+                      button.style.cursor = 'pointer';
+                      button.style.pointerEvents = 'auto';
+                      button.disabled = false;
+                    });
+                  }
+                  
+                  setupOrderButtons();
+                  setTimeout(setupOrderButtons, 100);
+                  setTimeout(setupOrderButtons, 500);
+                })();
+              `;
+              iframeDoc.head.appendChild(script);
+            } catch (err) {
+              console.error('Error injecting order button script:', err);
+            }
           } else {
             console.warn('⚠️ Products section not found in template');
           }
