@@ -47,6 +47,38 @@ const PublishedStore = () => {
   
   // Ref to store callback function for order button clicks
   const orderButtonCallbackRef = React.useRef(null);
+  
+  // Create a global function that the iframe can call
+  useEffect(() => {
+    // Store the callback in window so iframe can access it
+    window.openOrderModal = (product) => {
+      setSelectedProduct(product);
+      setShowOrderModal(true);
+      
+      // Reset order form
+      setOrderData({
+        customerName: '',
+        customerEmail: '',
+        customerPhone: '',
+        quantity: 1,
+        paymentMethod: 'gcash',
+        region: '',
+        province: '',
+        municipality: '',
+        barangay: '',
+        shipping: 0
+      });
+      setProvincesList([]);
+      setMunicipalitiesList([]);
+      setBarangaysList([]);
+      setOrderError('');
+      setOrderSuccess(false);
+    };
+    
+    return () => {
+      delete window.openOrderModal;
+    };
+  }, []);
 
   useEffect(() => {
     const fetchStore = async () => {
@@ -542,23 +574,69 @@ const PublishedStore = () => {
                 orderButton.onclick = null;
                 // Clone the product to avoid closure issues
                 const productCopy = JSON.parse(JSON.stringify(product));
+                
+                // Try multiple methods to ensure click works
+                orderButton.onclick = (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  
+                  // Method 1: Call parent's global function
+                  try {
+                    if (window.parent && window.parent.openOrderModal) {
+                      window.parent.openOrderModal(productCopy);
+                      return;
+                    }
+                  } catch (err) {
+                    console.log('Cannot access parent.openOrderModal:', err);
+                  }
+                  
+                  // Method 2: Use postMessage
+                  try {
+                    if (window.parent && window.parent !== window) {
+                      window.parent.postMessage({
+                        type: 'OPEN_ORDER_MODAL',
+                        product: productCopy
+                      }, '*');
+                    }
+                  } catch (err) {
+                    console.log('PostMessage failed:', err);
+                  }
+                  
+                  // Method 3: Direct call if same origin
+                  try {
+                    if (window.parent && typeof window.parent.openOrderModal === 'function') {
+                      window.parent.openOrderModal(productCopy);
+                    }
+                  } catch (err) {
+                    console.log('Direct call failed:', err);
+                  }
+                };
+                
+                // Also add event listener as backup
                 orderButton.addEventListener('click', (e) => {
                   e.preventDefault();
                   e.stopPropagation();
                   
-                  // Use postMessage to communicate with parent
-                  if (window.parent && window.parent !== window) {
-                    window.parent.postMessage({
-                      type: 'OPEN_ORDER_MODAL',
-                      product: productCopy
-                    }, '*');
+                  try {
+                    if (window.parent && window.parent.openOrderModal) {
+                      window.parent.openOrderModal(productCopy);
+                    } else if (window.parent && window.parent !== window) {
+                      window.parent.postMessage({
+                        type: 'OPEN_ORDER_MODAL',
+                        product: productCopy
+                      }, '*');
+                    }
+                  } catch (err) {
+                    console.error('Order button click error:', err);
                   }
-                }, { capture: true });
+                }, { capture: true, once: false });
                 
                 orderButton.style.cursor = 'pointer';
                 orderButton.style.pointerEvents = 'auto';
                 orderButton.disabled = false;
+                orderButton.removeAttribute('disabled');
                 orderButton.setAttribute('data-product-id', product.id || index);
+                orderButton.setAttribute('type', 'button');
               }
             });
             
@@ -598,23 +676,60 @@ const PublishedStore = () => {
                   button.onclick = null;
                   // Clone the product to avoid closure issues
                   const productCopy = JSON.parse(JSON.stringify(matchingProduct));
+                  
+                  // Try multiple methods to ensure click works
+                  button.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Method 1: Call parent's global function
+                    try {
+                      if (window.parent && window.parent.openOrderModal) {
+                        window.parent.openOrderModal(productCopy);
+                        return;
+                      }
+                    } catch (err) {
+                      console.log('Cannot access parent.openOrderModal:', err);
+                    }
+                    
+                    // Method 2: Use postMessage
+                    try {
+                      if (window.parent && window.parent !== window) {
+                        window.parent.postMessage({
+                          type: 'OPEN_ORDER_MODAL',
+                          product: productCopy
+                        }, '*');
+                      }
+                    } catch (err) {
+                      console.log('PostMessage failed:', err);
+                    }
+                  };
+                  
+                  // Also add event listener as backup
                   button.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     
-                    // Use postMessage to communicate with parent
-                    if (window.parent && window.parent !== window) {
-                      window.parent.postMessage({
-                        type: 'OPEN_ORDER_MODAL',
-                        product: productCopy
-                      }, '*');
+                    try {
+                      if (window.parent && window.parent.openOrderModal) {
+                        window.parent.openOrderModal(productCopy);
+                      } else if (window.parent && window.parent !== window) {
+                        window.parent.postMessage({
+                          type: 'OPEN_ORDER_MODAL',
+                          product: productCopy
+                        }, '*');
+                      }
+                    } catch (err) {
+                      console.error('Order button click error:', err);
                     }
-                  }, { capture: true });
+                  }, { capture: true, once: false });
                   
                   button.style.cursor = 'pointer';
                   button.style.pointerEvents = 'auto';
                   button.disabled = false;
+                  button.removeAttribute('disabled');
                   button.setAttribute('data-product-id', matchingProduct.id || btnIndex);
+                  button.setAttribute('type', 'button');
                 }
               }
             });
@@ -1403,7 +1518,7 @@ const PublishedStore = () => {
           }}
           title={store.storeName}
           scrolling="yes"
-          sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals"
+          sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals allow-top-navigation-by-user-activation"
           onLoad={() => {
             // Trigger update when iframe loads
             if (iframeRef.current && htmlContent) {
