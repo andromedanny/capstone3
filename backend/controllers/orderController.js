@@ -183,7 +183,7 @@ export const createOrder = async (req, res) => {
         subtotal,
         shipping: shippingCost,
         total,
-        shippingAddress: JSON.stringify(shippingAddress), // Store as JSON string
+        shippingAddress: shippingAddress, // Store as JSON object (Sequelize handles JSON type)
         customerName,
         customerEmail,
         customerPhone: customerPhone || ''
