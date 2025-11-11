@@ -413,9 +413,10 @@ export const saveStoreContent = async (req, res) => {
       )
     ]);
     
-    // Reload the store to verify the content was saved
-    const updatedStore = await Store.findByPk(id);
-    console.log(`✅ Content saved. Verifying...`);
+    const duration = Date.now() - startTime;
+    if (duration > 5000) {
+      console.warn(`Slow content save: took ${duration}ms, size: ${(contentSize / 1024).toFixed(2)}KB`);
+    }
     
     // Parse content if it's a string (Sequelize might return it as string)
     let parsedContent = updatedStore.content;
