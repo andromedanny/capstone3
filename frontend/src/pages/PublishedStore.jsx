@@ -875,6 +875,8 @@ const PublishedStore = () => {
               case 'home':
                 targetSection = iframeDoc.querySelector('.hero, body');
                 break;
+              case 'shop now':
+              case 'shopnow':
               case 'products':
                 targetSection = iframeDoc.querySelector('.products, .products-section, #products, section.products');
                 break;
@@ -893,10 +895,16 @@ const PublishedStore = () => {
               // Final fallback: scroll based on link type
               if (linkText === 'home') {
                 iframeDoc.querySelector('.hero, body')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              } else if (linkText === 'products') {
-                const productsSection = iframeDoc.querySelector('.products, .products-section');
+              } else if (linkText === 'shop now' || linkText === 'shopnow' || linkText === 'products') {
+                const productsSection = iframeDoc.querySelector('.products, .products-section, #products, section.products');
                 if (productsSection) {
                   productsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                  // Fallback: scroll to first product card
+                  const firstProduct = iframeDoc.querySelector('.product-card, .product');
+                  if (firstProduct) {
+                    firstProduct.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
                 }
               } else if (linkText === 'contact') {
                 // Scroll to footer for contact
