@@ -100,13 +100,24 @@ export const getProductById = async (req, res) => {
 
 // Create a new product
 export const createProduct = async (req, res) => {
+  const startTime = Date.now();
   try {
     const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({ message: 'User not authenticated' });
     }
 
-    const store = await Store.findOne({ where: { userId } });
+    // Get store with timeout
+    const store = await Promise.race([
+      Store.findOne({ 
+        where: { userId },
+        attributes: ['id']
+      }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Database query timeout')), 8000)
+      )
+    ]);
+
     if (!store) {
       return res.status(404).json({ 
         message: 'Store not found. Please create a store first before adding products.' 
@@ -124,24 +135,27 @@ export const createProduct = async (req, res) => {
 
     let imagePath = null;
 
-    // Handle file upload to Supabase Storage
+    // Handle file upload to Supabase Storage with timeout
     if (req.file) {
       try {
         const fileExtension = path.extname(req.file.originalname);
         const fileName = `product_${Date.now()}${fileExtension}`;
         
-        // Upload to Supabase Storage
-        const { path: storagePath } = await uploadToSupabase(
-          req.file.buffer,
-          'products',
-          fileName,
-          req.file.mimetype
-        );
+        const uploadResult = await Promise.race([
+          uploadToSupabase(
+            req.file.buffer,
+            'products',
+            fileName,
+            req.file.mimetype
+          ),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('File upload timeout')), 15000)
+          )
+        ]);
         
-        // Store the storage path (e.g., "products/product_123.jpg")
-        imagePath = storagePath;
+        imagePath = uploadResult.path;
       } catch (fileError) {
-        console.error('Error uploading file to Supabase:', fileError);
+        console.error('Error uploading file:', fileError.message);
         return res.status(500).json({ 
           message: 'Error uploading product image', 
           error: fileError.message 
@@ -149,30 +163,49 @@ export const createProduct = async (req, res) => {
       }
     }
 
-    const product = await Product.create({
-      storeId: store.id,
-      name,
-      description,
-      price: parseFloat(price),
-      stock: parseInt(stock) || 0,
-      image: imagePath,
-      isActive: isActive !== undefined ? isActive : true
-    });
+    // Create product with timeout
+    const product = await Promise.race([
+      Product.create({
+        storeId: store.id,
+        name,
+        description,
+        price: parseFloat(price),
+        stock: parseInt(stock) || 0,
+        image: imagePath,
+        isActive: isActive !== undefined ? isActive : true
+      }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Product creation timeout')), 8000)
+      )
+    ]);
+
+    const duration = Date.now() - startTime;
+    if (duration > 5000) {
+      console.warn(`Slow product creation: took ${duration}ms`);
+    }
 
     res.status(201).json(product);
   } catch (error) {
-    console.error('Error creating product:', error);
-    console.error('Error details:', error.stack);
+    const duration = Date.now() - startTime;
+    console.error(`Error creating product (${duration}ms):`, error.message);
+    
+    if (error.message.includes('timeout') || error.code === 'ETIMEDOUT') {
+      return res.status(504).json({ 
+        message: 'Request timeout - please try again',
+        error: 'TIMEOUT'
+      });
+    }
+    
     res.status(500).json({ 
       message: 'Error creating product', 
-      error: error.message,
-      details: error.parent?.message || error.stack
+      error: error.message
     });
   }
 };
 
 // Update a product
 export const updateProduct = async (req, res) => {
+  const startTime = Date.now();
   try {
     const { id } = req.params;
     const userId = req.user?.id;
@@ -181,14 +214,30 @@ export const updateProduct = async (req, res) => {
       return res.status(401).json({ message: 'User not authenticated' });
     }
 
-    const store = await Store.findOne({ where: { userId } });
+    // Get store with timeout
+    const store = await Promise.race([
+      Store.findOne({ 
+        where: { userId },
+        attributes: ['id']
+      }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Database query timeout')), 8000)
+      )
+    ]);
+
     if (!store) {
       return res.status(404).json({ message: 'Store not found' });
     }
 
-    const product = await Product.findOne({
-      where: { id, storeId: store.id }
-    });
+    // Get product with timeout
+    const product = await Promise.race([
+      Product.findOne({
+        where: { id, storeId: store.id }
+      }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Database query timeout')), 8000)
+      )
+    ]);
 
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
@@ -197,33 +246,35 @@ export const updateProduct = async (req, res) => {
     const { name, description, price, stock, isActive } = req.body;
     let imagePath = product.image;
 
-    // Handle file upload if new image provided
+    // Handle file upload if new image provided (with timeout)
     if (req.file) {
       try {
-        // Delete old image from Supabase Storage if exists
+        // Delete old image from Supabase Storage if exists (non-blocking)
         if (product.image && (product.image.startsWith('products/') || product.image.startsWith('backgrounds/'))) {
-          try {
-            await deleteFromSupabase('products', product.image);
-          } catch (deleteError) {
-            console.warn('Error deleting old image from Supabase:', deleteError);
-            // Continue even if deletion fails
-          }
+          deleteFromSupabase('products', product.image).catch(err => {
+            console.warn('Error deleting old image:', err.message);
+          });
         }
 
-        // Upload new image to Supabase Storage
+        // Upload new image to Supabase Storage with timeout
         const fileExtension = path.extname(req.file.originalname);
         const fileName = `product_${Date.now()}${fileExtension}`;
         
-        const { path: storagePath } = await uploadToSupabase(
-          req.file.buffer,
-          'products',
-          fileName,
-          req.file.mimetype
-        );
+        const uploadResult = await Promise.race([
+          uploadToSupabase(
+            req.file.buffer,
+            'products',
+            fileName,
+            req.file.mimetype
+          ),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('File upload timeout')), 15000)
+          )
+        ]);
         
-        imagePath = storagePath;
+        imagePath = uploadResult.path;
       } catch (fileError) {
-        console.error('Error uploading file to Supabase:', fileError);
+        console.error('Error uploading file:', fileError.message);
         return res.status(500).json({ 
           message: 'Error uploading product image', 
           error: fileError.message 
@@ -231,19 +282,42 @@ export const updateProduct = async (req, res) => {
       }
     }
 
-    await product.update({
-      name: name || product.name,
-      description: description || product.description,
-      price: price !== undefined ? parseFloat(price) : product.price,
-      stock: stock !== undefined ? parseInt(stock) : product.stock,
-      image: imagePath,
-      isActive: isActive !== undefined ? isActive : product.isActive
-    });
+    // Update product with timeout
+    await Promise.race([
+      product.update({
+        name: name || product.name,
+        description: description || product.description,
+        price: price !== undefined ? parseFloat(price) : product.price,
+        stock: stock !== undefined ? parseInt(stock) : product.stock,
+        image: imagePath,
+        isActive: isActive !== undefined ? isActive : product.isActive
+      }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Update timeout')), 8000)
+      )
+    ]);
+
+    const duration = Date.now() - startTime;
+    if (duration > 5000) {
+      console.warn(`Slow product update: took ${duration}ms`);
+    }
 
     res.json(product);
   } catch (error) {
-    console.error('Error updating product:', error);
-    res.status(500).json({ message: 'Error updating product', error: error.message });
+    const duration = Date.now() - startTime;
+    console.error(`Error updating product (${duration}ms):`, error.message);
+    
+    if (error.message.includes('timeout') || error.code === 'ETIMEDOUT') {
+      return res.status(504).json({ 
+        message: 'Request timeout - please try again',
+        error: 'TIMEOUT'
+      });
+    }
+    
+    res.status(500).json({ 
+      message: 'Error updating product', 
+      error: error.message 
+    });
   }
 };
 

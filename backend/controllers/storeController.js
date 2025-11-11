@@ -163,6 +163,7 @@ export const getUserStores = async (req, res) => {
 
 // Update a store
 export const updateStore = async (req, res) => {
+  const startTime = Date.now();
   const { id } = req.params;
   let { templateId, storeName, description, domainName, region, province, municipality, barangay, contactEmail, phone } = req.body;
   
@@ -183,7 +184,17 @@ export const updateStore = async (req, res) => {
       return res.status(401).json({ message: 'User not authenticated' });
     }
 
-    const store = await Store.findByPk(id);
+    // Get store with timeout
+    const store = await Promise.race([
+      Store.findByPk(id, {
+        attributes: ['id', 'userId', 'templateId', 'storeName', 'description', 'domainName', 
+                     'region', 'province', 'municipality', 'barangay', 'contactEmail', 'phone']
+      }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Database query timeout')), 8000)
+      )
+    ]);
+
     if (!store) {
       return res.status(404).json({ message: 'Store not found' });
     }
@@ -195,12 +206,19 @@ export const updateStore = async (req, res) => {
 
     // Check if domain name is being changed and if it conflicts with another store
     if (domainName && domainName !== store.domainName) {
-      const existingStore = await Store.findOne({ 
-        where: { 
-          domainName, 
-          id: { [Op.ne]: id } // Exclude current store
-        } 
-      });
+      const existingStore = await Promise.race([
+        Store.findOne({ 
+          where: { 
+            domainName, 
+            id: { [Op.ne]: id } // Exclude current store
+          },
+          attributes: ['id']
+        }),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Database query timeout')), 8000)
+        )
+      ]);
+      
       if (existingStore) {
         return res.status(400).json({ 
           message: `A store with the domain name "${domainName}" already exists. Please choose a different domain name.`,
@@ -209,21 +227,41 @@ export const updateStore = async (req, res) => {
       }
     }
 
-    await store.update({
-      templateId: templateId || store.templateId,
-      storeName: storeName || store.storeName,
-      description: description || store.description,
-      domainName: domainName || store.domainName,
-      region: region || store.region,
-      province: province || store.province,
-      municipality: municipality || store.municipality,
-      barangay: barangay || store.barangay,
-      contactEmail: contactEmail || store.contactEmail,
-      phone: phone || store.phone
-    });
+    // Update store with timeout
+    await Promise.race([
+      store.update({
+        templateId: templateId || store.templateId,
+        storeName: storeName || store.storeName,
+        description: description || store.description,
+        domainName: domainName || store.domainName,
+        region: region || store.region,
+        province: province || store.province,
+        municipality: municipality || store.municipality,
+        barangay: barangay || store.barangay,
+        contactEmail: contactEmail || store.contactEmail,
+        phone: phone || store.phone
+      }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Update timeout')), 8000)
+      )
+    ]);
+
+    const duration = Date.now() - startTime;
+    if (duration > 5000) {
+      console.warn(`Slow store update: took ${duration}ms`);
+    }
+
     res.status(200).json(store);
   } catch (error) {
-    console.error('Error updating store:', error);
+    const duration = Date.now() - startTime;
+    console.error(`Error updating store (${duration}ms):`, error.message);
+    
+    if (error.message.includes('timeout') || error.code === 'ETIMEDOUT') {
+      return res.status(504).json({ 
+        message: 'Request timeout - please try again',
+        error: 'TIMEOUT'
+      });
+    }
     
     // Check for duplicate domain name
     if (error.name === 'SequelizeUniqueConstraintError' || error.parent?.code === 'ER_DUP_ENTRY') {
@@ -331,18 +369,30 @@ export const uploadBackgroundImage = async (req, res) => {
 
 // Save store content (hero, products, etc.)
 export const saveStoreContent = async (req, res) => {
+  const startTime = Date.now();
   try {
     const { id } = req.params;
     const { content } = req.body;
     
-    // Log request size for debugging
+    // Validate content size (limit to 5MB)
     const contentSize = JSON.stringify(content).length;
-    console.log(`📦 Saving store content for store ${id}`);
-    console.log(`   Content size: ${(contentSize / 1024 / 1024).toFixed(2)} MB`);
-    console.log(`   Content keys:`, content ? Object.keys(content) : 'null');
-    console.log(`   Background settings:`, content?.background);
+    if (contentSize > 5 * 1024 * 1024) {
+      return res.status(400).json({ 
+        message: 'Content too large. Maximum size is 5MB.',
+        error: 'CONTENT_TOO_LARGE'
+      });
+    }
 
-    const store = await Store.findByPk(id);
+    // Get store with timeout
+    const store = await Promise.race([
+      Store.findByPk(id, {
+        attributes: ['id', 'userId']
+      }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Database query timeout')), 8000)
+      )
+    ]);
+
     if (!store) {
       return res.status(404).json({ message: 'Store not found' });
     }
@@ -355,7 +405,13 @@ export const saveStoreContent = async (req, res) => {
     // Ensure content is a proper object
     const contentToSave = typeof content === 'string' ? JSON.parse(content) : content;
     
-    await store.update({ content: contentToSave });
+    // Update with timeout
+    await Promise.race([
+      store.update({ content: contentToSave }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Update timeout')), 8000)
+      )
+    ]);
     
     // Reload the store to verify the content was saved
     const updatedStore = await Store.findByPk(id);
