@@ -418,27 +418,21 @@ export const saveStoreContent = async (req, res) => {
       console.warn(`Slow content save: took ${duration}ms, size: ${(contentSize / 1024).toFixed(2)}KB`);
     }
     
-    // Parse content if it's a string (Sequelize might return it as string)
-    let parsedContent = updatedStore.content;
-    if (typeof parsedContent === 'string') {
-      try {
-        parsedContent = JSON.parse(parsedContent);
-      } catch (e) {
-        console.error('Error parsing content:', e);
-      }
+    res.status(200).json({ 
+      message: 'Store content saved successfully',
+      content: contentToSave
+    });
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    console.error(`Error saving store content (${duration}ms):`, error.message);
+    
+    if (error.message.includes('timeout') || error.code === 'ETIMEDOUT') {
+      return res.status(504).json({ 
+        message: 'Request timeout - please try again',
+        error: 'TIMEOUT'
+      });
     }
     
-    console.log(`   Saved content type:`, typeof parsedContent);
-    console.log(`   Saved content keys:`, parsedContent ? Object.keys(parsedContent) : 'null');
-    console.log(`   Saved background:`, parsedContent?.background);
-    
-    // Return store with parsed content
-    const storeResponse = updatedStore.toJSON();
-    storeResponse.content = parsedContent;
-    
-    res.status(200).json({ message: 'Content saved successfully', store: storeResponse });
-  } catch (error) {
-    console.error('Error saving store content:', error);
     res.status(500).json({
       message: 'Error saving store content',
       error: error.message
