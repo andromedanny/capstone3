@@ -631,12 +631,24 @@ const PublishedStore = () => {
                   }
                 }, { capture: true, once: false });
                 
+                // Ensure button is fully clickable
                 orderButton.style.cursor = 'pointer';
                 orderButton.style.pointerEvents = 'auto';
+                orderButton.style.zIndex = '9999';
+                orderButton.style.position = 'relative';
                 orderButton.disabled = false;
                 orderButton.removeAttribute('disabled');
                 orderButton.setAttribute('data-product-id', product.id || index);
                 orderButton.setAttribute('type', 'button');
+                orderButton.setAttribute('tabindex', '0');
+                
+                // Remove any CSS that might block clicks
+                const card = orderButton.closest('.product-card, .product');
+                if (card) {
+                  card.style.pointerEvents = 'auto';
+                  card.style.position = 'relative';
+                  card.style.zIndex = '1';
+                }
               }
             });
             
@@ -724,12 +736,24 @@ const PublishedStore = () => {
                     }
                   }, { capture: true, once: false });
                   
+                  // Ensure button is fully clickable
                   button.style.cursor = 'pointer';
                   button.style.pointerEvents = 'auto';
+                  button.style.zIndex = '9999';
+                  button.style.position = 'relative';
                   button.disabled = false;
                   button.removeAttribute('disabled');
                   button.setAttribute('data-product-id', matchingProduct.id || btnIndex);
                   button.setAttribute('type', 'button');
+                  button.setAttribute('tabindex', '0');
+                  
+                  // Remove any CSS that might block clicks
+                  const card = button.closest('.product-card, .product');
+                  if (card) {
+                    card.style.pointerEvents = 'auto';
+                    card.style.position = 'relative';
+                    card.style.zIndex = '1';
+                  }
                 }
               }
             });
