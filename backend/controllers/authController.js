@@ -56,28 +56,41 @@ export const register = async (req, res) => {
     const duration = Date.now() - startTime;
     console.error(`Registration error (${duration}ms):`, err.message);
     console.error('Error stack:', err.stack);
+    console.error('Error name:', err.name);
+    console.error('Error code:', err.code);
+    console.error('Error original:', err.original);
     
-    // Handle timeout specifically
-    if (err.message.includes('timeout') || err.code === 'ETIMEDOUT') {
-      return res.status(504).json({ 
-        message: 'Request timeout - please try again',
-        error: 'TIMEOUT'
+    // Handle all Sequelize errors as database errors
+    if (err.name && err.name.startsWith('Sequelize')) {
+      // Handle unique constraint (duplicate email) separately
+      if (err.name === 'SequelizeUniqueConstraintError') {
+        return res.status(400).json({ 
+          message: 'User already exists',
+          error: 'DUPLICATE_EMAIL'
+        });
+      }
+      
+      // All other Sequelize errors are database errors
+      console.error('Sequelize error detected:', err.name);
+      return res.status(503).json({ 
+        message: 'Database error - please try again',
+        error: 'DATABASE_ERROR',
+        details: err.message
       });
     }
     
-    // Handle database errors
-    if (err.name === 'SequelizeConnectionError' || err.name === 'SequelizeDatabaseError') {
+    // Handle database connection errors
+    if (err.code === 'ECONNREFUSED' || 
+        err.code === 'ENOTFOUND' ||
+        err.code === 'ETIMEDOUT' ||
+        err.message?.includes('Connection') ||
+        err.message?.includes('connect') ||
+        err.message?.includes('timeout')) {
+      console.error('Database connection error detected');
       return res.status(503).json({ 
         message: 'Database connection error - please try again',
-        error: 'DATABASE_ERROR'
-      });
-    }
-    
-    // Handle unique constraint (duplicate email)
-    if (err.name === 'SequelizeUniqueConstraintError') {
-      return res.status(400).json({ 
-        message: 'User already exists',
-        error: 'DUPLICATE_EMAIL'
+        error: 'DATABASE_ERROR',
+        details: err.message
       });
     }
     
@@ -158,20 +171,32 @@ export const login = async (req, res) => {
     const duration = Date.now() - startTime;
     console.error(`Login error (${duration}ms):`, err.message);
     console.error('Error stack:', err.stack);
+    console.error('Error name:', err.name);
+    console.error('Error code:', err.code);
+    console.error('Error original:', err.original);
     
-    // Handle timeout specifically
-    if (err.message.includes('timeout') || err.code === 'ETIMEDOUT') {
-      return res.status(504).json({ 
-        message: 'Request timeout - please try again',
-        error: 'TIMEOUT'
+    // Handle all Sequelize errors as database errors
+    if (err.name && err.name.startsWith('Sequelize')) {
+      console.error('Sequelize error detected:', err.name);
+      return res.status(503).json({ 
+        message: 'Database error - please try again',
+        error: 'DATABASE_ERROR',
+        details: err.message
       });
     }
     
-    // Handle database errors
-    if (err.name === 'SequelizeConnectionError' || err.name === 'SequelizeDatabaseError') {
+    // Handle database connection errors
+    if (err.code === 'ECONNREFUSED' || 
+        err.code === 'ENOTFOUND' ||
+        err.code === 'ETIMEDOUT' ||
+        err.message?.includes('Connection') ||
+        err.message?.includes('connect') ||
+        err.message?.includes('timeout')) {
+      console.error('Database connection error detected');
       return res.status(503).json({ 
         message: 'Database connection error - please try again',
-        error: 'DATABASE_ERROR'
+        error: 'DATABASE_ERROR',
+        details: err.message
       });
     }
     
