@@ -85,6 +85,7 @@ export const getOrderById = async (req, res) => {
 
 // Create a new order
 export const createOrder = async (req, res) => {
+  const startTime = Date.now();
   try {
     const {
       storeId,
@@ -97,97 +98,197 @@ export const createOrder = async (req, res) => {
       shipping
     } = req.body;
 
-    // Validate store exists and is published
-    const store = await Store.findOne({
-      where: { id: storeId, status: 'published' }
-    });
+    // Validate required fields
+    if (!storeId || !items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: 'Store ID and items are required' });
+    }
+
+    if (!customerName || !customerEmail || !paymentMethod) {
+      return res.status(400).json({ message: 'Customer name, email, and payment method are required' });
+    }
+
+    if (!shippingAddress || !shippingAddress.region || !shippingAddress.province || 
+        !shippingAddress.municipality || !shippingAddress.barangay) {
+      return res.status(400).json({ message: 'Complete shipping address is required' });
+    }
+
+    // Validate store exists and is published with timeout
+    const store = await Promise.race([
+      Store.findOne({
+        where: { id: storeId, status: 'published' },
+        attributes: ['id', 'status']
+      }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Database query timeout')), 8000)
+      )
+    ]);
 
     if (!store) {
       return res.status(404).json({ message: 'Store not found or not published' });
     }
 
-    // Validate products and calculate totals
+    // Validate products and calculate totals with timeout
     let subtotal = 0;
     const orderItems = [];
 
     for (const item of items) {
-      const product = await Product.findOne({
-        where: { id: item.productId, storeId, isActive: true }
-      });
+      if (!item.productId || !item.quantity) {
+        return res.status(400).json({ message: 'Each item must have productId and quantity' });
+      }
+
+      const product = await Promise.race([
+        Product.findOne({
+          where: { id: item.productId, storeId, isActive: true },
+          attributes: ['id', 'name', 'price', 'stock']
+        }),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Database query timeout')), 8000)
+        )
+      ]);
 
       if (!product) {
         return res.status(404).json({ message: `Product ${item.productId} not found` });
       }
 
-      if (product.stock < item.quantity) {
+      // Allow orders even if stock is 0 or undefined (for products without stock tracking)
+      const availableStock = product.stock !== null && product.stock !== undefined ? product.stock : 999999;
+      if (availableStock < item.quantity && availableStock < 999999) {
         return res.status(400).json({
-          message: `Insufficient stock for ${product.name}. Available: ${product.stock}`
+          message: `Insufficient stock for ${product.name}. Available: ${availableStock}`
         });
       }
 
-      const itemSubtotal = parseFloat(product.price) * item.quantity;
+      const itemSubtotal = parseFloat(product.price || 0) * parseInt(item.quantity || 1);
       subtotal += itemSubtotal;
 
       orderItems.push({
         productId: product.id,
-        quantity: item.quantity,
-        price: product.price,
-        subtotal: itemSubtotal,
-        product
+        quantity: parseInt(item.quantity),
+        price: parseFloat(product.price || 0),
+        subtotal: itemSubtotal
       });
     }
 
     const shippingCost = parseFloat(shipping) || 0;
     const total = subtotal + shippingCost;
 
-    // Create order
-    const order = await Order.create({
-      storeId,
-      orderNumber: generateOrderNumber(),
-      status: 'pending',
-      paymentMethod,
-      paymentStatus: 'pending',
-      subtotal,
-      shipping: shippingCost,
-      total,
-      shippingAddress,
-      customerName,
-      customerEmail,
-      customerPhone
-    });
+    // Create order with timeout
+    const order = await Promise.race([
+      Order.create({
+        storeId,
+        orderNumber: generateOrderNumber(),
+        status: 'pending',
+        paymentMethod: paymentMethod || 'gcash',
+        paymentStatus: 'pending',
+        subtotal,
+        shipping: shippingCost,
+        total,
+        shippingAddress: JSON.stringify(shippingAddress), // Store as JSON string
+        customerName,
+        customerEmail,
+        customerPhone: customerPhone || ''
+      }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Order creation timeout')), 8000)
+      )
+    ]);
 
-    // Create order items and update product stock
+    // Create order items and update product stock with timeout
     for (const item of orderItems) {
-      await OrderItem.create({
-        orderId: order.id,
-        productId: item.productId,
-        quantity: item.quantity,
-        price: item.price,
-        subtotal: item.subtotal
-      });
+      await Promise.race([
+        OrderItem.create({
+          orderId: order.id,
+          productId: item.productId,
+          quantity: item.quantity,
+          price: item.price,
+          subtotal: item.subtotal
+        }),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Order item creation timeout')), 8000)
+        )
+      ]);
 
-      // Update product stock
-      await Product.decrement('stock', {
-        by: item.quantity,
-        where: { id: item.productId }
-      });
+      // Update product stock (non-blocking - don't fail order if stock update fails)
+      try {
+        await Promise.race([
+          Product.decrement('stock', {
+            by: item.quantity,
+            where: { id: item.productId }
+          }),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Stock update timeout')), 5000)
+          )
+        ]);
+      } catch (stockError) {
+        console.warn('Stock update failed (non-critical):', stockError.message);
+        // Continue - don't fail the order if stock update fails
+      }
     }
 
-    // Fetch complete order with items
-    const completeOrder = await Order.findOne({
-      where: { id: order.id },
-      include: [
-        {
-          model: OrderItem,
-          include: [Product]
-        }
-      ]
-    });
+    // Fetch complete order with items with timeout
+    const completeOrder = await Promise.race([
+      Order.findOne({
+        where: { id: order.id },
+        attributes: ['id', 'storeId', 'orderNumber', 'status', 'paymentMethod', 
+                     'paymentStatus', 'subtotal', 'shipping', 'total', 
+                     'shippingAddress', 'customerName', 'customerEmail', 
+                     'customerPhone', 'createdAt', 'updatedAt'],
+        include: [
+          {
+            model: OrderItem,
+            attributes: ['id', 'orderId', 'productId', 'quantity', 'price', 'subtotal'],
+            include: [{
+              model: Product,
+              attributes: ['id', 'name', 'price', 'image']
+            }]
+          }
+        ]
+      }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Order fetch timeout')), 8000)
+      )
+    ]);
+
+    const duration = Date.now() - startTime;
+    if (duration > 3000) {
+      console.warn(`Slow order creation: took ${duration}ms`);
+    }
 
     res.status(201).json(completeOrder);
   } catch (error) {
-    console.error('Error creating order:', error);
-    res.status(500).json({ message: 'Error creating order', error: error.message });
+    const duration = Date.now() - startTime;
+    console.error(`Error creating order (${duration}ms):`, error.message);
+    console.error('Error stack:', error.stack);
+    console.error('Request body:', JSON.stringify(req.body, null, 2));
+    
+    // Handle timeout specifically
+    if (error.message.includes('timeout') || error.code === 'ETIMEDOUT') {
+      return res.status(504).json({ 
+        message: 'Request timeout - please try again',
+        error: 'TIMEOUT'
+      });
+    }
+    
+    // Handle database errors
+    if (error.name === 'SequelizeConnectionError' || error.name === 'SequelizeDatabaseError') {
+      return res.status(503).json({ 
+        message: 'Database connection error - please try again',
+        error: 'DATABASE_ERROR'
+      });
+    }
+    
+    // Handle validation errors
+    if (error.name === 'SequelizeValidationError') {
+      return res.status(400).json({ 
+        message: 'Validation error',
+        error: error.errors?.map(e => e.message).join(', ') || error.message
+      });
+    }
+    
+    res.status(500).json({ 
+      message: 'Error creating order', 
+      error: error.message || 'Unknown error occurred'
+    });
   }
 };
 
