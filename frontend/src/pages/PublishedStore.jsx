@@ -119,7 +119,17 @@ const PublishedStore = () => {
 
     const updateIframe = () => {
       const iframe = iframeRef.current;
-      if (!iframe || !iframe.contentDocument) return;
+      if (!iframe) return;
+      
+      let iframeDoc;
+      try {
+        iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+      } catch (err) {
+        console.error('Cannot access iframe document:', err);
+        return;
+      }
+      
+      if (!iframeDoc) return;
 
       try {
         const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
@@ -500,27 +510,52 @@ const PublishedStore = () => {
               // Add click handler to Order/Inquire button
               const orderButton = card.querySelector('.product-button, button');
               if (orderButton) {
-                orderButton.onclick = (e) => {
+                // Remove any existing handlers
+                orderButton.onclick = null;
+                orderButton.addEventListener('click', (e) => {
                   e.preventDefault();
                   e.stopPropagation();
                   
-                  const productData = {
-                    type: 'OPEN_ORDER_MODAL',
-                    product: product
-                  };
-                  window.parent.postMessage(productData, '*');
-                };
+                  // Use the product from the closure
+                  setSelectedProduct(product);
+                  setShowOrderModal(true);
+                  
+                  // Reset order form
+                  setOrderData({
+                    customerName: '',
+                    customerEmail: '',
+                    customerPhone: '',
+                    quantity: 1,
+                    paymentMethod: 'gcash',
+                    region: '',
+                    province: '',
+                    municipality: '',
+                    barangay: '',
+                    shipping: 0
+                  });
+                  setProvincesList([]);
+                  setMunicipalitiesList([]);
+                  setBarangaysList([]);
+                  setOrderError('');
+                  setOrderSuccess(false);
+                }, { capture: true });
                 
                 orderButton.style.cursor = 'pointer';
                 orderButton.style.pointerEvents = 'auto';
                 orderButton.disabled = false;
+                orderButton.setAttribute('data-product-id', product.id || index);
               }
             });
             
             // Add click handlers to ALL product buttons in the template (including existing ones)
             // This ensures buttons that weren't updated in the loop above still get handlers
             const allProductButtons = iframeDoc.querySelectorAll('.product-button, .product-card button, .product button');
-            allProductButtons.forEach((button) => {
+            allProductButtons.forEach((button, btnIndex) => {
+              // Skip if already has a handler (from the loop above)
+              if (button.hasAttribute('data-product-id')) {
+                return;
+              }
+              
               // Find the corresponding product for this button by matching card content
               const card = button.closest('.product-card, .product');
               if (card) {
@@ -544,20 +579,35 @@ const PublishedStore = () => {
                 
                 // If we found a matching product, attach the handler
                 if (matchingProduct) {
-                  button.onclick = (e) => {
+                  // Remove any existing handlers
+                  button.onclick = null;
+                  button.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     
-                    const productData = {
-                      type: 'OPEN_ORDER_MODAL',
-                      product: matchingProduct
-                    };
-                    window.parent.postMessage(productData, '*');
-                  };
+                    // Access the parent component's state setters via closure
+                    // We need to use a custom event that the parent can listen to
+                    const clickEvent = new CustomEvent('orderButtonClick', {
+                      detail: { product: matchingProduct },
+                      bubbles: true
+                    });
+                    iframe.contentWindow.dispatchEvent(clickEvent);
+                    
+                    // Also try postMessage as fallback
+                    try {
+                      iframe.contentWindow.parent.postMessage({
+                        type: 'OPEN_ORDER_MODAL',
+                        product: matchingProduct
+                      }, '*');
+                    } catch (err) {
+                      console.log('PostMessage failed, using direct handler');
+                    }
+                  }, { capture: true });
                   
                   button.style.cursor = 'pointer';
                   button.style.pointerEvents = 'auto';
                   button.disabled = false;
+                  button.setAttribute('data-product-id', matchingProduct.id || btnIndex);
                 }
               }
             });
@@ -827,6 +877,7 @@ const PublishedStore = () => {
   // Listen for messages from iframe to open order modal
   useEffect(() => {
     const handleMessage = (event) => {
+      // Accept messages from same origin or any origin (for iframe)
       if (event.data && event.data.type === 'OPEN_ORDER_MODAL' && event.data.product) {
         const product = event.data.product;
         setSelectedProduct(product);
@@ -853,9 +904,86 @@ const PublishedStore = () => {
       }
     };
 
+    // Also listen for clicks directly on the iframe
+    const handleIframeClick = (e) => {
+      const iframe = iframeRef.current;
+      if (!iframe || !iframe.contentWindow) return;
+      
+      try {
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        const target = e.target;
+        
+        // Check if click is on a product button
+        if (target && (target.classList.contains('product-button') || target.closest('.product-button'))) {
+          const button = target.classList.contains('product-button') ? target : target.closest('.product-button');
+          const card = button.closest('.product-card, .product');
+          
+          if (card) {
+            const titleEl = card.querySelector('.product-title, h3, h4, .product-name');
+            const productName = titleEl ? titleEl.textContent.trim() : '';
+            
+            // Find matching product
+            const matchingProduct = products.find(p => 
+              p.name && p.name.trim() === productName
+            ) || (products.length > 0 ? products[0] : null);
+            
+            if (matchingProduct) {
+              setSelectedProduct(matchingProduct);
+              setShowOrderModal(true);
+              setOrderData({
+                customerName: '',
+                customerEmail: '',
+                customerPhone: '',
+                quantity: 1,
+                paymentMethod: 'gcash',
+                region: '',
+                province: '',
+                municipality: '',
+                barangay: '',
+                shipping: 0
+              });
+              setProvincesList([]);
+              setMunicipalitiesList([]);
+              setBarangaysList([]);
+              setOrderError('');
+              setOrderSuccess(false);
+            }
+          }
+        }
+      } catch (err) {
+        // Cross-origin error, ignore
+      }
+    };
+
     window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, []);
+    // Try to listen for clicks on the iframe (may not work due to cross-origin)
+    if (iframeRef.current) {
+      iframeRef.current.addEventListener('load', () => {
+        try {
+          const iframeDoc = iframeRef.current.contentDocument || iframeRef.current.contentWindow.document;
+          if (iframeDoc) {
+            iframeDoc.addEventListener('click', handleIframeClick, true);
+          }
+        } catch (err) {
+          // Cross-origin, use postMessage only
+        }
+      });
+    }
+    
+    return () => {
+      window.removeEventListener('message', handleMessage);
+      if (iframeRef.current) {
+        try {
+          const iframeDoc = iframeRef.current.contentDocument || iframeRef.current.contentWindow.document;
+          if (iframeDoc) {
+            iframeDoc.removeEventListener('click', handleIframeClick, true);
+          }
+        } catch (err) {
+          // Ignore
+        }
+      }
+    };
+  }, [products]);
 
   if (loading) {
     return (
