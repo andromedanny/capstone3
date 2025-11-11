@@ -446,7 +446,7 @@ const PublishedStore = () => {
                     <p class="product-description">${descText}</p>
                     <div class="product-footer">
                       <span class="product-price">₱${price.toFixed(2)}</span>
-                      <button class="product-button">Inquire</button>
+                      <button class="product-button">Order</button>
                     </div>
                   </div>
                 `;
@@ -488,6 +488,13 @@ const PublishedStore = () => {
                   imageEl.alt = product.name || 'Product';
                   imageEl.style.display = 'block';
                 }
+              }
+
+              // Remove category labels from product cards
+              const categoryEl = card.querySelector('.product-category');
+              if (categoryEl) {
+                categoryEl.style.display = 'none';
+                categoryEl.remove();
               }
               
               // Add click handler to Order/Inquire button
@@ -1260,8 +1267,8 @@ const PublishedStore = () => {
             pointerEvents: 'auto'
           }}
           title={store.storeName}
-          allow="pointer-events"
           scrolling="yes"
+          sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals"
           onLoad={() => {
             // Trigger update when iframe loads
             if (iframeRef.current && htmlContent) {
