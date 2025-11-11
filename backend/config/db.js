@@ -53,9 +53,7 @@ const sequelize = new Sequelize(databaseUrl, {
     acquire: 15000, // 15 second timeout for connection acquisition
     idle: 10000,
     evict: 1000, // Check for idle connections every second
-    handleDisconnects: true, // Automatically reconnect on disconnect
-    // For serverless: Close idle connections quickly
-    idleTimeoutMillis: 30000 // Close idle connections after 30 seconds
+    handleDisconnects: true // Automatically reconnect on disconnect
   },
   // For serverless: don't keep connections alive too long
   define: {
