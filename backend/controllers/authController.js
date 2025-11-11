@@ -117,9 +117,15 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    // Find user - wrap in try-catch for better error handling
+    // Find user - ensure database connection is available
+    // In serverless, connection might need to be established
     let user;
     try {
+      // Test connection first if needed (for serverless cold starts)
+      await sequelize.authenticate().catch(() => {
+        // Connection might already exist, continue
+      });
+      
       user = await User.findOne({ 
         where: { email },
         attributes: ['id', 'firstName', 'lastName', 'email', 'password', 'role'],
@@ -127,6 +133,9 @@ export const login = async (req, res) => {
       });
     } catch (dbError) {
       console.error('Database query error in login:', dbError);
+      console.error('Database error name:', dbError.name);
+      console.error('Database error code:', dbError.code);
+      console.error('Database error message:', dbError.message);
       // Re-throw to be caught by outer catch block
       throw dbError;
     }

@@ -50,10 +50,12 @@ const sequelize = new Sequelize(databaseUrl, {
   pool: {
     max: 1, // Single connection for serverless to avoid connection overhead
     min: 0,
-    acquire: 10000, // 10 second timeout - fail fast if database is slow
+    acquire: 15000, // 15 second timeout for connection acquisition
     idle: 10000,
     evict: 1000, // Check for idle connections every second
-    handleDisconnects: true // Automatically reconnect on disconnect
+    handleDisconnects: true, // Automatically reconnect on disconnect
+    // For serverless: Close idle connections quickly
+    idleTimeoutMillis: 30000 // Close idle connections after 30 seconds
   },
   // For serverless: don't keep connections alive too long
   define: {
@@ -62,15 +64,8 @@ const sequelize = new Sequelize(databaseUrl, {
   }
 });
 
-// Test connection on initialization (only in development)
-if (process.env.NODE_ENV === 'development') {
-  sequelize.authenticate()
-    .then(() => {
-      console.log('✅ Database connection established successfully');
-    })
-    .catch((err) => {
-      console.error('❌ Unable to connect to database:', err.message);
-    });
-}
+// For serverless: Don't test connection on module load
+// Connection will be established on first query
+// This prevents cold start issues in serverless environments
 
 export default sequelize;
