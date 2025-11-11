@@ -23,6 +23,15 @@ const templateNames = {
   woodcarving: 'Caturis'
 };
 
+// Template-specific default background colors
+const templateDefaultColors = {
+  bladesmith: '#0a0a0a', // Dark black
+  pottery: '#faf8f3', // Warm beige
+  balisong: '#0f0f23', // Dark blue
+  weavery: '#ffffff', // White
+  woodcarving: '#f5efe6' // Light beige
+};
+
 export default function SiteBuilder() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -30,7 +39,7 @@ export default function SiteBuilder() {
   const templateIdFromUrl = searchParams.get('template');
   
   const [templateId, setTemplateId] = useState(templateIdFromUrl || 'bladesmith');
-  const [templateFile, setTemplateFile] = useState(templateFileMap[templateId] || 'struvaris.html');
+  const [templateFile, setTemplateFile] = useState(templateFileMap[templateIdFromUrl || 'bladesmith'] || 'struvaris.html');
   const [status, setStatus] = useState('');
   const [htmlContent, setHtmlContent] = useState('');
   const iframeRef = useRef(null);
@@ -60,7 +69,33 @@ export default function SiteBuilder() {
   const [heroContent, setHeroContent] = useState({
     title: '',
     subtitle: '',
-    buttonText: 'Shop Now'
+    buttonText: 'Shop Now',
+    // Text styling
+    titleStyle: {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '3rem',
+      fontWeight: 'bold',
+      color: '#ffffff',
+      fontStyle: 'normal',
+      textDecoration: 'none'
+    },
+    subtitleStyle: {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '1.2rem',
+      fontWeight: 'normal',
+      color: '#e0e0e0',
+      fontStyle: 'normal',
+      textDecoration: 'none'
+    },
+    buttonStyle: {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '1rem',
+      fontWeight: '600',
+      color: '#000000',
+      backgroundColor: '#c9a961',
+      fontStyle: 'normal',
+      textDecoration: 'none'
+    }
   });
   
   const [products, setProducts] = useState([
@@ -72,7 +107,7 @@ export default function SiteBuilder() {
   // Background settings state
   const [backgroundSettings, setBackgroundSettings] = useState({
     type: 'color', // 'color' or 'image'
-    color: '#0a0a0a', // Default dark background
+    color: templateDefaultColors[templateIdFromUrl || 'bladesmith'] || '#0a0a0a', // Template-specific default
     image: '', // Base64 or URL
     repeat: 'no-repeat',
     size: 'cover',
@@ -81,8 +116,20 @@ export default function SiteBuilder() {
 
   useEffect(() => {
     if (templateIdFromUrl && templateFileMap[templateIdFromUrl]) {
-      setTemplateId(templateIdFromUrl);
-      setTemplateFile(templateFileMap[templateIdFromUrl]);
+      const newTemplateId = templateIdFromUrl;
+      setTemplateId(newTemplateId);
+      setTemplateFile(templateFileMap[newTemplateId]);
+      // Update background color to match template default when template changes
+      // Only update if current color matches the old template's default or is empty
+      setBackgroundSettings(prev => {
+        const defaultColor = templateDefaultColors[newTemplateId] || '#0a0a0a';
+        // Check if current color matches any template default (user hasn't customized)
+        const matchesAnyDefault = Object.values(templateDefaultColors).includes(prev.color);
+        return {
+          ...prev,
+          color: matchesAnyDefault || !prev.color ? defaultColor : prev.color
+        };
+      });
     }
   }, [templateIdFromUrl]);
 
@@ -110,6 +157,12 @@ export default function SiteBuilder() {
             phone: storeData.phone || ''
           });
 
+          // Update template ID if it exists in store data
+          if (storeData.templateId && templateFileMap[storeData.templateId]) {
+            setTemplateId(storeData.templateId);
+            setTemplateFile(templateFileMap[storeData.templateId]);
+          }
+
           // Load saved content if exists, otherwise use store form data
           if (storeData.content) {
             if (storeData.content.hero) {
@@ -118,25 +171,121 @@ export default function SiteBuilder() {
               setHeroContent({
                 title: savedHero.title && savedHero.title.trim() ? savedHero.title : (storeData.storeName || ''),
                 subtitle: savedHero.subtitle && savedHero.subtitle.trim() ? savedHero.subtitle : (storeData.description ? `<p>${storeData.description}</p>` : ''),
-                buttonText: savedHero.buttonText && savedHero.buttonText.trim() ? savedHero.buttonText : 'Shop Now'
+                buttonText: savedHero.buttonText && savedHero.buttonText.trim() ? savedHero.buttonText : 'Shop Now',
+                titleStyle: savedHero.titleStyle || {
+                  fontFamily: 'Arial, sans-serif',
+                  fontSize: '3rem',
+                  fontWeight: 'bold',
+                  color: '#ffffff',
+                  fontStyle: 'normal',
+                  textDecoration: 'none'
+                },
+                subtitleStyle: savedHero.subtitleStyle || {
+                  fontFamily: 'Arial, sans-serif',
+                  fontSize: '1.2rem',
+                  fontWeight: 'normal',
+                  color: '#e0e0e0',
+                  fontStyle: 'normal',
+                  textDecoration: 'none'
+                },
+                buttonStyle: savedHero.buttonStyle || {
+                  fontFamily: 'Arial, sans-serif',
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  color: '#000000',
+                  backgroundColor: '#c9a961',
+                  fontStyle: 'normal',
+                  textDecoration: 'none'
+                }
               });
             } else {
               // No saved hero content, use store form data
               setHeroContent({
                 title: storeData.storeName || '',
                 subtitle: storeData.description ? `<p>${storeData.description}</p>` : '',
-                buttonText: 'Shop Now'
+                buttonText: 'Shop Now',
+                titleStyle: {
+                  fontFamily: 'Arial, sans-serif',
+                  fontSize: '3rem',
+                  fontWeight: 'bold',
+                  color: '#ffffff',
+                  fontStyle: 'normal',
+                  textDecoration: 'none'
+                },
+                subtitleStyle: {
+                  fontFamily: 'Arial, sans-serif',
+                  fontSize: '1.2rem',
+                  fontWeight: 'normal',
+                  color: '#e0e0e0',
+                  fontStyle: 'normal',
+                  textDecoration: 'none'
+                },
+                buttonStyle: {
+                  fontFamily: 'Arial, sans-serif',
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  color: '#000000',
+                  backgroundColor: '#c9a961',
+                  fontStyle: 'normal',
+                  textDecoration: 'none'
+                }
               });
             }
             if (storeData.content.background) {
               setBackgroundSettings(storeData.content.background);
+            } else {
+              // No saved background, use template default
+              const defaultColor = templateDefaultColors[storeData.templateId || templateId] || '#0a0a0a';
+              setBackgroundSettings({
+                type: 'color',
+                color: defaultColor,
+                image: '',
+                repeat: 'no-repeat',
+                size: 'cover',
+                position: 'center'
+              });
             }
           } else {
             // No saved content at all, initialize with store form data
             setHeroContent({
               title: storeData.storeName || '',
               subtitle: storeData.description ? `<p>${storeData.description}</p>` : '',
-              buttonText: 'Shop Now'
+              buttonText: 'Shop Now',
+              titleStyle: {
+                fontFamily: 'Arial, sans-serif',
+                fontSize: '3rem',
+                fontWeight: 'bold',
+                color: '#ffffff',
+                fontStyle: 'normal',
+                textDecoration: 'none'
+              },
+              subtitleStyle: {
+                fontFamily: 'Arial, sans-serif',
+                fontSize: '1.2rem',
+                fontWeight: 'normal',
+                color: '#e0e0e0',
+                fontStyle: 'normal',
+                textDecoration: 'none'
+              },
+              buttonStyle: {
+                fontFamily: 'Arial, sans-serif',
+                fontSize: '1rem',
+                fontWeight: '600',
+                color: '#000000',
+                backgroundColor: '#c9a961',
+                fontStyle: 'normal',
+                textDecoration: 'none'
+              }
+            });
+            // Use template default background
+            const defaultColor = templateDefaultColors[storeData.templateId || templateId] || '#0a0a0a';
+            setBackgroundSettings({
+              type: 'color',
+              color: defaultColor,
+              image: '',
+              repeat: 'no-repeat',
+              size: 'cover',
+              position: 'center'
             });
           }
 
@@ -219,7 +368,13 @@ export default function SiteBuilder() {
           }
         }
       } catch (error) {
-        console.error('Error fetching store data:', error);
+        console.error('❌ Error fetching store data:', error);
+        console.error('   Error response:', error.response?.data);
+        console.error('   Error status:', error.response?.status);
+        console.error('   Error message:', error.message);
+        if (error.response?.data) {
+          console.error('   Error details:', JSON.stringify(error.response.data, null, 2));
+        }
       }
     };
 
@@ -251,24 +406,52 @@ export default function SiteBuilder() {
       try {
         const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
         
-        // Update hero section
+        // Update hero section with styles
         const heroH1 = iframeDoc.querySelector('.hero h1');
         if (heroH1) {
           heroH1.textContent = heroContent.title;
+          // Apply title styles
+          if (heroContent.titleStyle) {
+            heroH1.style.fontFamily = heroContent.titleStyle.fontFamily || 'Arial, sans-serif';
+            heroH1.style.fontSize = heroContent.titleStyle.fontSize || '3rem';
+            heroH1.style.fontWeight = heroContent.titleStyle.fontWeight || 'bold';
+            heroH1.style.color = heroContent.titleStyle.color || '#ffffff';
+            heroH1.style.fontStyle = heroContent.titleStyle.fontStyle || 'normal';
+            heroH1.style.textDecoration = heroContent.titleStyle.textDecoration || 'none';
+          }
         }
 
-        // Update hero subtitle/paragraph
+        // Update hero subtitle/paragraph with styles
         const heroP = iframeDoc.querySelector('.hero .hero-content p');
         if (heroP) {
           // Remove wrapping <p> tags from Quill content if present
           const subtitleText = heroContent.subtitle.replace(/^<p>|<\/p>$/g, '').trim();
           heroP.innerHTML = subtitleText || '';
+          // Apply subtitle styles
+          if (heroContent.subtitleStyle) {
+            heroP.style.fontFamily = heroContent.subtitleStyle.fontFamily || 'Arial, sans-serif';
+            heroP.style.fontSize = heroContent.subtitleStyle.fontSize || '1.2rem';
+            heroP.style.fontWeight = heroContent.subtitleStyle.fontWeight || 'normal';
+            heroP.style.color = heroContent.subtitleStyle.color || '#e0e0e0';
+            heroP.style.fontStyle = heroContent.subtitleStyle.fontStyle || 'normal';
+            heroP.style.textDecoration = heroContent.subtitleStyle.textDecoration || 'none';
+          }
         }
 
-        // Update button text
+        // Update button text with styles
         const ctaButton = iframeDoc.querySelector('.hero .cta-button');
         if (ctaButton) {
           ctaButton.textContent = heroContent.buttonText;
+          // Apply button styles
+          if (heroContent.buttonStyle) {
+            ctaButton.style.fontFamily = heroContent.buttonStyle.fontFamily || 'Arial, sans-serif';
+            ctaButton.style.fontSize = heroContent.buttonStyle.fontSize || '1rem';
+            ctaButton.style.fontWeight = heroContent.buttonStyle.fontWeight || '600';
+            ctaButton.style.color = heroContent.buttonStyle.color || '#000000';
+            ctaButton.style.backgroundColor = heroContent.buttonStyle.backgroundColor || '#c9a961';
+            ctaButton.style.fontStyle = heroContent.buttonStyle.fontStyle || 'normal';
+            ctaButton.style.textDecoration = heroContent.buttonStyle.textDecoration || 'none';
+          }
         }
 
         // Apply background settings
@@ -367,6 +550,16 @@ export default function SiteBuilder() {
     const timer = setTimeout(updateIframe, 100);
     return () => clearTimeout(timer);
   }, [htmlContent, heroContent, products, backgroundSettings]);
+
+  const handleStyleChange = (element, property, value) => {
+    setHeroContent(prev => ({
+      ...prev,
+      [element]: {
+        ...prev[element],
+        [property]: value
+      }
+    }));
+  };
 
   const handleHeroChange = (field, value) => {
     setHeroContent(prev => ({ ...prev, [field]: value }));
@@ -837,7 +1030,7 @@ export default function SiteBuilder() {
               }}
             />
           </div>
-          <div>
+          <div style={{ marginBottom: '1rem' }}>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
               Button Text
             </label>
@@ -853,6 +1046,400 @@ export default function SiteBuilder() {
                 fontSize: '0.875rem'
               }}
             />
+          </div>
+        </div>
+
+        {/* Text Styling Section - Right after Hero Section for visibility */}
+        <div style={{ 
+          marginBottom: '2rem', 
+          padding: '1rem', 
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          borderRadius: '0.5rem', 
+          border: '2px solid #667eea',
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+        }}>
+          <h3 style={{ 
+            fontSize: '1.125rem', 
+            fontWeight: '600', 
+            marginBottom: '1rem',
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}>
+            <span>🎨</span> Text Styling
+          </h3>
+
+          {/* Title Styling */}
+          <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'white', borderRadius: '0.375rem', border: '1px solid #e5e7eb' }}>
+            <h4 style={{ fontSize: '0.875rem', fontWeight: '600', marginBottom: '0.75rem', color: '#374151', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span>📝</span> Title Styling
+            </h4>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>Font Family</label>
+                <select
+                  value={heroContent.titleStyle?.fontFamily || 'Arial, sans-serif'}
+                  onChange={(e) => handleStyleChange('titleStyle', 'fontFamily', e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.375rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.25rem',
+                    fontSize: '0.875rem'
+                  }}
+                >
+                  <option value="Arial, sans-serif">Arial</option>
+                  <option value="Georgia, serif">Georgia</option>
+                  <option value="'Times New Roman', serif">Times New Roman</option>
+                  <option value="'Courier New', monospace">Courier New</option>
+                  <option value="Verdana, sans-serif">Verdana</option>
+                  <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                  <option value="Impact, sans-serif">Impact</option>
+                  <option value="'Comic Sans MS', cursive">Comic Sans MS</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>Font Size</label>
+                <input
+                  type="text"
+                  value={heroContent.titleStyle?.fontSize || '3rem'}
+                  onChange={(e) => handleStyleChange('titleStyle', 'fontSize', e.target.value)}
+                  placeholder="3rem"
+                  style={{
+                    width: '100%',
+                    padding: '0.375rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.25rem',
+                    fontSize: '0.875rem'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>Font Weight</label>
+                <select
+                  value={heroContent.titleStyle?.fontWeight || 'bold'}
+                  onChange={(e) => handleStyleChange('titleStyle', 'fontWeight', e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.375rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.25rem',
+                    fontSize: '0.875rem'
+                  }}
+                >
+                  <option value="normal">Normal</option>
+                  <option value="bold">Bold</option>
+                  <option value="300">Light</option>
+                  <option value="600">Semi-Bold</option>
+                  <option value="700">Bold</option>
+                  <option value="800">Extra Bold</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>Font Style</label>
+                <select
+                  value={heroContent.titleStyle?.fontStyle || 'normal'}
+                  onChange={(e) => handleStyleChange('titleStyle', 'fontStyle', e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.375rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.25rem',
+                    fontSize: '0.875rem'
+                  }}
+                >
+                  <option value="normal">Normal</option>
+                  <option value="italic">Italic</option>
+                  <option value="oblique">Oblique</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>Text Color</label>
+                <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
+                  <input
+                    type="color"
+                    value={heroContent.titleStyle?.color || '#ffffff'}
+                    onChange={(e) => handleStyleChange('titleStyle', 'color', e.target.value)}
+                    style={{
+                      width: '40px',
+                      height: '32px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '0.25rem',
+                      cursor: 'pointer'
+                    }}
+                  />
+                  <input
+                    type="text"
+                    value={heroContent.titleStyle?.color || '#ffffff'}
+                    onChange={(e) => handleStyleChange('titleStyle', 'color', e.target.value)}
+                    placeholder="#ffffff"
+                    style={{
+                      flex: 1,
+                      padding: '0.375rem',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '0.25rem',
+                      fontSize: '0.875rem'
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Subtitle Styling */}
+          <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'white', borderRadius: '0.375rem', border: '1px solid #e5e7eb' }}>
+            <h4 style={{ fontSize: '0.875rem', fontWeight: '600', marginBottom: '0.75rem', color: '#374151', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span>✏️</span> Subtitle Styling
+            </h4>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>Font Family</label>
+                <select
+                  value={heroContent.subtitleStyle?.fontFamily || 'Arial, sans-serif'}
+                  onChange={(e) => handleStyleChange('subtitleStyle', 'fontFamily', e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.375rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.25rem',
+                    fontSize: '0.875rem'
+                  }}
+                >
+                  <option value="Arial, sans-serif">Arial</option>
+                  <option value="Georgia, serif">Georgia</option>
+                  <option value="'Times New Roman', serif">Times New Roman</option>
+                  <option value="'Courier New', monospace">Courier New</option>
+                  <option value="Verdana, sans-serif">Verdana</option>
+                  <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                  <option value="Impact, sans-serif">Impact</option>
+                  <option value="'Comic Sans MS', cursive">Comic Sans MS</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>Font Size</label>
+                <input
+                  type="text"
+                  value={heroContent.subtitleStyle?.fontSize || '1.2rem'}
+                  onChange={(e) => handleStyleChange('subtitleStyle', 'fontSize', e.target.value)}
+                  placeholder="1.2rem"
+                  style={{
+                    width: '100%',
+                    padding: '0.375rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.25rem',
+                    fontSize: '0.875rem'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>Font Weight</label>
+                <select
+                  value={heroContent.subtitleStyle?.fontWeight || 'normal'}
+                  onChange={(e) => handleStyleChange('subtitleStyle', 'fontWeight', e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.375rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.25rem',
+                    fontSize: '0.875rem'
+                  }}
+                >
+                  <option value="normal">Normal</option>
+                  <option value="bold">Bold</option>
+                  <option value="300">Light</option>
+                  <option value="600">Semi-Bold</option>
+                  <option value="700">Bold</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>Font Style</label>
+                <select
+                  value={heroContent.subtitleStyle?.fontStyle || 'normal'}
+                  onChange={(e) => handleStyleChange('subtitleStyle', 'fontStyle', e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.375rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.25rem',
+                    fontSize: '0.875rem'
+                  }}
+                >
+                  <option value="normal">Normal</option>
+                  <option value="italic">Italic</option>
+                  <option value="oblique">Oblique</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>Text Color</label>
+                <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
+                  <input
+                    type="color"
+                    value={heroContent.subtitleStyle?.color || '#e0e0e0'}
+                    onChange={(e) => handleStyleChange('subtitleStyle', 'color', e.target.value)}
+                    style={{
+                      width: '40px',
+                      height: '32px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '0.25rem',
+                      cursor: 'pointer'
+                    }}
+                  />
+                  <input
+                    type="text"
+                    value={heroContent.subtitleStyle?.color || '#e0e0e0'}
+                    onChange={(e) => handleStyleChange('subtitleStyle', 'color', e.target.value)}
+                    placeholder="#e0e0e0"
+                    style={{
+                      flex: 1,
+                      padding: '0.375rem',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '0.25rem',
+                      fontSize: '0.875rem'
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Button Styling */}
+          <div style={{ padding: '1rem', background: 'white', borderRadius: '0.375rem', border: '1px solid #e5e7eb' }}>
+            <h4 style={{ fontSize: '0.875rem', fontWeight: '600', marginBottom: '0.75rem', color: '#374151', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span>🔘</span> Button Styling
+            </h4>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>Font Family</label>
+                <select
+                  value={heroContent.buttonStyle?.fontFamily || 'Arial, sans-serif'}
+                  onChange={(e) => handleStyleChange('buttonStyle', 'fontFamily', e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.375rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.25rem',
+                    fontSize: '0.875rem'
+                  }}
+                >
+                  <option value="Arial, sans-serif">Arial</option>
+                  <option value="Georgia, serif">Georgia</option>
+                  <option value="'Times New Roman', serif">Times New Roman</option>
+                  <option value="'Courier New', monospace">Courier New</option>
+                  <option value="Verdana, sans-serif">Verdana</option>
+                  <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                  <option value="Impact, sans-serif">Impact</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>Font Size</label>
+                <input
+                  type="text"
+                  value={heroContent.buttonStyle?.fontSize || '1rem'}
+                  onChange={(e) => handleStyleChange('buttonStyle', 'fontSize', e.target.value)}
+                  placeholder="1rem"
+                  style={{
+                    width: '100%',
+                    padding: '0.375rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.25rem',
+                    fontSize: '0.875rem'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>Font Weight</label>
+                <select
+                  value={heroContent.buttonStyle?.fontWeight || '600'}
+                  onChange={(e) => handleStyleChange('buttonStyle', 'fontWeight', e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.375rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.25rem',
+                    fontSize: '0.875rem'
+                  }}
+                >
+                  <option value="normal">Normal</option>
+                  <option value="bold">Bold</option>
+                  <option value="600">Semi-Bold</option>
+                  <option value="700">Bold</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>Text Color</label>
+                <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
+                  <input
+                    type="color"
+                    value={heroContent.buttonStyle?.color || '#000000'}
+                    onChange={(e) => handleStyleChange('buttonStyle', 'color', e.target.value)}
+                    style={{
+                      width: '40px',
+                      height: '32px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '0.25rem',
+                      cursor: 'pointer'
+                    }}
+                  />
+                  <input
+                    type="text"
+                    value={heroContent.buttonStyle?.color || '#000000'}
+                    onChange={(e) => handleStyleChange('buttonStyle', 'color', e.target.value)}
+                    placeholder="#000000"
+                    style={{
+                      flex: 1,
+                      padding: '0.375rem',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '0.25rem',
+                      fontSize: '0.875rem'
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>Background Color</label>
+              <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
+                <input
+                  type="color"
+                  value={heroContent.buttonStyle?.backgroundColor || '#c9a961'}
+                  onChange={(e) => handleStyleChange('buttonStyle', 'backgroundColor', e.target.value)}
+                  style={{
+                    width: '40px',
+                    height: '32px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.25rem',
+                    cursor: 'pointer'
+                  }}
+                />
+                <input
+                  type="text"
+                  value={heroContent.buttonStyle?.backgroundColor || '#c9a961'}
+                  onChange={(e) => handleStyleChange('buttonStyle', 'backgroundColor', e.target.value)}
+                  placeholder="#c9a961"
+                  style={{
+                    flex: 1,
+                    padding: '0.375rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.25rem',
+                    fontSize: '0.875rem'
+                  }}
+                />
+              </div>
+            </div>
           </div>
         </div>
 
