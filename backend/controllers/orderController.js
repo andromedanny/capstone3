@@ -86,18 +86,6 @@ export const getOrderById = async (req, res) => {
 // Create a new order
 export const createOrder = async (req, res) => {
   const startTime = Date.now();
-  
-  // Test database connection first
-  try {
-    await sequelize.authenticate();
-  } catch (authError) {
-    console.error('Database authentication failed:', authError);
-    return res.status(503).json({ 
-      message: 'Database connection error - please try again',
-      error: 'DATABASE_ERROR'
-    });
-  }
-  
   try {
     const {
       storeId,
@@ -243,30 +231,31 @@ export const createOrder = async (req, res) => {
     console.error('Error stack:', error.stack);
     console.error('Error name:', error.name);
     console.error('Error code:', error.code);
+    console.error('Error original:', error.original);
     console.error('Request body:', JSON.stringify(req.body, null, 2));
     
-    // Handle database connection errors
-    if (error.name === 'SequelizeConnectionError' || 
-        error.name === 'SequelizeConnectionRefusedError' ||
-        error.code === 'ECONNREFUSED' ||
-        error.code === 'ENOTFOUND' ||
-        error.message?.includes('Connection') ||
-        error.message?.includes('connect')) {
-      console.error('Database connection error detected');
+    // Handle all Sequelize errors as database errors
+    if (error.name && error.name.startsWith('Sequelize')) {
+      console.error('Sequelize error detected:', error.name);
       return res.status(503).json({ 
-        message: 'Database connection error - please try again',
-        error: 'DATABASE_ERROR'
+        message: 'Database error - please try again',
+        error: 'DATABASE_ERROR',
+        details: error.message
       });
     }
     
-    // Handle database query errors
-    if (error.name === 'SequelizeDatabaseError' || 
-        error.name === 'SequelizeUniqueConstraintError' ||
-        error.name === 'SequelizeForeignKeyConstraintError') {
-      console.error('Database query error detected');
+    // Handle database connection errors
+    if (error.code === 'ECONNREFUSED' || 
+        error.code === 'ENOTFOUND' ||
+        error.code === 'ETIMEDOUT' ||
+        error.message?.includes('Connection') ||
+        error.message?.includes('connect') ||
+        error.message?.includes('timeout')) {
+      console.error('Database connection error detected');
       return res.status(503).json({ 
-        message: 'Database error - please try again',
-        error: 'DATABASE_ERROR'
+        message: 'Database connection error - please try again',
+        error: 'DATABASE_ERROR',
+        details: error.message
       });
     }
     
@@ -278,17 +267,11 @@ export const createOrder = async (req, res) => {
       });
     }
     
-    // Handle timeout errors (from network/connection level)
-    if (error.message?.includes('timeout') || error.code === 'ETIMEDOUT') {
-      return res.status(503).json({ 
-        message: 'Request timeout - please try again',
-        error: 'TIMEOUT'
-      });
-    }
-    
+    // Generic error response
     res.status(500).json({ 
       message: 'Error creating order', 
-      error: error.message || 'Unknown error occurred'
+      error: error.message || 'Unknown error occurred',
+      details: error.stack
     });
   }
 };
