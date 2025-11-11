@@ -1000,29 +1000,56 @@ const PublishedStore = () => {
   useEffect(() => {
     const handleMessage = (event) => {
       // Accept messages from same origin or any origin (for iframe)
-      if (event.data && event.data.type === 'OPEN_ORDER_MODAL' && event.data.product) {
-        const product = event.data.product;
-        setSelectedProduct(product);
-        setShowOrderModal(true);
+      if (event.data && event.data.type === 'OPEN_ORDER_MODAL') {
+        let product = null;
         
-        // Reset order form
-        setOrderData({
-          customerName: '',
-          customerEmail: '',
-          customerPhone: '',
-          quantity: 1,
-          paymentMethod: 'gcash',
-          region: '',
-          province: '',
-          municipality: '',
-          barangay: '',
-          shipping: 0
-        });
-        setProvincesList([]);
-        setMunicipalitiesList([]);
-        setBarangaysList([]);
-        setOrderError('');
-        setOrderSuccess(false);
+        // If product object is sent directly
+        if (event.data.product) {
+          product = event.data.product;
+        } 
+        // If product name is sent, find the product
+        else if (event.data.productName) {
+          product = products.find(p => 
+            p.name && p.name.trim() === event.data.productName.trim()
+          ) || (products.length > 0 ? products[0] : null);
+        }
+        
+        if (product) {
+          setSelectedProduct(product);
+          setShowOrderModal(true);
+          
+          // Reset order form
+          setOrderData({
+            customerName: '',
+            customerEmail: '',
+            customerPhone: '',
+            quantity: 1,
+            paymentMethod: 'gcash',
+            region: '',
+            province: '',
+            municipality: '',
+            barangay: '',
+            shipping: 0
+          });
+          setProvincesList([]);
+          setMunicipalitiesList([]);
+          setBarangaysList([]);
+          setOrderError('');
+          setOrderSuccess(false);
+        }
+      }
+      
+      // Handle product lookup request
+      if (event.data && event.data.type === 'GET_PRODUCT_BY_NAME' && event.data.productName) {
+        const product = products.find(p => 
+          p.name && p.name.trim() === event.data.productName.trim()
+        );
+        if (product && event.source) {
+          event.source.postMessage({
+            type: 'PRODUCT_DATA',
+            product: product
+          }, '*');
+        }
       }
     };
 
@@ -1505,7 +1532,73 @@ const PublishedStore = () => {
         </div>
       )}
 
-      <div className="w-full h-screen" style={{ overflow: 'hidden' }}>
+      <div 
+        className="w-full h-screen" 
+        style={{ overflow: 'hidden', position: 'relative' }}
+        onClick={(e) => {
+          // Handle clicks on the iframe container
+          const iframe = iframeRef.current;
+          if (!iframe) return;
+          
+          try {
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+            if (!iframeDoc) return;
+            
+            // Get click coordinates relative to iframe
+            const rect = iframe.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Find element at click position in iframe
+            const elementAtPoint = iframeDoc.elementFromPoint(x, y);
+            if (!elementAtPoint) return;
+            
+            // Check if click is on a product button
+            const button = elementAtPoint.closest('.product-button, button');
+            if (button && (button.classList.contains('product-button') || button.closest('.product-card'))) {
+              e.preventDefault();
+              e.stopPropagation();
+              
+              // Find the product card
+              const card = button.closest('.product-card, .product');
+              if (card) {
+                const titleEl = card.querySelector('.product-title, h3, h4, .product-name');
+                const productName = titleEl ? titleEl.textContent.trim() : '';
+                
+                // Find matching product
+                const matchingProduct = products.find(p => 
+                  p.name && p.name.trim() === productName
+                ) || (products.length > 0 ? products[0] : null);
+                
+                if (matchingProduct) {
+                  setSelectedProduct(matchingProduct);
+                  setShowOrderModal(true);
+                  setOrderData({
+                    customerName: '',
+                    customerEmail: '',
+                    customerPhone: '',
+                    quantity: 1,
+                    paymentMethod: 'gcash',
+                    region: '',
+                    province: '',
+                    municipality: '',
+                    barangay: '',
+                    shipping: 0
+                  });
+                  setProvincesList([]);
+                  setMunicipalitiesList([]);
+                  setBarangaysList([]);
+                  setOrderError('');
+                  setOrderSuccess(false);
+                }
+              }
+            }
+          } catch (err) {
+            // Cross-origin error, ignore
+            console.log('Cannot access iframe content:', err);
+          }
+        }}
+      >
         <iframe
           ref={iframeRef}
           src={`/templates/${templateFileMap[store.templateId] || 'struvaris.html'}`}
@@ -1524,6 +1617,75 @@ const PublishedStore = () => {
             if (iframeRef.current && htmlContent) {
               const event = new Event('updatePreview');
               window.dispatchEvent(event);
+            }
+            
+            // Also inject a script to handle button clicks directly in iframe
+            try {
+              const iframe = iframeRef.current;
+              const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+              if (iframeDoc) {
+                // Inject a script that sets up click handlers
+                const script = iframeDoc.createElement('script');
+                script.textContent = `
+                  (function() {
+                    function setupOrderButtons() {
+                      const buttons = document.querySelectorAll('.product-button, .product-card button, .product button');
+                      buttons.forEach(function(button) {
+                        if (button.hasAttribute('data-handler-attached')) return;
+                        button.setAttribute('data-handler-attached', 'true');
+                        
+                        button.addEventListener('click', function(e) {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          
+                          // Try to call parent function
+                          try {
+                            if (window.parent && window.parent.openOrderModal) {
+                              const card = button.closest('.product-card, .product');
+                              if (card) {
+                                const titleEl = card.querySelector('.product-title, h3, h4, .product-name');
+                                const productName = titleEl ? titleEl.textContent.trim() : '';
+                                
+                                // Send product name to parent
+                                window.parent.postMessage({
+                                  type: 'OPEN_ORDER_MODAL',
+                                  productName: productName
+                                }, '*');
+                                
+                                // Also try direct call
+                                if (window.parent.openOrderModal) {
+                                  // We'll need to get product data from parent
+                                  window.parent.postMessage({
+                                    type: 'GET_PRODUCT_BY_NAME',
+                                    productName: productName
+                                  }, '*');
+                                }
+                              }
+                            }
+                          } catch (err) {
+                            console.error('Error in button click:', err);
+                          }
+                        }, true);
+                      });
+                    }
+                    
+                    // Run immediately
+                    setupOrderButtons();
+                    
+                    // Also run after a delay to catch dynamically added buttons
+                    setTimeout(setupOrderButtons, 500);
+                    setTimeout(setupOrderButtons, 1000);
+                    setTimeout(setupOrderButtons, 2000);
+                    
+                    // Watch for new buttons
+                    const observer = new MutationObserver(setupOrderButtons);
+                    observer.observe(document.body, { childList: true, subtree: true });
+                  })();
+                `;
+                iframeDoc.head.appendChild(script);
+              }
+            } catch (err) {
+              console.error('Error injecting script:', err);
             }
           }}
         />
