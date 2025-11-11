@@ -27,9 +27,6 @@ const sequelize = new Sequelize(
       min: 0,
       acquire: 20000, // Reduced timeout
       idle: 5000 // Reduced idle time
-    },
-    retry: {
-      max: 2 // Retry failed queries up to 2 times
     }
   }
 );
