@@ -11,7 +11,7 @@ const Header = () => {
         {/* Logo + Brand Name Container */}
         <div className="flex items-center space-x-2">
           <img src="/webicon.png" alt="Logo" className="w-12 h-12 object-contain drop-shadow-lg" />
-          <Link to="/" className="text-xl font-semibold text-white hover:text-yellow-200 drop-shadow-md" style={{ textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)' }}>
+          <Link to="/dashboard" className="text-xl font-semibold text-white hover:text-yellow-200 drop-shadow-md" style={{ textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)' }}>
             Structura
           </Link>
         </div>
