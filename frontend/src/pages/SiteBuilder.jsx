@@ -1202,7 +1202,7 @@ export default function SiteBuilder() {
 
             <div style={{ marginBottom: '0' }}>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8125rem', fontWeight: '600', color: '#4b5563' }}>Text Color</label>
-              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'stretch', width: '100%' }}>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'stretch' }}>
                 <input
                   type="color"
                   value={heroContent.titleStyle?.color || '#ffffff'}
@@ -1226,16 +1226,14 @@ export default function SiteBuilder() {
                   onChange={(e) => handleStyleChange('titleStyle', 'color', e.target.value)}
                   placeholder="#ffffff"
                   style={{
-                    flex: 1,
-                    padding: '0.5rem 0.75rem',
+                    width: '100px',
+                    padding: '0.5rem 0.5rem',
                     border: '2px solid #d1d5db',
                     borderRadius: '0.375rem',
                     fontSize: '0.875rem',
                     fontFamily: 'monospace',
                     transition: 'all 0.2s',
                     outline: 'none',
-                    minWidth: 0,
-                    maxWidth: '100%',
                     boxSizing: 'border-box'
                   }}
                   onFocus={(e) => e.target.style.borderColor = '#667eea'}
@@ -1375,7 +1373,7 @@ export default function SiteBuilder() {
 
             <div style={{ marginBottom: '0' }}>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8125rem', fontWeight: '600', color: '#4b5563' }}>Text Color</label>
-              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'stretch', width: '100%' }}>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'stretch' }}>
                 <input
                   type="color"
                   value={heroContent.subtitleStyle?.color || '#e0e0e0'}
@@ -1399,16 +1397,14 @@ export default function SiteBuilder() {
                   onChange={(e) => handleStyleChange('subtitleStyle', 'color', e.target.value)}
                   placeholder="#e0e0e0"
                   style={{
-                    flex: 1,
-                    padding: '0.5rem 0.75rem',
+                    width: '100px',
+                    padding: '0.5rem 0.5rem',
                     border: '2px solid #d1d5db',
                     borderRadius: '0.375rem',
                     fontSize: '0.875rem',
                     fontFamily: 'monospace',
                     transition: 'all 0.2s',
                     outline: 'none',
-                    minWidth: 0,
-                    maxWidth: '100%',
                     boxSizing: 'border-box'
                   }}
                   onFocus={(e) => e.target.style.borderColor = '#667eea'}
@@ -1519,7 +1515,7 @@ export default function SiteBuilder() {
               </div>
               <div>
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8125rem', fontWeight: '600', color: '#4b5563' }}>Text Color</label>
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'stretch', width: '100%' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'stretch' }}>
                   <input
                     type="color"
                     value={heroContent.buttonStyle?.color || '#000000'}
@@ -1543,16 +1539,14 @@ export default function SiteBuilder() {
                     onChange={(e) => handleStyleChange('buttonStyle', 'color', e.target.value)}
                     placeholder="#000000"
                     style={{
-                      flex: 1,
-                      padding: '0.5rem 0.75rem',
+                      width: '100px',
+                      padding: '0.5rem 0.5rem',
                       border: '2px solid #d1d5db',
                       borderRadius: '0.375rem',
                       fontSize: '0.875rem',
                       fontFamily: 'monospace',
                       transition: 'all 0.2s',
                       outline: 'none',
-                      minWidth: 0,
-                      maxWidth: '100%',
                       boxSizing: 'border-box'
                     }}
                     onFocus={(e) => e.target.style.borderColor = '#667eea'}
@@ -1564,7 +1558,7 @@ export default function SiteBuilder() {
 
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8125rem', fontWeight: '600', color: '#4b5563' }}>Background Color</label>
-              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'stretch', width: '100%' }}>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'stretch' }}>
                 <input
                   type="color"
                   value={heroContent.buttonStyle?.backgroundColor || '#c9a961'}
@@ -1588,16 +1582,14 @@ export default function SiteBuilder() {
                   onChange={(e) => handleStyleChange('buttonStyle', 'backgroundColor', e.target.value)}
                   placeholder="#c9a961"
                   style={{
-                    flex: 1,
-                    padding: '0.5rem 0.75rem',
+                    width: '100px',
+                    padding: '0.5rem 0.5rem',
                     border: '2px solid #d1d5db',
                     borderRadius: '0.375rem',
                     fontSize: '0.875rem',
                     fontFamily: 'monospace',
                     transition: 'all 0.2s',
                     outline: 'none',
-                    minWidth: 0,
-                    maxWidth: '100%',
                     boxSizing: 'border-box'
                   }}
                   onFocus={(e) => e.target.style.borderColor = '#667eea'}
