@@ -26,31 +26,31 @@ if (!databaseUrl) {
 }
 
 // Supabase PostgreSQL connection
-// For serverless, use connection pooler URL if available (ends with .pooler.supabase.com)
-// Otherwise use direct connection URL
-const isPooler = databaseUrl && databaseUrl.includes('.pooler.supabase.com');
+// IMPORTANT: For serverless (Vercel), use Supabase Connection Pooler URL
+// Format: postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres
+// The pooler (port 6543) is much faster for serverless than direct connection (port 5432)
+const isPooler = databaseUrl && (databaseUrl.includes('.pooler.supabase.com') || databaseUrl.includes(':6543/'));
 
 const sequelize = new Sequelize(databaseUrl, {
   dialect: 'postgres',
   dialectModule: pg, // Explicitly provide the pg module
   dialectOptions: {
-    ssl: databaseUrl && databaseUrl.includes('sslmode=require') ? {
-      require: true,
-      rejectUnauthorized: false
-    } : {
+    ssl: {
       require: true,
       rejectUnauthorized: false
     },
-    // For connection pooler, add additional options
+    // Connection pooler specific options
     ...(isPooler && {
-      application_name: 'structura-app'
+      application_name: 'structura-app',
+      // For pooler, we can use transaction mode
+      options: '-c statement_timeout=8000' // 8 second statement timeout
     })
   },
   logging: process.env.NODE_ENV === 'development' ? console.log : false,
   pool: {
     max: 1, // Single connection for serverless to avoid connection overhead
     min: 0,
-    acquire: 15000, // 15 second timeout for connection acquisition
+    acquire: 8000, // 8 second timeout - fail fast if database is slow
     idle: 10000,
     evict: 1000, // Check for idle connections every second
     handleDisconnects: true // Automatically reconnect on disconnect

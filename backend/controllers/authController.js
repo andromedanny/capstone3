@@ -118,13 +118,11 @@ export const login = async (req, res) => {
     }
 
     // Find user - optimized query for performance
-    // Don't test connection first - let the query establish connection if needed
+    // Query will establish connection if needed (lazy connection)
     const user = await User.findOne({ 
       where: { email },
       attributes: ['id', 'firstName', 'lastName', 'email', 'password', 'role'],
-      raw: false, // Keep as Sequelize instance for password access
-      // Add query timeout to prevent hanging
-      timeout: 10000 // 10 second timeout for the query
+      raw: false // Keep as Sequelize instance for password access
     });
 
     if (!user) {
