@@ -1052,43 +1052,67 @@ export default function SiteBuilder() {
         {/* Text Styling Section - Right after Hero Section for visibility */}
         <div style={{ 
           marginBottom: '2rem', 
-          padding: '1rem', 
+          padding: '1.5rem', 
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          borderRadius: '0.5rem', 
+          borderRadius: '0.75rem', 
           border: '2px solid #667eea',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+          boxShadow: '0 8px 16px rgba(102, 126, 234, 0.2)'
         }}>
           <h3 style={{ 
-            fontSize: '1.125rem', 
-            fontWeight: '600', 
-            marginBottom: '1rem',
+            fontSize: '1.25rem', 
+            fontWeight: '700', 
+            marginBottom: '1.5rem',
             color: 'white',
             display: 'flex',
             alignItems: 'center',
-            gap: '0.5rem'
+            gap: '0.75rem',
+            letterSpacing: '0.025em'
           }}>
-            <span>🎨</span> Text Styling
+            <span style={{ fontSize: '1.5rem' }}>🎨</span> Text Styling
           </h3>
 
           {/* Title Styling */}
-          <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'white', borderRadius: '0.375rem', border: '1px solid #e5e7eb' }}>
-            <h4 style={{ fontSize: '0.875rem', fontWeight: '600', marginBottom: '0.75rem', color: '#374151', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span>📝</span> Title Styling
+          <div style={{ 
+            marginBottom: '1.25rem', 
+            padding: '1.25rem', 
+            background: 'white', 
+            borderRadius: '0.5rem', 
+            border: '1px solid #e5e7eb',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
+          }}>
+            <h4 style={{ 
+              fontSize: '0.9375rem', 
+              fontWeight: '600', 
+              marginBottom: '1rem', 
+              color: '#1f2937', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.5rem',
+              paddingBottom: '0.75rem',
+              borderBottom: '2px solid #f3f4f6'
+            }}>
+              <span style={{ fontSize: '1.125rem' }}>📝</span> Title Styling
             </h4>
             
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>Font Family</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8125rem', fontWeight: '600', color: '#4b5563' }}>Font Family</label>
                 <select
                   value={heroContent.titleStyle?.fontFamily || 'Arial, sans-serif'}
                   onChange={(e) => handleStyleChange('titleStyle', 'fontFamily', e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '0.375rem',
+                    padding: '0.5rem 0.75rem',
                     border: '1px solid #d1d5db',
-                    borderRadius: '0.25rem',
-                    fontSize: '0.875rem'
+                    borderRadius: '0.375rem',
+                    fontSize: '0.875rem',
+                    background: 'white',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    outline: 'none'
                   }}
+                  onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                  onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                 >
                   <option value="Arial, sans-serif">Arial</option>
                   <option value="Georgia, serif">Georgia</option>
@@ -1101,7 +1125,7 @@ export default function SiteBuilder() {
                 </select>
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>Font Size</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8125rem', fontWeight: '600', color: '#4b5563' }}>Font Size</label>
                 <input
                   type="text"
                   value={heroContent.titleStyle?.fontSize || '3rem'}
@@ -1109,28 +1133,38 @@ export default function SiteBuilder() {
                   placeholder="3rem"
                   style={{
                     width: '100%',
-                    padding: '0.375rem',
+                    padding: '0.5rem 0.75rem',
                     border: '1px solid #d1d5db',
-                    borderRadius: '0.25rem',
-                    fontSize: '0.875rem'
+                    borderRadius: '0.375rem',
+                    fontSize: '0.875rem',
+                    transition: 'all 0.2s',
+                    outline: 'none'
                   }}
+                  onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                  onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                 />
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>Font Weight</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8125rem', fontWeight: '600', color: '#4b5563' }}>Font Weight</label>
                 <select
                   value={heroContent.titleStyle?.fontWeight || 'bold'}
                   onChange={(e) => handleStyleChange('titleStyle', 'fontWeight', e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '0.375rem',
+                    padding: '0.5rem 0.75rem',
                     border: '1px solid #d1d5db',
-                    borderRadius: '0.25rem',
-                    fontSize: '0.875rem'
+                    borderRadius: '0.375rem',
+                    fontSize: '0.875rem',
+                    background: 'white',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    outline: 'none'
                   }}
+                  onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                  onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                 >
                   <option value="normal">Normal</option>
                   <option value="bold">Bold</option>
@@ -1141,17 +1175,23 @@ export default function SiteBuilder() {
                 </select>
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>Font Style</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8125rem', fontWeight: '600', color: '#4b5563' }}>Font Style</label>
                 <select
                   value={heroContent.titleStyle?.fontStyle || 'normal'}
                   onChange={(e) => handleStyleChange('titleStyle', 'fontStyle', e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '0.375rem',
+                    padding: '0.5rem 0.75rem',
                     border: '1px solid #d1d5db',
-                    borderRadius: '0.25rem',
-                    fontSize: '0.875rem'
+                    borderRadius: '0.375rem',
+                    fontSize: '0.875rem',
+                    background: 'white',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    outline: 'none'
                   }}
+                  onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                  onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                 >
                   <option value="normal">Normal</option>
                   <option value="italic">Italic</option>
@@ -1159,19 +1199,23 @@ export default function SiteBuilder() {
                 </select>
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>Text Color</label>
-                <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8125rem', fontWeight: '600', color: '#4b5563' }}>Text Color</label>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                   <input
                     type="color"
                     value={heroContent.titleStyle?.color || '#ffffff'}
                     onChange={(e) => handleStyleChange('titleStyle', 'color', e.target.value)}
                     style={{
-                      width: '40px',
-                      height: '32px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '0.25rem',
-                      cursor: 'pointer'
+                      width: '48px',
+                      height: '40px',
+                      border: '2px solid #d1d5db',
+                      borderRadius: '0.375rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      outline: 'none'
                     }}
+                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                    onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                   />
                   <input
                     type="text"
@@ -1180,11 +1224,16 @@ export default function SiteBuilder() {
                     placeholder="#ffffff"
                     style={{
                       flex: 1,
-                      padding: '0.375rem',
+                      padding: '0.5rem 0.75rem',
                       border: '1px solid #d1d5db',
-                      borderRadius: '0.25rem',
-                      fontSize: '0.875rem'
+                      borderRadius: '0.375rem',
+                      fontSize: '0.875rem',
+                      fontFamily: 'monospace',
+                      transition: 'all 0.2s',
+                      outline: 'none'
                     }}
+                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                    onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                   />
                 </div>
               </div>
@@ -1192,24 +1241,47 @@ export default function SiteBuilder() {
           </div>
 
           {/* Subtitle Styling */}
-          <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'white', borderRadius: '0.375rem', border: '1px solid #e5e7eb' }}>
-            <h4 style={{ fontSize: '0.875rem', fontWeight: '600', marginBottom: '0.75rem', color: '#374151', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span>✏️</span> Subtitle Styling
+          <div style={{ 
+            marginBottom: '1.25rem', 
+            padding: '1.25rem', 
+            background: 'white', 
+            borderRadius: '0.5rem', 
+            border: '1px solid #e5e7eb',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
+          }}>
+            <h4 style={{ 
+              fontSize: '0.9375rem', 
+              fontWeight: '600', 
+              marginBottom: '1rem', 
+              color: '#1f2937', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.5rem',
+              paddingBottom: '0.75rem',
+              borderBottom: '2px solid #f3f4f6'
+            }}>
+              <span style={{ fontSize: '1.125rem' }}>✏️</span> Subtitle Styling
             </h4>
             
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>Font Family</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8125rem', fontWeight: '600', color: '#4b5563' }}>Font Family</label>
                 <select
                   value={heroContent.subtitleStyle?.fontFamily || 'Arial, sans-serif'}
                   onChange={(e) => handleStyleChange('subtitleStyle', 'fontFamily', e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '0.375rem',
+                    padding: '0.5rem 0.75rem',
                     border: '1px solid #d1d5db',
-                    borderRadius: '0.25rem',
-                    fontSize: '0.875rem'
+                    borderRadius: '0.375rem',
+                    fontSize: '0.875rem',
+                    background: 'white',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    outline: 'none'
                   }}
+                  onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                  onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                 >
                   <option value="Arial, sans-serif">Arial</option>
                   <option value="Georgia, serif">Georgia</option>
@@ -1222,7 +1294,7 @@ export default function SiteBuilder() {
                 </select>
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>Font Size</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8125rem', fontWeight: '600', color: '#4b5563' }}>Font Size</label>
                 <input
                   type="text"
                   value={heroContent.subtitleStyle?.fontSize || '1.2rem'}
@@ -1230,28 +1302,38 @@ export default function SiteBuilder() {
                   placeholder="1.2rem"
                   style={{
                     width: '100%',
-                    padding: '0.375rem',
+                    padding: '0.5rem 0.75rem',
                     border: '1px solid #d1d5db',
-                    borderRadius: '0.25rem',
-                    fontSize: '0.875rem'
+                    borderRadius: '0.375rem',
+                    fontSize: '0.875rem',
+                    transition: 'all 0.2s',
+                    outline: 'none'
                   }}
+                  onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                  onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                 />
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>Font Weight</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8125rem', fontWeight: '600', color: '#4b5563' }}>Font Weight</label>
                 <select
                   value={heroContent.subtitleStyle?.fontWeight || 'normal'}
                   onChange={(e) => handleStyleChange('subtitleStyle', 'fontWeight', e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '0.375rem',
+                    padding: '0.5rem 0.75rem',
                     border: '1px solid #d1d5db',
-                    borderRadius: '0.25rem',
-                    fontSize: '0.875rem'
+                    borderRadius: '0.375rem',
+                    fontSize: '0.875rem',
+                    background: 'white',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    outline: 'none'
                   }}
+                  onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                  onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                 >
                   <option value="normal">Normal</option>
                   <option value="bold">Bold</option>
@@ -1261,17 +1343,23 @@ export default function SiteBuilder() {
                 </select>
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>Font Style</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8125rem', fontWeight: '600', color: '#4b5563' }}>Font Style</label>
                 <select
                   value={heroContent.subtitleStyle?.fontStyle || 'normal'}
                   onChange={(e) => handleStyleChange('subtitleStyle', 'fontStyle', e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '0.375rem',
+                    padding: '0.5rem 0.75rem',
                     border: '1px solid #d1d5db',
-                    borderRadius: '0.25rem',
-                    fontSize: '0.875rem'
+                    borderRadius: '0.375rem',
+                    fontSize: '0.875rem',
+                    background: 'white',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    outline: 'none'
                   }}
+                  onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                  onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                 >
                   <option value="normal">Normal</option>
                   <option value="italic">Italic</option>
@@ -1279,19 +1367,23 @@ export default function SiteBuilder() {
                 </select>
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>Text Color</label>
-                <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8125rem', fontWeight: '600', color: '#4b5563' }}>Text Color</label>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                   <input
                     type="color"
                     value={heroContent.subtitleStyle?.color || '#e0e0e0'}
                     onChange={(e) => handleStyleChange('subtitleStyle', 'color', e.target.value)}
                     style={{
-                      width: '40px',
-                      height: '32px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '0.25rem',
-                      cursor: 'pointer'
+                      width: '48px',
+                      height: '40px',
+                      border: '2px solid #d1d5db',
+                      borderRadius: '0.375rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      outline: 'none'
                     }}
+                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                    onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                   />
                   <input
                     type="text"
@@ -1300,11 +1392,16 @@ export default function SiteBuilder() {
                     placeholder="#e0e0e0"
                     style={{
                       flex: 1,
-                      padding: '0.375rem',
+                      padding: '0.5rem 0.75rem',
                       border: '1px solid #d1d5db',
-                      borderRadius: '0.25rem',
-                      fontSize: '0.875rem'
+                      borderRadius: '0.375rem',
+                      fontSize: '0.875rem',
+                      fontFamily: 'monospace',
+                      transition: 'all 0.2s',
+                      outline: 'none'
                     }}
+                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                    onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                   />
                 </div>
               </div>
@@ -1312,24 +1409,46 @@ export default function SiteBuilder() {
           </div>
 
           {/* Button Styling */}
-          <div style={{ padding: '1rem', background: 'white', borderRadius: '0.375rem', border: '1px solid #e5e7eb' }}>
-            <h4 style={{ fontSize: '0.875rem', fontWeight: '600', marginBottom: '0.75rem', color: '#374151', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span>🔘</span> Button Styling
+          <div style={{ 
+            padding: '1.25rem', 
+            background: 'white', 
+            borderRadius: '0.5rem', 
+            border: '1px solid #e5e7eb',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
+          }}>
+            <h4 style={{ 
+              fontSize: '0.9375rem', 
+              fontWeight: '600', 
+              marginBottom: '1rem', 
+              color: '#1f2937', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.5rem',
+              paddingBottom: '0.75rem',
+              borderBottom: '2px solid #f3f4f6'
+            }}>
+              <span style={{ fontSize: '1.125rem' }}>🔘</span> Button Styling
             </h4>
             
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>Font Family</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8125rem', fontWeight: '600', color: '#4b5563' }}>Font Family</label>
                 <select
                   value={heroContent.buttonStyle?.fontFamily || 'Arial, sans-serif'}
                   onChange={(e) => handleStyleChange('buttonStyle', 'fontFamily', e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '0.375rem',
+                    padding: '0.5rem 0.75rem',
                     border: '1px solid #d1d5db',
-                    borderRadius: '0.25rem',
-                    fontSize: '0.875rem'
+                    borderRadius: '0.375rem',
+                    fontSize: '0.875rem',
+                    background: 'white',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    outline: 'none'
                   }}
+                  onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                  onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                 >
                   <option value="Arial, sans-serif">Arial</option>
                   <option value="Georgia, serif">Georgia</option>
@@ -1341,7 +1460,7 @@ export default function SiteBuilder() {
                 </select>
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>Font Size</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8125rem', fontWeight: '600', color: '#4b5563' }}>Font Size</label>
                 <input
                   type="text"
                   value={heroContent.buttonStyle?.fontSize || '1rem'}
@@ -1349,28 +1468,38 @@ export default function SiteBuilder() {
                   placeholder="1rem"
                   style={{
                     width: '100%',
-                    padding: '0.375rem',
+                    padding: '0.5rem 0.75rem',
                     border: '1px solid #d1d5db',
-                    borderRadius: '0.25rem',
-                    fontSize: '0.875rem'
+                    borderRadius: '0.375rem',
+                    fontSize: '0.875rem',
+                    transition: 'all 0.2s',
+                    outline: 'none'
                   }}
+                  onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                  onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                 />
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>Font Weight</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8125rem', fontWeight: '600', color: '#4b5563' }}>Font Weight</label>
                 <select
                   value={heroContent.buttonStyle?.fontWeight || '600'}
                   onChange={(e) => handleStyleChange('buttonStyle', 'fontWeight', e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '0.375rem',
+                    padding: '0.5rem 0.75rem',
                     border: '1px solid #d1d5db',
-                    borderRadius: '0.25rem',
-                    fontSize: '0.875rem'
+                    borderRadius: '0.375rem',
+                    fontSize: '0.875rem',
+                    background: 'white',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    outline: 'none'
                   }}
+                  onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                  onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                 >
                   <option value="normal">Normal</option>
                   <option value="bold">Bold</option>
@@ -1379,19 +1508,23 @@ export default function SiteBuilder() {
                 </select>
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>Text Color</label>
-                <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8125rem', fontWeight: '600', color: '#4b5563' }}>Text Color</label>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                   <input
                     type="color"
                     value={heroContent.buttonStyle?.color || '#000000'}
                     onChange={(e) => handleStyleChange('buttonStyle', 'color', e.target.value)}
                     style={{
-                      width: '40px',
-                      height: '32px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '0.25rem',
-                      cursor: 'pointer'
+                      width: '48px',
+                      height: '40px',
+                      border: '2px solid #d1d5db',
+                      borderRadius: '0.375rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      outline: 'none'
                     }}
+                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                    onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                   />
                   <input
                     type="text"
@@ -1400,30 +1533,39 @@ export default function SiteBuilder() {
                     placeholder="#000000"
                     style={{
                       flex: 1,
-                      padding: '0.375rem',
+                      padding: '0.5rem 0.75rem',
                       border: '1px solid #d1d5db',
-                      borderRadius: '0.25rem',
-                      fontSize: '0.875rem'
+                      borderRadius: '0.375rem',
+                      fontSize: '0.875rem',
+                      fontFamily: 'monospace',
+                      transition: 'all 0.2s',
+                      outline: 'none'
                     }}
+                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                    onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                   />
                 </div>
               </div>
             </div>
 
             <div>
-              <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>Background Color</label>
-              <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8125rem', fontWeight: '600', color: '#4b5563' }}>Background Color</label>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                 <input
                   type="color"
                   value={heroContent.buttonStyle?.backgroundColor || '#c9a961'}
                   onChange={(e) => handleStyleChange('buttonStyle', 'backgroundColor', e.target.value)}
                   style={{
-                    width: '40px',
-                    height: '32px',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '0.25rem',
-                    cursor: 'pointer'
+                    width: '48px',
+                    height: '40px',
+                    border: '2px solid #d1d5db',
+                    borderRadius: '0.375rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    outline: 'none'
                   }}
+                  onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                  onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                 />
                 <input
                   type="text"
@@ -1432,11 +1574,16 @@ export default function SiteBuilder() {
                   placeholder="#c9a961"
                   style={{
                     flex: 1,
-                    padding: '0.375rem',
+                    padding: '0.5rem 0.75rem',
                     border: '1px solid #d1d5db',
-                    borderRadius: '0.25rem',
-                    fontSize: '0.875rem'
+                    borderRadius: '0.375rem',
+                    fontSize: '0.875rem',
+                    fontFamily: 'monospace',
+                    transition: 'all 0.2s',
+                    outline: 'none'
                   }}
+                  onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                  onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                 />
               </div>
             </div>
