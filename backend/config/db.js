@@ -28,9 +28,7 @@ const sequelize = new Sequelize(
       acquire: 10000, // 10 second timeout - fail fast
       idle: 10000,
       evict: 1000 // Check for idle connections every second
-    },
-    // Optimize for serverless - don't keep connections alive
-    keepAlive: false
+    }
   }
 );
 
