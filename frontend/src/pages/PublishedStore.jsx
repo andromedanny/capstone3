@@ -44,6 +44,9 @@ const PublishedStore = () => {
   const [orderLoading, setOrderLoading] = useState(false);
   const [orderError, setOrderError] = useState('');
   const [orderSuccess, setOrderSuccess] = useState(false);
+  
+  // Ref to store callback function for order button clicks
+  const orderButtonCallbackRef = React.useRef(null);
 
   useEffect(() => {
     const fetchStore = async () => {
@@ -109,6 +112,33 @@ const PublishedStore = () => {
       setLoading(false);
     }
   }, [domain]);
+
+  // Update callback ref whenever products or state setters change
+  useEffect(() => {
+    orderButtonCallbackRef.current = (product) => {
+      setSelectedProduct(product);
+      setShowOrderModal(true);
+      
+      // Reset order form
+      setOrderData({
+        customerName: '',
+        customerEmail: '',
+        customerPhone: '',
+        quantity: 1,
+        paymentMethod: 'gcash',
+        region: '',
+        province: '',
+        municipality: '',
+        barangay: '',
+        shipping: 0
+      });
+      setProvincesList([]);
+      setMunicipalitiesList([]);
+      setBarangaysList([]);
+      setOrderError('');
+      setOrderSuccess(false);
+    };
+  }, [products]);
 
   // Update iframe with store content
   useEffect(() => {
@@ -510,32 +540,19 @@ const PublishedStore = () => {
               if (orderButton) {
                 // Remove any existing handlers
                 orderButton.onclick = null;
+                // Clone the product to avoid closure issues
+                const productCopy = JSON.parse(JSON.stringify(product));
                 orderButton.addEventListener('click', (e) => {
                   e.preventDefault();
                   e.stopPropagation();
                   
-                  // Use the product from the closure
-                  setSelectedProduct(product);
-                  setShowOrderModal(true);
-                  
-                  // Reset order form
-                  setOrderData({
-                    customerName: '',
-                    customerEmail: '',
-                    customerPhone: '',
-                    quantity: 1,
-                    paymentMethod: 'gcash',
-                    region: '',
-                    province: '',
-                    municipality: '',
-                    barangay: '',
-                    shipping: 0
-                  });
-                  setProvincesList([]);
-                  setMunicipalitiesList([]);
-                  setBarangaysList([]);
-                  setOrderError('');
-                  setOrderSuccess(false);
+                  // Use postMessage to communicate with parent
+                  if (window.parent && window.parent !== window) {
+                    window.parent.postMessage({
+                      type: 'OPEN_ORDER_MODAL',
+                      product: productCopy
+                    }, '*');
+                  }
                 }, { capture: true });
                 
                 orderButton.style.cursor = 'pointer';
@@ -579,26 +596,18 @@ const PublishedStore = () => {
                 if (matchingProduct) {
                   // Remove any existing handlers
                   button.onclick = null;
+                  // Clone the product to avoid closure issues
+                  const productCopy = JSON.parse(JSON.stringify(matchingProduct));
                   button.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     
-                    // Access the parent component's state setters via closure
-                    // We need to use a custom event that the parent can listen to
-                    const clickEvent = new CustomEvent('orderButtonClick', {
-                      detail: { product: matchingProduct },
-                      bubbles: true
-                    });
-                    iframe.contentWindow.dispatchEvent(clickEvent);
-                    
-                    // Also try postMessage as fallback
-                    try {
-                      iframe.contentWindow.parent.postMessage({
+                    // Use postMessage to communicate with parent
+                    if (window.parent && window.parent !== window) {
+                      window.parent.postMessage({
                         type: 'OPEN_ORDER_MODAL',
-                        product: matchingProduct
+                        product: productCopy
                       }, '*');
-                    } catch (err) {
-                      console.log('PostMessage failed, using direct handler');
                     }
                   }, { capture: true });
                   
