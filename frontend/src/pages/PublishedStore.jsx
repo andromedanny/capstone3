@@ -490,10 +490,10 @@ const PublishedStore = () => {
                 }
               }
               
-              // Add click handler to Inquire button
-              const inquireButton = card.querySelector('.product-button, button');
-              if (inquireButton) {
-                inquireButton.onclick = (e) => {
+              // Add click handler to Order/Inquire button
+              const orderButton = card.querySelector('.product-button, button');
+              if (orderButton) {
+                orderButton.onclick = (e) => {
                   e.preventDefault();
                   e.stopPropagation();
                   
@@ -504,9 +504,33 @@ const PublishedStore = () => {
                   window.parent.postMessage(productData, '*');
                 };
                 
-                inquireButton.style.cursor = 'pointer';
-                inquireButton.style.pointerEvents = 'auto';
-                inquireButton.disabled = false;
+                orderButton.style.cursor = 'pointer';
+                orderButton.style.pointerEvents = 'auto';
+                orderButton.disabled = false;
+              }
+            });
+            
+            // Add click handlers to ALL product buttons in the template (including existing ones)
+            const allProductButtons = iframeDoc.querySelectorAll('.product-button, .product-card button, .product button');
+            allProductButtons.forEach((button, index) => {
+              // Find the corresponding product for this button
+              const card = button.closest('.product-card, .product');
+              if (card && displayProducts[index]) {
+                const product = displayProducts[index];
+                button.onclick = (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  
+                  const productData = {
+                    type: 'OPEN_ORDER_MODAL',
+                    product: product
+                  };
+                  window.parent.postMessage(productData, '*');
+                };
+                
+                button.style.cursor = 'pointer';
+                button.style.pointerEvents = 'auto';
+                button.disabled = false;
               }
             });
             
