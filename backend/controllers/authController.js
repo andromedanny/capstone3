@@ -24,7 +24,9 @@ export const register = async (req, res) => {
 };
 
 export const login = async (req, res) => {
+  const startTime = Date.now();
   const { email, password } = req.body;
+  
   try {
     // Validate JWT_SECRET exists
     if (!process.env.JWT_SECRET) {
@@ -37,16 +39,34 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    const user = await User.findOne({ where: { email } });
+    // Find user with timeout
+    const user = await Promise.race([
+      User.findOne({ 
+        where: { email },
+        attributes: ['id', 'firstName', 'lastName', 'email', 'password', 'role']
+      }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Database query timeout')), 15000)
+      )
+    ]);
+
     if (!user) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    // Compare password with timeout
+    const isMatch = await Promise.race([
+      bcrypt.compare(password, user.password),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Password comparison timeout')), 5000)
+      )
+    ]);
+
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
+    // Generate token
     const token = jwt.sign(
       { 
         id: user.id, 
@@ -68,13 +88,40 @@ export const login = async (req, res) => {
       role: user.role
     };
 
+    const duration = Date.now() - startTime;
+    if (duration > 3000) {
+      console.warn(`Slow login: took ${duration}ms`);
+    }
+
     res.json({ 
       message: 'Logged in successfully', 
       token, 
       user: userWithoutPassword 
     });
   } catch (err) {
-    console.error('Login error:', err);
-    res.status(500).json({ message: 'Login failed', error: err.message });
+    const duration = Date.now() - startTime;
+    console.error(`Login error (${duration}ms):`, err.message);
+    console.error('Error stack:', err.stack);
+    
+    // Handle timeout specifically
+    if (err.message.includes('timeout') || err.code === 'ETIMEDOUT') {
+      return res.status(504).json({ 
+        message: 'Request timeout - please try again',
+        error: 'TIMEOUT'
+      });
+    }
+    
+    // Handle database errors
+    if (err.name === 'SequelizeConnectionError' || err.name === 'SequelizeDatabaseError') {
+      return res.status(503).json({ 
+        message: 'Database connection error - please try again',
+        error: 'DATABASE_ERROR'
+      });
+    }
+    
+    res.status(500).json({ 
+      message: 'Login failed', 
+      error: err.message || 'Unknown error occurred'
+    });
   }
 };
