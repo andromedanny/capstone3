@@ -98,11 +98,6 @@ export default function SiteBuilder() {
     }
   });
   
-  const [products, setProducts] = useState([
-    { id: 1, name: '', price: '', description: '', image: '/imgplc.jpg' },
-    { id: 2, name: '', price: '', description: '', image: '/imgplc.jpg' },
-    { id: 3, name: '', price: '', description: '', image: '/imgplc.jpg' }
-  ]);
 
   // Background settings state
   const [backgroundSettings, setBackgroundSettings] = useState({
@@ -289,8 +284,7 @@ export default function SiteBuilder() {
             });
           }
 
-          // Fetch products from API (products added via "Manage Products")
-          await fetchProductsFromAPI(storeData);
+          // Products are now managed only in the Products page, not in SiteBuilder
 
           // Load location dropdowns based on existing data
           if (storeData.region) {
@@ -322,92 +316,6 @@ export default function SiteBuilder() {
     fetchStoreData();
   }, []);
 
-  // Function to fetch products from API (defined early so it can be used in useEffect)
-  const fetchProductsFromAPI = async (storeData = null) => {
-    try {
-      const productsResponse = await apiClient.get('/products');
-
-      if (productsResponse.data && productsResponse.data.length > 0) {
-        // Convert API products to the format expected by SiteBuilder
-        const apiProducts = productsResponse.data.map(product => ({
-          id: product.id,
-          name: product.name || '',
-          price: product.price ? parseFloat(product.price).toString() : '',
-          description: product.description || '',
-          image: product.image || '/imgplc.jpg'
-        }));
-
-        // If there are saved products in content, merge them (API products take priority)
-        if (storeData?.content?.products && storeData.content.products.length > 0) {
-          // Merge: use API products first, then add any content products that aren't in API
-          const contentProductIds = new Set(apiProducts.map(p => p.id));
-          const additionalContentProducts = storeData.content.products
-            .filter(p => !contentProductIds.has(p.id))
-            .map(p => ({
-              id: p.id,
-              name: p.name || '',
-              price: p.price ? parseFloat(p.price).toString() : '',
-              description: p.description || '',
-              image: p.image || '/imgplc.jpg'
-            }));
-          
-          setProducts([...apiProducts, ...additionalContentProducts]);
-        } else {
-          // No content products, just use API products
-          setProducts(apiProducts);
-        }
-      } else {
-        // No API products, check if there are content products
-        if (storeData?.content?.products && storeData.content.products.length > 0) {
-          const contentProducts = storeData.content.products.map(product => ({
-            id: product.id,
-            name: product.name || '',
-            price: product.price ? parseFloat(product.price).toString() : '',
-            description: product.description || '',
-            image: product.image || '/imgplc.jpg'
-          }));
-          setProducts(contentProducts);
-        }
-        // If no products at all, keep the default empty products
-      }
-    } catch (error) {
-      console.error('Error fetching products:', error);
-      // If API fetch fails, try to use content products as fallback
-      if (storeData?.content?.products && storeData.content.products.length > 0) {
-        const contentProducts = storeData.content.products.map(product => ({
-          id: product.id,
-          name: product.name || '',
-          price: product.price ? parseFloat(product.price).toString() : '',
-          description: product.description || '',
-          image: product.image || '/imgplc.jpg'
-        }));
-        setProducts(contentProducts);
-      }
-    }
-  };
-
-  // Refresh products when page becomes visible (user navigates back from Products page)
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden && storeId) {
-        fetchProductsFromAPI();
-      }
-    };
-
-    const handleFocus = () => {
-      if (storeId) {
-        fetchProductsFromAPI();
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('focus', handleFocus);
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('focus', handleFocus);
-    };
-  }, [storeId]);
 
   // Load HTML template content
   useEffect(() => {
@@ -512,39 +420,7 @@ export default function SiteBuilder() {
           }
         }
 
-        // Update products
-        const productCards = iframeDoc.querySelectorAll('.product-card');
-        products.forEach((product, index) => {
-          if (productCards[index]) {
-            const card = productCards[index];
-            
-            // Update product title
-            const titleEl = card.querySelector('.product-title');
-            if (titleEl) {
-              titleEl.textContent = product.name;
-            }
-
-            // Update product price
-            const priceEl = card.querySelector('.product-price');
-            if (priceEl) {
-              priceEl.textContent = `$${product.price}`;
-            }
-
-            // Update product description - preserve HTML from Quill
-            const descEl = card.querySelector('.product-description');
-            if (descEl) {
-              // Remove wrapping <p> tags from Quill if present
-              const descText = product.description.replace(/^<p>|<\/p>$/g, '').trim();
-              descEl.innerHTML = descText || '';
-            }
-
-            // Update product image
-            const imageEl = card.querySelector('.product-image');
-            if (imageEl && product.image) {
-              imageEl.src = product.image;
-            }
-          }
-        });
+        // Products are now managed only in the Products page, not updated here
 
         // If iframe hasn't loaded the content yet, write it first
         if (!iframeDoc.body || iframeDoc.body.children.length === 0) {
@@ -577,7 +453,7 @@ export default function SiteBuilder() {
     // Small delay to ensure iframe is loaded
     const timer = setTimeout(updateIframe, 100);
     return () => clearTimeout(timer);
-  }, [htmlContent, heroContent, products, backgroundSettings]);
+  }, [htmlContent, heroContent, backgroundSettings]);
 
   const handleStyleChange = (element, property, value) => {
     setHeroContent(prev => ({
@@ -594,135 +470,6 @@ export default function SiteBuilder() {
   };
 
 
-  const handleProductChange = (id, field, value) => {
-    setProducts(prev => prev.map(product => 
-      product.id === id ? { ...product, [field]: value } : product
-    ));
-  };
-
-  const handleAddProduct = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token || !storeId) {
-        // If no token or store, just add locally
-        setProducts(prev => [...prev, {
-          id: `temp-${Date.now()}`,
-          name: `Product ${prev.length + 1}`,
-          price: '99.99',
-          description: '<p>Lorem ipsum dolor sit amet</p>',
-          image: '/imgplc.jpg',
-          isNew: true
-        }]);
-        return;
-      }
-
-      // Create product via API
-      const productData = new FormData();
-      productData.append('name', `Product ${products.length + 1}`);
-      productData.append('description', '<p>Lorem ipsum dolor sit amet</p>');
-      productData.append('price', '99.99');
-      productData.append('stock', '0');
-      productData.append('isActive', 'true');
-
-      const response = await apiClient.post('/products', productData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-
-      // Add the created product to local state
-      const newProduct = {
-        id: response.data.id,
-        name: response.data.name || `Product ${products.length + 1}`,
-        price: response.data.price ? parseFloat(response.data.price).toString() : '99.99',
-        description: response.data.description || '<p>Lorem ipsum dolor sit amet</p>',
-        image: response.data.image || '/imgplc.jpg'
-      };
-
-      setProducts(prev => [...prev, newProduct]);
-      setStatus('Product added successfully!');
-      setTimeout(() => setStatus(''), 3000);
-    } catch (error) {
-      console.error('Error adding product:', error);
-      // If API fails, add locally with temp ID
-      setProducts(prev => [...prev, {
-        id: `temp-${Date.now()}`,
-        name: `Product ${prev.length + 1}`,
-        price: '99.99',
-        description: '<p>Lorem ipsum dolor sit amet</p>',
-        image: '/imgplc.jpg',
-        isNew: true
-      }]);
-      setStatus('Product added locally. Save to sync with server.');
-      setTimeout(() => setStatus(''), 3000);
-    }
-  };
-
-  const handleDeleteProduct = async (id) => {
-    // Don't delete temp products from API
-    if (id.toString().startsWith('temp-')) {
-      setProducts(prev => prev.filter(product => product.id !== id));
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem('token');
-      if (token && storeId) {
-        // Delete from API
-        await apiClient.delete(`/products/${id}`);
-        setStatus('Product deleted successfully!');
-        setTimeout(() => setStatus(''), 3000);
-      }
-    } catch (error) {
-      console.error('Error deleting product:', error);
-      setStatus('Error deleting product. It will be removed locally.');
-      setTimeout(() => setStatus(''), 3000);
-    }
-
-    // Remove from local state
-    setProducts(prev => prev.filter(product => product.id !== id));
-  };
-
-  const handleImageUpload = (productId, event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // Check if file is an image
-    if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
-      return;
-    }
-
-    // Check file size (5MB limit)
-    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
-    if (file.size > maxSize) {
-      alert('Image size must be less than 5MB');
-      return;
-    }
-
-    // Convert to base64 for preview (or you can upload to server)
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64String = reader.result;
-      setProducts(prev => prev.map(product => 
-        product.id === productId 
-          ? { ...product, image: base64String }
-          : product
-      ));
-    };
-    reader.onerror = () => {
-      alert('Error reading image file');
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleRemoveImage = (productId) => {
-    setProducts(prev => prev.map(product => 
-      product.id === productId 
-        ? { ...product, image: '/imgplc.jpg' }
-        : product
-    ));
-  };
 
   const handleStoreSettingsChange = (field, value) => {
     // Handle location cascading dropdowns
@@ -792,85 +539,9 @@ export default function SiteBuilder() {
       // Save store settings first
       await handleSaveStoreSettings();
       
-      // Sync products with API - create new ones and update existing ones
-      const updatedProducts = [];
-      for (const product of products) {
-        try {
-          // Check if product has a temp ID or is marked as new (needs to be created)
-          if (product.id.toString().startsWith('temp-') || product.isNew) {
-            // Create new product via API
-            const productData = new FormData();
-            productData.append('name', product.name || 'Untitled Product');
-            productData.append('description', product.description || '');
-            productData.append('price', product.price || '0');
-            productData.append('stock', '0');
-            productData.append('isActive', 'true');
-
-            // Handle image - if it's base64, convert to blob
-            if (product.image && product.image !== '/imgplc.jpg' && !product.image.startsWith('http')) {
-              if (product.image.startsWith('data:image')) {
-                // Convert base64 to blob
-                const response = await fetch(product.image);
-                const blob = await response.blob();
-                const file = new File([blob], `product-${Date.now()}.png`, { type: blob.type });
-                productData.append('image', file);
-              }
-            }
-
-            const response = await apiClient.post('/products', productData, {
-              headers: {
-                'Content-Type': 'multipart/form-data'
-              }
-            });
-
-            updatedProducts.push({
-              id: response.data.id,
-              name: response.data.name || product.name,
-              price: response.data.price ? parseFloat(response.data.price).toString() : product.price,
-              description: response.data.description || product.description,
-              image: response.data.image || product.image
-            });
-          } else {
-            // Update existing product via API
-            const productData = new FormData();
-            productData.append('name', product.name || 'Untitled Product');
-            productData.append('description', product.description || '');
-            productData.append('price', product.price || '0');
-            productData.append('stock', '0');
-            productData.append('isActive', 'true');
-
-            // Handle image update if it's base64
-            if (product.image && product.image !== '/imgplc.jpg' && !product.image.startsWith('http')) {
-              if (product.image.startsWith('data:image')) {
-                const response = await fetch(product.image);
-                const blob = await response.blob();
-                const file = new File([blob], `product-${Date.now()}.png`, { type: blob.type });
-                productData.append('image', file);
-              }
-            }
-
-            await apiClient.put(`/products/${product.id}`, productData, {
-              headers: {
-                'Content-Type': 'multipart/form-data'
-              }
-            });
-
-            updatedProducts.push(product);
-          }
-        } catch (error) {
-          console.error('Error syncing product:', error);
-          // If sync fails, keep the product in the list
-          updatedProducts.push(product);
-        }
-      }
-
-      // Update products state with synced products
-      setProducts(updatedProducts);
-      
-      // Save template content (hero, products, background) to backend
+      // Save template content (hero, background) to backend - products are managed separately
       const content = {
         hero: heroContent,
-        products: updatedProducts,
         background: backgroundSettings
       };
 
@@ -884,7 +555,7 @@ export default function SiteBuilder() {
         { content },
       );
 
-      setStatus('Content and products saved successfully!');
+      setStatus('Content saved successfully!');
       setTimeout(() => setStatus(''), 3000);
     } catch (e) {
       setStatus('Error saving: ' + (e.response?.data?.message || e.message));
@@ -900,13 +571,6 @@ export default function SiteBuilder() {
     ['clean']
   ];
 
-  // React Quill toolbar configuration for product descriptions
-  const productDescriptionToolbar = [
-    ['bold', 'italic', 'underline'],
-    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-    ['link'],
-    ['clean']
-  ];
 
   return (
     <div className="site-builder-editor" style={{ minHeight: '100vh', background: '#f8fafc', display: 'flex' }}>
@@ -2152,189 +1816,6 @@ export default function SiteBuilder() {
           )}
         </div>
 
-        {/* Products Editor */}
-        <div style={{ marginBottom: '2rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: '600' }}>
-              Products
-            </h3>
-            <button
-              onClick={handleAddProduct}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#8b5cf6',
-                color: 'white',
-                border: 'none',
-                borderRadius: '0.375rem',
-                fontSize: '0.875rem',
-                cursor: 'pointer'
-              }}
-            >
-              + Add
-            </button>
-          </div>
-          <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-            {products.map((product) => (
-              <div key={product.id} style={{
-                padding: '1rem',
-                border: '1px solid #e5e7eb',
-                borderRadius: '0.375rem',
-                marginBottom: '1rem',
-                background: '#f9fafb'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                  <span style={{ fontWeight: '600', fontSize: '0.875rem' }}>Product {product.id}</span>
-                  <button
-                    onClick={() => handleDeleteProduct(product.id)}
-                    style={{
-                      background: '#ef4444',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '0.25rem',
-                      padding: '0.25rem 0.5rem',
-                      fontSize: '0.75rem',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Delete
-                  </button>
-                </div>
-                <div style={{ marginBottom: '0.5rem' }}>
-                  <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem' }}>Name</label>
-                  <input
-                    type="text"
-                    value={product.name}
-                    onChange={(e) => handleProductChange(product.id, 'name', e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '0.375rem',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '0.25rem',
-                      fontSize: '0.875rem'
-                    }}
-                  />
-                </div>
-                <div style={{ marginBottom: '0.5rem' }}>
-                  <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem' }}>Price</label>
-                  <input
-                    type="text"
-                    value={product.price}
-                    onChange={(e) => handleProductChange(product.id, 'price', e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '0.375rem',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '0.25rem',
-                      fontSize: '0.875rem'
-                    }}
-                  />
-                </div>
-                <div style={{ marginBottom: '0.5rem' }}>
-                  <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem' }}>Image</label>
-                  <div style={{ 
-                    width: '100%', 
-                    height: '100px', 
-                    border: '1px dashed #d1d5db',
-                    borderRadius: '0.25rem',
-                    marginBottom: '0.5rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    overflow: 'hidden',
-                    background: '#f9fafb',
-                    position: 'relative'
-                  }}>
-                    {product.image && product.image !== '/imgplc.jpg' && (
-                      <>
-                        <img 
-                          src={product.image} 
-                          alt={product.name}
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover'
-                          }}
-                        />
-                        <button
-                          onClick={() => handleRemoveImage(product.id)}
-                          style={{
-                            position: 'absolute',
-                            top: '4px',
-                            right: '4px',
-                            background: 'rgba(239, 68, 68, 0.9)',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '0.25rem',
-                            padding: '0.25rem 0.5rem',
-                            fontSize: '0.7rem',
-                            cursor: 'pointer',
-                            fontWeight: '600',
-                            zIndex: 10
-                          }}
-                          title="Remove image"
-                        >
-                          ×
-                        </button>
-                      </>
-                    )}
-                    {(!product.image || product.image === '/imgplc.jpg') && (
-                      <span style={{ color: '#9ca3af', fontSize: '0.75rem' }}>No image selected</span>
-                    )}
-                  </div>
-                  <label
-                    htmlFor={`image-upload-${product.id}`}
-                    style={{
-                      display: 'block',
-                      width: '100%',
-                      padding: '0.375rem',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '0.25rem',
-                      fontSize: '0.75rem',
-                      cursor: 'pointer',
-                      textAlign: 'center',
-                      background: '#fff',
-                      color: '#374151',
-                      transition: 'background 0.2s'
-                    }}
-                    onMouseEnter={(e) => e.target.style.background = '#f3f4f6'}
-                    onMouseLeave={(e) => e.target.style.background = '#fff'}
-                  >
-                    {product.image && product.image !== '/imgplc.jpg' ? 'Change Image' : 'Upload Image'}
-                  </label>
-                  <input
-                    id={`image-upload-${product.id}`}
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleImageUpload(product.id, e)}
-                    style={{
-                      display: 'none'
-                    }}
-                  />
-                  <p style={{ 
-                    marginTop: '0.25rem', 
-                    fontSize: '0.65rem', 
-                    color: '#6b7280' 
-                  }}>
-                    JPG, PNG, or GIF (max 5MB)
-                  </p>
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem' }}>Description</label>
-                  <QuillEditor
-                    value={product.description}
-                    onChange={(value) => handleProductChange(product.id, 'description', value)}
-                    toolbar={productDescriptionToolbar}
-                    style={{
-                      background: 'white',
-                      borderRadius: '0.25rem',
-                      marginBottom: '0.5rem'
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
 
         {/* Save Button */}
         <div>
