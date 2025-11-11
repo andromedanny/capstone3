@@ -132,8 +132,6 @@ const PublishedStore = () => {
       if (!iframeDoc) return;
 
       try {
-        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-        
         // Write the HTML content first if not already written
         if (!iframeDoc.body || iframeDoc.body.children.length === 0) {
           iframeDoc.open();
