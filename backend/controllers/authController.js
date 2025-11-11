@@ -12,14 +12,14 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
-    // Check if user exists with timeout
+    // Check if user exists with shorter timeout
     const existingUser = await Promise.race([
       User.findOne({ 
         where: { email },
         attributes: ['id', 'email']
       }),
       new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Database query timeout')), 15000)
+        setTimeout(() => reject(new Error('Database query timeout')), 8000)
       )
     ]);
 
@@ -35,7 +35,7 @@ export const register = async (req, res) => {
       )
     ]);
 
-    // Create user with timeout
+    // Create user with shorter timeout
     const user = await Promise.race([
       User.create({
         firstName,
@@ -44,7 +44,7 @@ export const register = async (req, res) => {
         password: hashedPassword,
       }),
       new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('User creation timeout')), 15000)
+        setTimeout(() => reject(new Error('User creation timeout')), 8000)
       )
     ]);
 
@@ -118,14 +118,15 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    // Find user with timeout
+    // Find user with shorter timeout for faster failure
     const user = await Promise.race([
       User.findOne({ 
         where: { email },
-        attributes: ['id', 'firstName', 'lastName', 'email', 'password', 'role']
+        attributes: ['id', 'firstName', 'lastName', 'email', 'password', 'role'],
+        raw: false // Keep as Sequelize instance for password access
       }),
       new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Database query timeout')), 15000)
+        setTimeout(() => reject(new Error('Database query timeout')), 8000)
       )
     ]);
 

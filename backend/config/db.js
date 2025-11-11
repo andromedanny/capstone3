@@ -23,11 +23,14 @@ const sequelize = new Sequelize(
     },
     logging: process.env.NODE_ENV === 'development' ? console.log : false,
     pool: {
-      max: 2, // Reduced for serverless
+      max: 1, // Single connection for serverless to avoid connection overhead
       min: 0,
-      acquire: 20000, // Reduced timeout
-      idle: 5000 // Reduced idle time
-    }
+      acquire: 10000, // 10 second timeout - fail fast
+      idle: 10000,
+      evict: 1000 // Check for idle connections every second
+    },
+    // Optimize for serverless - don't keep connections alive
+    keepAlive: false
   }
 );
 
