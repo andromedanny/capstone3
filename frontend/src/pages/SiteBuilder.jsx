@@ -1146,7 +1146,7 @@ export default function SiteBuilder() {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
               <div>
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8125rem', fontWeight: '600', color: '#4b5563' }}>Font Weight</label>
                 <select
@@ -1198,46 +1198,47 @@ export default function SiteBuilder() {
                   <option value="oblique">Oblique</option>
                 </select>
               </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8125rem', fontWeight: '600', color: '#4b5563' }}>Text Color</label>
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'stretch' }}>
-                  <input
-                    type="color"
-                    value={heroContent.titleStyle?.color || '#ffffff'}
-                    onChange={(e) => handleStyleChange('titleStyle', 'color', e.target.value)}
-                    style={{
-                      width: '50px',
-                      height: '40px',
-                      border: '2px solid #d1d5db',
-                      borderRadius: '0.375rem',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s',
-                      outline: 'none',
-                      flexShrink: 0
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
-                    onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
-                  />
-                  <input
-                    type="text"
-                    value={heroContent.titleStyle?.color || '#ffffff'}
-                    onChange={(e) => handleStyleChange('titleStyle', 'color', e.target.value)}
-                    placeholder="#ffffff"
-                    style={{
-                      flex: 1,
-                      padding: '0.5rem 0.75rem',
-                      border: '2px solid #d1d5db',
-                      borderRadius: '0.375rem',
-                      fontSize: '0.875rem',
-                      fontFamily: 'monospace',
-                      transition: 'all 0.2s',
-                      outline: 'none',
-                      minWidth: 0
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
-                    onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
-                  />
-                </div>
+            </div>
+
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8125rem', fontWeight: '600', color: '#4b5563' }}>Text Color</label>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'stretch' }}>
+                <input
+                  type="color"
+                  value={heroContent.titleStyle?.color || '#ffffff'}
+                  onChange={(e) => handleStyleChange('titleStyle', 'color', e.target.value)}
+                  style={{
+                    width: '50px',
+                    height: '40px',
+                    border: '2px solid #d1d5db',
+                    borderRadius: '0.375rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    outline: 'none',
+                    flexShrink: 0
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                  onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+                />
+                <input
+                  type="text"
+                  value={heroContent.titleStyle?.color || '#ffffff'}
+                  onChange={(e) => handleStyleChange('titleStyle', 'color', e.target.value)}
+                  placeholder="#ffffff"
+                  style={{
+                    flex: 1,
+                    padding: '0.5rem 0.75rem',
+                    border: '2px solid #d1d5db',
+                    borderRadius: '0.375rem',
+                    fontSize: '0.875rem',
+                    fontFamily: 'monospace',
+                    transition: 'all 0.2s',
+                    outline: 'none',
+                    minWidth: 0
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                  onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+                />
               </div>
             </div>
           </div>
@@ -1317,7 +1318,7 @@ export default function SiteBuilder() {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
               <div>
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8125rem', fontWeight: '600', color: '#4b5563' }}>Font Weight</label>
                 <select
@@ -1368,46 +1369,47 @@ export default function SiteBuilder() {
                   <option value="oblique">Oblique</option>
                 </select>
               </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8125rem', fontWeight: '600', color: '#4b5563' }}>Text Color</label>
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'stretch' }}>
-                  <input
-                    type="color"
-                    value={heroContent.subtitleStyle?.color || '#e0e0e0'}
-                    onChange={(e) => handleStyleChange('subtitleStyle', 'color', e.target.value)}
-                    style={{
-                      width: '50px',
-                      height: '40px',
-                      border: '2px solid #d1d5db',
-                      borderRadius: '0.375rem',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s',
-                      outline: 'none',
-                      flexShrink: 0
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
-                    onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
-                  />
-                  <input
-                    type="text"
-                    value={heroContent.subtitleStyle?.color || '#e0e0e0'}
-                    onChange={(e) => handleStyleChange('subtitleStyle', 'color', e.target.value)}
-                    placeholder="#e0e0e0"
-                    style={{
-                      flex: 1,
-                      padding: '0.5rem 0.75rem',
-                      border: '2px solid #d1d5db',
-                      borderRadius: '0.375rem',
-                      fontSize: '0.875rem',
-                      fontFamily: 'monospace',
-                      transition: 'all 0.2s',
-                      outline: 'none',
-                      minWidth: 0
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
-                    onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
-                  />
-                </div>
+            </div>
+
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8125rem', fontWeight: '600', color: '#4b5563' }}>Text Color</label>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'stretch' }}>
+                <input
+                  type="color"
+                  value={heroContent.subtitleStyle?.color || '#e0e0e0'}
+                  onChange={(e) => handleStyleChange('subtitleStyle', 'color', e.target.value)}
+                  style={{
+                    width: '50px',
+                    height: '40px',
+                    border: '2px solid #d1d5db',
+                    borderRadius: '0.375rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    outline: 'none',
+                    flexShrink: 0
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                  onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+                />
+                <input
+                  type="text"
+                  value={heroContent.subtitleStyle?.color || '#e0e0e0'}
+                  onChange={(e) => handleStyleChange('subtitleStyle', 'color', e.target.value)}
+                  placeholder="#e0e0e0"
+                  style={{
+                    flex: 1,
+                    padding: '0.5rem 0.75rem',
+                    border: '2px solid #d1d5db',
+                    borderRadius: '0.375rem',
+                    fontSize: '0.875rem',
+                    fontFamily: 'monospace',
+                    transition: 'all 0.2s',
+                    outline: 'none',
+                    minWidth: 0
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                  onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+                />
               </div>
             </div>
           </div>
