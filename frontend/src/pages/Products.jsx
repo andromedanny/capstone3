@@ -14,6 +14,27 @@ const Products = () => {
     fetchProducts();
   }, []);
 
+  // Refresh products when page becomes visible (user navigates back)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchProducts();
+      }
+    };
+
+    const handleFocus = () => {
+      fetchProducts();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, []);
+
   const fetchProducts = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -119,12 +140,21 @@ const Products = () => {
             <h1 className="text-3xl font-bold text-gray-900">Products</h1>
             <p className="text-gray-600 mt-1">Manage your store products</p>
           </div>
-          <button
-            onClick={() => navigate('/dashboard/addproducts')}
-            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-          >
-            + Add Product
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={fetchProducts}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+              title="Refresh products"
+            >
+              🔄 Refresh
+            </button>
+            <button
+              onClick={() => navigate('/dashboard/addproducts')}
+              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+            >
+              + Add Product
+            </button>
+          </div>
         </div>
 
         {error && (
