@@ -117,12 +117,19 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    // Find user
-    const user = await User.findOne({ 
-      where: { email },
-      attributes: ['id', 'firstName', 'lastName', 'email', 'password', 'role'],
-      raw: false // Keep as Sequelize instance for password access
-    });
+    // Find user - wrap in try-catch for better error handling
+    let user;
+    try {
+      user = await User.findOne({ 
+        where: { email },
+        attributes: ['id', 'firstName', 'lastName', 'email', 'password', 'role'],
+        raw: false // Keep as Sequelize instance for password access
+      });
+    } catch (dbError) {
+      console.error('Database query error in login:', dbError);
+      // Re-throw to be caught by outer catch block
+      throw dbError;
+    }
 
     if (!user) {
       return res.status(401).json({ message: 'Invalid email or password' });
