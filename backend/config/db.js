@@ -23,12 +23,17 @@ const sequelize = new Sequelize(
     },
     logging: process.env.NODE_ENV === 'development' ? console.log : false,
     pool: {
-      max: 5, // Allow more connections for better throughput
+      max: 2, // Limit connections for serverless (each function instance)
       min: 0,
-      acquire: 30000, // 30 second timeout - give more time for connection
+      acquire: 20000, // 20 second timeout for connection acquisition
       idle: 10000,
       evict: 1000, // Check for idle connections every second
       handleDisconnects: true // Automatically reconnect on disconnect
+    },
+    // For serverless: don't keep connections alive too long
+    define: {
+      freezeTableName: true,
+      underscored: false
     }
   }
 );
