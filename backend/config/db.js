@@ -41,9 +41,7 @@ const sequelize = new Sequelize(databaseUrl, {
     },
     // Connection pooler specific options
     ...(isPooler && {
-      application_name: 'structura-app',
-      // For pooler, we can use transaction mode
-      options: '-c statement_timeout=8000' // 8 second statement timeout
+      application_name: 'structura-app'
     })
   },
   logging: process.env.NODE_ENV === 'development' ? console.log : false,
