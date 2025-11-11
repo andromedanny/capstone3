@@ -162,69 +162,83 @@ export const createOrder = async (req, res) => {
     const shippingCost = parseFloat(shipping) || 0;
     const total = subtotal + shippingCost;
 
-    // Create order
-    const order = await Order.create({
-      storeId,
-      orderNumber: generateOrderNumber(),
-      status: 'pending',
-      paymentMethod: paymentMethod || 'gcash',
-      paymentStatus: 'pending',
-      subtotal,
-      shipping: shippingCost,
-      total,
-      shippingAddress: shippingAddress, // Store as JSON object (Sequelize handles JSON type)
-      customerName,
-      customerEmail,
-      customerPhone: customerPhone || ''
-    });
+    // Use transaction to ensure all operations succeed or fail together
+    const transaction = await sequelize.transaction();
 
-    // Create order items and update product stock
-    for (const item of orderItems) {
-      await OrderItem.create({
-        orderId: order.id,
-        productId: item.productId,
-        quantity: item.quantity,
-        price: item.price,
-        subtotal: item.subtotal
+    try {
+      // Create order within transaction
+      const order = await Order.create({
+        storeId,
+        orderNumber: generateOrderNumber(),
+        status: 'pending',
+        paymentMethod: paymentMethod || 'gcash',
+        paymentStatus: 'pending',
+        subtotal,
+        shipping: shippingCost,
+        total,
+        shippingAddress: shippingAddress, // Store as JSON object (Sequelize handles JSON type)
+        customerName,
+        customerEmail,
+        customerPhone: customerPhone || ''
+      }, { transaction });
+
+      // Create order items within transaction
+      for (const item of orderItems) {
+        await OrderItem.create({
+          orderId: order.id,
+          productId: item.productId,
+          quantity: item.quantity,
+          price: item.price,
+          subtotal: item.subtotal
+        }, { transaction });
+
+        // Update product stock (non-blocking - don't fail order if stock update fails)
+        try {
+          await Product.decrement('stock', {
+            by: item.quantity,
+            where: { id: item.productId },
+            transaction
+          });
+        } catch (stockError) {
+          console.warn('Stock update failed (non-critical):', stockError.message);
+          // Continue - don't fail the order if stock update fails
+        }
+      }
+
+      // Commit transaction
+      await transaction.commit();
+
+      // Fetch complete order with items (outside transaction)
+      const completeOrder = await Order.findOne({
+        where: { id: order.id },
+        attributes: ['id', 'storeId', 'orderNumber', 'status', 'paymentMethod', 
+                     'paymentStatus', 'subtotal', 'shipping', 'total', 
+                     'shippingAddress', 'customerName', 'customerEmail', 
+                     'customerPhone', 'createdAt', 'updatedAt'],
+        include: [
+          {
+            model: OrderItem,
+            attributes: ['id', 'orderId', 'productId', 'quantity', 'price', 'subtotal'],
+            include: [{
+              model: Product,
+              attributes: ['id', 'name', 'price', 'image']
+            }]
+          }
+        ]
       });
 
-      // Update product stock (non-blocking - don't fail order if stock update fails)
-      try {
-        await Product.decrement('stock', {
-          by: item.quantity,
-          where: { id: item.productId }
-        });
-      } catch (stockError) {
-        console.warn('Stock update failed (non-critical):', stockError.message);
-        // Continue - don't fail the order if stock update fails
+      const duration = Date.now() - startTime;
+      if (duration > 3000) {
+        console.warn(`Slow order creation: took ${duration}ms`);
       }
+
+      return res.status(201).json(completeOrder);
+    } catch (transactionError) {
+      // Rollback transaction on error
+      await transaction.rollback();
+      throw transactionError; // Re-throw to be caught by outer catch block
     }
 
-    // Fetch complete order with items
-    const completeOrder = await Order.findOne({
-      where: { id: order.id },
-      attributes: ['id', 'storeId', 'orderNumber', 'status', 'paymentMethod', 
-                   'paymentStatus', 'subtotal', 'shipping', 'total', 
-                   'shippingAddress', 'customerName', 'customerEmail', 
-                   'customerPhone', 'createdAt', 'updatedAt'],
-      include: [
-        {
-          model: OrderItem,
-          attributes: ['id', 'orderId', 'productId', 'quantity', 'price', 'subtotal'],
-          include: [{
-            model: Product,
-            attributes: ['id', 'name', 'price', 'image']
-          }]
-        }
-      ]
-    });
-
-    const duration = Date.now() - startTime;
-    if (duration > 3000) {
-      console.warn(`Slow order creation: took ${duration}ms`);
-    }
-
-    res.status(201).json(completeOrder);
   } catch (error) {
     const duration = Date.now() - startTime;
     console.error(`Error creating order (${duration}ms):`, error.message);
