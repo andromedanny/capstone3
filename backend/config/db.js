@@ -13,6 +13,12 @@ const databaseUrl = process.env.SUPABASE_DB_URL || process.env.DATABASE_URL;
 
 if (!databaseUrl) {
   console.error('⚠️ DATABASE_URL or SUPABASE_DB_URL environment variable is not set!');
+  console.error('⚠️ Please set SUPABASE_DB_URL or DATABASE_URL in your environment variables');
+} else {
+  // Log connection info (without sensitive data)
+  const urlParts = new URL(databaseUrl);
+  console.log(`🔌 Database: ${urlParts.hostname}${urlParts.port ? ':' + urlParts.port : ''}`);
+  console.log(`🔌 Database: ${urlParts.pathname}`);
 }
 
 // Supabase PostgreSQL connection
