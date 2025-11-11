@@ -117,28 +117,15 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    // Find user - ensure database connection is available
-    // In serverless, connection might need to be established
-    let user;
-    try {
-      // Test connection first if needed (for serverless cold starts)
-      await sequelize.authenticate().catch(() => {
-        // Connection might already exist, continue
-      });
-      
-      user = await User.findOne({ 
-        where: { email },
-        attributes: ['id', 'firstName', 'lastName', 'email', 'password', 'role'],
-        raw: false // Keep as Sequelize instance for password access
-      });
-    } catch (dbError) {
-      console.error('Database query error in login:', dbError);
-      console.error('Database error name:', dbError.name);
-      console.error('Database error code:', dbError.code);
-      console.error('Database error message:', dbError.message);
-      // Re-throw to be caught by outer catch block
-      throw dbError;
-    }
+    // Find user - optimized query for performance
+    // Don't test connection first - let the query establish connection if needed
+    const user = await User.findOne({ 
+      where: { email },
+      attributes: ['id', 'firstName', 'lastName', 'email', 'password', 'role'],
+      raw: false, // Keep as Sequelize instance for password access
+      // Add query timeout to prevent hanging
+      timeout: 10000 // 10 second timeout for the query
+    });
 
     if (!user) {
       return res.status(401).json({ message: 'Invalid email or password' });

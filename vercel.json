@@ -20,7 +20,7 @@
   "functions": {
     "api/index.js": {
       "maxDuration": 30,
-      "memory": 1024
+      "memory": 3008
     }
   }
 }
