@@ -119,23 +119,7 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    // Test database connection first with a quick query
-    try {
-      await Promise.race([
-        sequelize.authenticate(),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Connection timeout')), 3000)
-        )
-      ]);
-    } catch (connError) {
-      console.error('Database connection failed:', connError.message);
-      return res.status(503).json({ 
-        message: 'Database connection error - please try again',
-        error: 'CONNECTION_ERROR'
-      });
-    }
-
-    // Find user with shorter timeout for faster failure
+    // Find user with aggressive timeout - fail fast if database is slow
     const user = await Promise.race([
       User.findOne({ 
         where: { email },
@@ -143,7 +127,7 @@ export const login = async (req, res) => {
         raw: false // Keep as Sequelize instance for password access
       }),
       new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Database query timeout')), 5000)
+        setTimeout(() => reject(new Error('Database query timeout')), 6000)
       )
     ]);
 
