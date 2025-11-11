@@ -571,17 +571,86 @@ export default function SiteBuilder() {
     ));
   };
 
-  const handleAddProduct = () => {
-    setProducts(prev => [...prev, {
-      id: prev.length + 1,
-      name: `Product ${prev.length + 1}`,
-      price: '99.99',
-      description: '<p>Lorem ipsum dolor sit amet</p>',
-      image: '/imgplc.jpg'
-    }]);
+  const handleAddProduct = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token || !storeId) {
+        // If no token or store, just add locally
+        setProducts(prev => [...prev, {
+          id: `temp-${Date.now()}`,
+          name: `Product ${prev.length + 1}`,
+          price: '99.99',
+          description: '<p>Lorem ipsum dolor sit amet</p>',
+          image: '/imgplc.jpg',
+          isNew: true
+        }]);
+        return;
+      }
+
+      // Create product via API
+      const productData = new FormData();
+      productData.append('name', `Product ${products.length + 1}`);
+      productData.append('description', '<p>Lorem ipsum dolor sit amet</p>');
+      productData.append('price', '99.99');
+      productData.append('stock', '0');
+      productData.append('isActive', 'true');
+
+      const response = await apiClient.post('/products', productData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      // Add the created product to local state
+      const newProduct = {
+        id: response.data.id,
+        name: response.data.name || `Product ${products.length + 1}`,
+        price: response.data.price ? parseFloat(response.data.price).toString() : '99.99',
+        description: response.data.description || '<p>Lorem ipsum dolor sit amet</p>',
+        image: response.data.image || '/imgplc.jpg'
+      };
+
+      setProducts(prev => [...prev, newProduct]);
+      setStatus('Product added successfully!');
+      setTimeout(() => setStatus(''), 3000);
+    } catch (error) {
+      console.error('Error adding product:', error);
+      // If API fails, add locally with temp ID
+      setProducts(prev => [...prev, {
+        id: `temp-${Date.now()}`,
+        name: `Product ${prev.length + 1}`,
+        price: '99.99',
+        description: '<p>Lorem ipsum dolor sit amet</p>',
+        image: '/imgplc.jpg',
+        isNew: true
+      }]);
+      setStatus('Product added locally. Save to sync with server.');
+      setTimeout(() => setStatus(''), 3000);
+    }
   };
 
-  const handleDeleteProduct = (id) => {
+  const handleDeleteProduct = async (id) => {
+    // Don't delete temp products from API
+    if (id.toString().startsWith('temp-')) {
+      setProducts(prev => prev.filter(product => product.id !== id));
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      if (token && storeId) {
+        // Delete from API
+        await apiClient.delete(`/products/${id}`);
+        setStatus('Product deleted successfully!');
+        setTimeout(() => setStatus(''), 3000);
+      }
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      setStatus('Error deleting product. It will be removed locally.');
+      setTimeout(() => setStatus(''), 3000);
+    }
+
+    // Remove from local state
     setProducts(prev => prev.filter(product => product.id !== id));
   };
 
@@ -694,10 +763,85 @@ export default function SiteBuilder() {
       // Save store settings first
       await handleSaveStoreSettings();
       
+      // Sync products with API - create new ones and update existing ones
+      const updatedProducts = [];
+      for (const product of products) {
+        try {
+          // Check if product has a temp ID or is marked as new (needs to be created)
+          if (product.id.toString().startsWith('temp-') || product.isNew) {
+            // Create new product via API
+            const productData = new FormData();
+            productData.append('name', product.name || 'Untitled Product');
+            productData.append('description', product.description || '');
+            productData.append('price', product.price || '0');
+            productData.append('stock', '0');
+            productData.append('isActive', 'true');
+
+            // Handle image - if it's base64, convert to blob
+            if (product.image && product.image !== '/imgplc.jpg' && !product.image.startsWith('http')) {
+              if (product.image.startsWith('data:image')) {
+                // Convert base64 to blob
+                const response = await fetch(product.image);
+                const blob = await response.blob();
+                const file = new File([blob], `product-${Date.now()}.png`, { type: blob.type });
+                productData.append('image', file);
+              }
+            }
+
+            const response = await apiClient.post('/products', productData, {
+              headers: {
+                'Content-Type': 'multipart/form-data'
+              }
+            });
+
+            updatedProducts.push({
+              id: response.data.id,
+              name: response.data.name || product.name,
+              price: response.data.price ? parseFloat(response.data.price).toString() : product.price,
+              description: response.data.description || product.description,
+              image: response.data.image || product.image
+            });
+          } else {
+            // Update existing product via API
+            const productData = new FormData();
+            productData.append('name', product.name || 'Untitled Product');
+            productData.append('description', product.description || '');
+            productData.append('price', product.price || '0');
+            productData.append('stock', '0');
+            productData.append('isActive', 'true');
+
+            // Handle image update if it's base64
+            if (product.image && product.image !== '/imgplc.jpg' && !product.image.startsWith('http')) {
+              if (product.image.startsWith('data:image')) {
+                const response = await fetch(product.image);
+                const blob = await response.blob();
+                const file = new File([blob], `product-${Date.now()}.png`, { type: blob.type });
+                productData.append('image', file);
+              }
+            }
+
+            await apiClient.put(`/products/${product.id}`, productData, {
+              headers: {
+                'Content-Type': 'multipart/form-data'
+              }
+            });
+
+            updatedProducts.push(product);
+          }
+        } catch (error) {
+          console.error('Error syncing product:', error);
+          // If sync fails, keep the product in the list
+          updatedProducts.push(product);
+        }
+      }
+
+      // Update products state with synced products
+      setProducts(updatedProducts);
+      
       // Save template content (hero, products, background) to backend
       const content = {
         hero: heroContent,
-        products: products,
+        products: updatedProducts,
         background: backgroundSettings
       };
 
@@ -711,7 +855,7 @@ export default function SiteBuilder() {
         { content },
       );
 
-      setStatus('Content saved successfully!');
+      setStatus('Content and products saved successfully!');
       setTimeout(() => setStatus(''), 3000);
     } catch (e) {
       setStatus('Error saving: ' + (e.response?.data?.message || e.message));
