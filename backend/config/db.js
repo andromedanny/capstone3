@@ -25,9 +25,14 @@ const sequelize = new Sequelize(
     pool: {
       max: 1, // Single connection for serverless to avoid connection overhead
       min: 0,
-      acquire: 10000, // 10 second timeout - fail fast
+      acquire: 5000, // 5 second timeout - fail very fast
       idle: 10000,
-      evict: 1000 // Check for idle connections every second
+      evict: 1000, // Check for idle connections every second
+      handleDisconnects: true // Automatically reconnect on disconnect
+    },
+    // Add query timeout
+    query: {
+      timeout: 5000 // 5 second query timeout
     }
   }
 );
