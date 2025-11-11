@@ -322,6 +322,70 @@ export default function SiteBuilder() {
     fetchStoreData();
   }, []);
 
+  // Function to fetch products from API (defined early so it can be used in useEffect)
+  const fetchProductsFromAPI = async (storeData = null) => {
+    try {
+      const productsResponse = await apiClient.get('/products');
+
+      if (productsResponse.data && productsResponse.data.length > 0) {
+        // Convert API products to the format expected by SiteBuilder
+        const apiProducts = productsResponse.data.map(product => ({
+          id: product.id,
+          name: product.name || '',
+          price: product.price ? parseFloat(product.price).toString() : '',
+          description: product.description || '',
+          image: product.image || '/imgplc.jpg'
+        }));
+
+        // If there are saved products in content, merge them (API products take priority)
+        if (storeData?.content?.products && storeData.content.products.length > 0) {
+          // Merge: use API products first, then add any content products that aren't in API
+          const contentProductIds = new Set(apiProducts.map(p => p.id));
+          const additionalContentProducts = storeData.content.products
+            .filter(p => !contentProductIds.has(p.id))
+            .map(p => ({
+              id: p.id,
+              name: p.name || '',
+              price: p.price ? parseFloat(p.price).toString() : '',
+              description: p.description || '',
+              image: p.image || '/imgplc.jpg'
+            }));
+          
+          setProducts([...apiProducts, ...additionalContentProducts]);
+        } else {
+          // No content products, just use API products
+          setProducts(apiProducts);
+        }
+      } else {
+        // No API products, check if there are content products
+        if (storeData?.content?.products && storeData.content.products.length > 0) {
+          const contentProducts = storeData.content.products.map(product => ({
+            id: product.id,
+            name: product.name || '',
+            price: product.price ? parseFloat(product.price).toString() : '',
+            description: product.description || '',
+            image: product.image || '/imgplc.jpg'
+          }));
+          setProducts(contentProducts);
+        }
+        // If no products at all, keep the default empty products
+      }
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      // If API fetch fails, try to use content products as fallback
+      if (storeData?.content?.products && storeData.content.products.length > 0) {
+        const contentProducts = storeData.content.products.map(product => ({
+          id: product.id,
+          name: product.name || '',
+          price: product.price ? parseFloat(product.price).toString() : '',
+          description: product.description || '',
+          image: product.image || '/imgplc.jpg'
+        }));
+        setProducts(contentProducts);
+      }
+    }
+  };
+
   // Refresh products when page becomes visible (user navigates back from Products page)
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -529,69 +593,6 @@ export default function SiteBuilder() {
     setHeroContent(prev => ({ ...prev, [field]: value }));
   };
 
-  // Function to fetch products from API
-  const fetchProductsFromAPI = async (storeData = null) => {
-    try {
-      const productsResponse = await apiClient.get('/products');
-
-      if (productsResponse.data && productsResponse.data.length > 0) {
-        // Convert API products to the format expected by SiteBuilder
-        const apiProducts = productsResponse.data.map(product => ({
-          id: product.id,
-          name: product.name || '',
-          price: product.price ? parseFloat(product.price).toString() : '',
-          description: product.description || '',
-          image: product.image || '/imgplc.jpg'
-        }));
-
-        // If there are saved products in content, merge them (API products take priority)
-        if (storeData?.content?.products && storeData.content.products.length > 0) {
-          // Merge: use API products first, then add any content products that aren't in API
-          const contentProductIds = new Set(apiProducts.map(p => p.id));
-          const additionalContentProducts = storeData.content.products
-            .filter(p => !contentProductIds.has(p.id))
-            .map(p => ({
-              id: p.id,
-              name: p.name || '',
-              price: p.price ? parseFloat(p.price).toString() : '',
-              description: p.description || '',
-              image: p.image || '/imgplc.jpg'
-            }));
-          
-          setProducts([...apiProducts, ...additionalContentProducts]);
-        } else {
-          // No content products, just use API products
-          setProducts(apiProducts);
-        }
-      } else {
-        // No API products, check if there are content products
-        if (storeData?.content?.products && storeData.content.products.length > 0) {
-          const contentProducts = storeData.content.products.map(product => ({
-            id: product.id,
-            name: product.name || '',
-            price: product.price ? parseFloat(product.price).toString() : '',
-            description: product.description || '',
-            image: product.image || '/imgplc.jpg'
-          }));
-          setProducts(contentProducts);
-        }
-        // If no products at all, keep the default empty products
-      }
-    } catch (error) {
-      console.error('Error fetching products:', error);
-      // If API fetch fails, try to use content products as fallback
-      if (storeData?.content?.products && storeData.content.products.length > 0) {
-        const contentProducts = storeData.content.products.map(product => ({
-          id: product.id,
-          name: product.name || '',
-          price: product.price ? parseFloat(product.price).toString() : '',
-          description: product.description || '',
-          image: product.image || '/imgplc.jpg'
-        }));
-        setProducts(contentProducts);
-      }
-    }
-  };
 
   const handleProductChange = (id, field, value) => {
     setProducts(prev => prev.map(product => 
