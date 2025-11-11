@@ -62,7 +62,8 @@ const Dashboard = () => {
         console.log('Store data response:', response.data);
         if (response.data && response.data.length > 0) {
           // If one or more stores and not explicitly skipping redirect, redirect to My Stores page
-          if (!location.state?.skipRedirect) {
+          // Only redirect if coming from login (has hasStore or storeCount in state), not from direct navigation
+          if (!location.state?.skipRedirect && (location.state?.hasStore !== undefined || location.state?.storeCount !== undefined)) {
             navigate('/my-stores');
             return;
           }
@@ -81,7 +82,13 @@ const Dashboard = () => {
           }
         }
       } catch (error) {
-        console.error('Error fetching store:', error.response?.data || error.message);
+        console.error('❌ Error fetching store:', error);
+        console.error('   Error response:', error.response?.data);
+        console.error('   Error status:', error.response?.status);
+        console.error('   Error message:', error.message);
+        if (error.response?.data) {
+          console.error('   Error details:', JSON.stringify(error.response.data, null, 2));
+        }
         if (error.response?.status === 401) {
           localStorage.removeItem('token');
           window.location.href = '/login';
