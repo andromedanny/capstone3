@@ -3,23 +3,102 @@ import jwt from 'jsonwebtoken';
 import User from '../models/user.js';
 
 export const register = async (req, res) => {
+  const startTime = Date.now();
   const { firstName, lastName, email, password } = req.body;
+  
   try {
-    const existingUser = await User.findOne({ where: { email } });
-    if (existingUser) return res.status(400).json({ message: 'User already exists' });
+    // Validate input
+    if (!firstName || !lastName || !email || !password) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Check if user exists with timeout
+    const existingUser = await Promise.race([
+      User.findOne({ 
+        where: { email },
+        attributes: ['id', 'email']
+      }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Database query timeout')), 15000)
+      )
+    ]);
 
-    const user = await User.create({
-      firstName,
-      lastName,
-      email,
-      password: hashedPassword,
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
+    // Hash password with timeout
+    const hashedPassword = await Promise.race([
+      bcrypt.hash(password, 10),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Password hashing timeout')), 5000)
+      )
+    ]);
+
+    // Create user with timeout
+    const user = await Promise.race([
+      User.create({
+        firstName,
+        lastName,
+        email,
+        password: hashedPassword,
+      }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('User creation timeout')), 15000)
+      )
+    ]);
+
+    // Remove password from response
+    const userWithoutPassword = {
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      role: user.role
+    };
+
+    const duration = Date.now() - startTime;
+    if (duration > 3000) {
+      console.warn(`Slow registration: took ${duration}ms`);
+    }
+
+    res.status(201).json({ 
+      message: 'User registered successfully', 
+      user: userWithoutPassword 
     });
-
-    res.status(201).json({ message: 'User registered successfully', user });
   } catch (err) {
-    res.status(500).json({ message: 'Registration failed', error: err.message });
+    const duration = Date.now() - startTime;
+    console.error(`Registration error (${duration}ms):`, err.message);
+    console.error('Error stack:', err.stack);
+    
+    // Handle timeout specifically
+    if (err.message.includes('timeout') || err.code === 'ETIMEDOUT') {
+      return res.status(504).json({ 
+        message: 'Request timeout - please try again',
+        error: 'TIMEOUT'
+      });
+    }
+    
+    // Handle database errors
+    if (err.name === 'SequelizeConnectionError' || err.name === 'SequelizeDatabaseError') {
+      return res.status(503).json({ 
+        message: 'Database connection error - please try again',
+        error: 'DATABASE_ERROR'
+      });
+    }
+    
+    // Handle unique constraint (duplicate email)
+    if (err.name === 'SequelizeUniqueConstraintError') {
+      return res.status(400).json({ 
+        message: 'User already exists',
+        error: 'DUPLICATE_EMAIL'
+      });
+    }
+    
+    res.status(500).json({ 
+      message: 'Registration failed', 
+      error: err.message || 'Unknown error occurred'
+    });
   }
 };
 
