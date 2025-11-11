@@ -3,6 +3,9 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import WelcomePage from './pages/WelcomePage';
+import AboutPage from './pages/AboutPage';
+import ServicesPage from './pages/ServicesPage';
+import ContactPage from './pages/ContactPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import Dashboard from './pages/Dashboard';
@@ -57,6 +60,9 @@ function App() {
         <Routes>
           
           <Route path="/" element={<WelcomePage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/services" element={<ServicesPage />} />
+          <Route path="/contact" element={<ContactPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           

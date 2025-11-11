@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import './WelcomePage.css';
 
-const WelcomePage = () => {
+const ContactPage = () => {
   const location = useLocation();
   return (
     <div className="welcome-page">
@@ -50,20 +50,45 @@ const WelcomePage = () => {
       {/* Main Content */}
       <main className="welcome-content">
         <div className="welcome-text">
-          <h1 className="welcome-title">Welcome Home</h1>
+          <h1 className="welcome-title">Contact Us</h1>
           <div className="separator"></div>
-          <p className="welcome-description">
-            Create your dream store in a warm, welcoming environment.
-            <br />
-            Where every business feels like home.
-          </p>
-          <div className="cta-container">
-            <Link to="/register" className="cta-button primary">
-              Start Your Journey
-            </Link>
-            <Link to="/login" className="cta-button secondary">
-              Welcome Back
-            </Link>
+          <div style={{ textAlign: 'center', maxWidth: '600px', margin: '0 auto', padding: '0 20px' }}>
+            <p className="welcome-description" style={{ marginBottom: '40px' }}>
+              We'd love to hear from you! If you have any questions, feedback, or inquiries 
+              about our platform, please feel free to reach out to us.
+            </p>
+            <div style={{ 
+              background: 'rgba(255, 255, 255, 0.1)', 
+              padding: '40px', 
+              borderRadius: '15px',
+              backdropFilter: 'blur(10px)',
+              marginTop: '30px'
+            }}>
+              <h2 style={{ 
+                color: '#FFD700', 
+                fontSize: '32px', 
+                marginBottom: '30px', 
+                textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'
+              }}>
+                Faith Colleges
+              </h2>
+              <p className="welcome-description" style={{ marginBottom: '20px' }}>
+                We are students from Faith Colleges, working on this capstone project 
+                to support Filipino artisans in their journey to digital success.
+              </p>
+              <p className="welcome-description" style={{ margin: 0 }}>
+                For more information about our institution, please visit Faith Colleges 
+                or contact the administration office.
+              </p>
+            </div>
+            <div style={{ marginTop: '40px' }}>
+              <Link to="/register" className="cta-button primary" style={{ marginRight: '10px' }}>
+                Get Started
+              </Link>
+              <Link to="/" className="cta-button secondary">
+                Back to Home
+              </Link>
+            </div>
           </div>
         </div>
       </main>
@@ -78,4 +103,5 @@ const WelcomePage = () => {
   );
 };
 
-export default WelcomePage;
+export default ContactPage;
+
