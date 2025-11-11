@@ -13,41 +13,26 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
-    // Check if user exists with shorter timeout
-    const existingUser = await Promise.race([
-      User.findOne({ 
-        where: { email },
-        attributes: ['id', 'email']
-      }),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Database query timeout')), 8000)
-      )
-    ]);
+    // Check if user exists
+    const existingUser = await User.findOne({ 
+      where: { email },
+      attributes: ['id', 'email']
+    });
 
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Hash password with timeout
-    const hashedPassword = await Promise.race([
-      bcrypt.hash(password, 10),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Password hashing timeout')), 5000)
-      )
-    ]);
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user with shorter timeout
-    const user = await Promise.race([
-      User.create({
-        firstName,
-        lastName,
-        email,
-        password: hashedPassword,
-      }),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('User creation timeout')), 8000)
-      )
-    ]);
+    // Create user
+    const user = await User.create({
+      firstName,
+      lastName,
+      email,
+      password: hashedPassword,
+    });
 
     // Remove password from response
     const userWithoutPassword = {
@@ -119,29 +104,19 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    // Find user with aggressive timeout - fail fast if database is slow
-    const user = await Promise.race([
-      User.findOne({ 
-        where: { email },
-        attributes: ['id', 'firstName', 'lastName', 'email', 'password', 'role'],
-        raw: false // Keep as Sequelize instance for password access
-      }),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Database query timeout')), 6000)
-      )
-    ]);
+    // Find user
+    const user = await User.findOne({ 
+      where: { email },
+      attributes: ['id', 'firstName', 'lastName', 'email', 'password', 'role'],
+      raw: false // Keep as Sequelize instance for password access
+    });
 
     if (!user) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    // Compare password with timeout
-    const isMatch = await Promise.race([
-      bcrypt.compare(password, user.password),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Password comparison timeout')), 5000)
-      )
-    ]);
+    // Compare password
+    const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid email or password' });
