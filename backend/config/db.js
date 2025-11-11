@@ -29,18 +29,6 @@ const sequelize = new Sequelize(
       idle: 10000,
       evict: 1000, // Check for idle connections every second
       handleDisconnects: true // Automatically reconnect on disconnect
-    },
-    retry: {
-      max: 3, // Retry failed queries up to 3 times
-      match: [
-        /ConnectionError/,
-        /SequelizeConnectionError/,
-        /SequelizeConnectionRefusedError/,
-        /SequelizeHostNotFoundError/,
-        /SequelizeHostNotReachableError/,
-        /SequelizeInvalidConnectionError/,
-        /SequelizeConnectionTimedOutError/
-      ]
     }
   }
 );
