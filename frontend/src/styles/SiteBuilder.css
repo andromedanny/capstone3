@@ -506,4 +506,18 @@
   padding: 0.25rem;
   width: 24px;
   height: 24px;
+}
+
+/* Text Styling Section - Force white background, remove any gradients */
+.text-styling-section {
+  background: white !important;
+  background-image: none !important;
+  background-color: white !important;
+}
+
+/* Override any gradient backgrounds in editor sidebar sections */
+.editor-sidebar .text-styling-section {
+  background: white !important;
+  background-image: none !important;
+  background-color: white !important;
 } 

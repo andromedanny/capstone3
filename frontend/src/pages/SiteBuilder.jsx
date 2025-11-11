@@ -1050,10 +1050,11 @@ export default function SiteBuilder() {
         </div>
 
         {/* Text Styling Section - Right after Hero Section for visibility */}
-        <div style={{ 
+        <div className="text-styling-section" style={{ 
           marginBottom: '2rem', 
           padding: '1.5rem', 
           background: 'white',
+          backgroundImage: 'none',
           borderRadius: '0.5rem', 
           border: '1px solid #e5e7eb',
           boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
