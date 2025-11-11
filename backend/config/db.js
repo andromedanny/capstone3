@@ -27,12 +27,7 @@ const sequelize = new Sequelize(
       min: 0,
       acquire: 5000, // 5 second timeout - fail very fast
       idle: 10000,
-      evict: 1000, // Check for idle connections every second
-      handleDisconnects: true // Automatically reconnect on disconnect
-    },
-    // Add query timeout
-    query: {
-      timeout: 5000 // 5 second query timeout
+      evict: 1000 // Check for idle connections every second
     }
   }
 );
