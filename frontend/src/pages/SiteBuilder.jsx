@@ -1200,19 +1200,20 @@ export default function SiteBuilder() {
               </div>
               <div>
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8125rem', fontWeight: '600', color: '#4b5563' }}>Text Color</label>
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'stretch' }}>
                   <input
                     type="color"
                     value={heroContent.titleStyle?.color || '#ffffff'}
                     onChange={(e) => handleStyleChange('titleStyle', 'color', e.target.value)}
                     style={{
-                      width: '48px',
+                      width: '50px',
                       height: '40px',
                       border: '2px solid #d1d5db',
                       borderRadius: '0.375rem',
                       cursor: 'pointer',
                       transition: 'all 0.2s',
-                      outline: 'none'
+                      outline: 'none',
+                      flexShrink: 0
                     }}
                     onFocus={(e) => e.target.style.borderColor = '#667eea'}
                     onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
@@ -1225,12 +1226,13 @@ export default function SiteBuilder() {
                     style={{
                       flex: 1,
                       padding: '0.5rem 0.75rem',
-                      border: '1px solid #d1d5db',
+                      border: '2px solid #d1d5db',
                       borderRadius: '0.375rem',
                       fontSize: '0.875rem',
                       fontFamily: 'monospace',
                       transition: 'all 0.2s',
-                      outline: 'none'
+                      outline: 'none',
+                      minWidth: 0
                     }}
                     onFocus={(e) => e.target.style.borderColor = '#667eea'}
                     onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
@@ -1368,19 +1370,20 @@ export default function SiteBuilder() {
               </div>
               <div>
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8125rem', fontWeight: '600', color: '#4b5563' }}>Text Color</label>
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'stretch' }}>
                   <input
                     type="color"
                     value={heroContent.subtitleStyle?.color || '#e0e0e0'}
                     onChange={(e) => handleStyleChange('subtitleStyle', 'color', e.target.value)}
                     style={{
-                      width: '48px',
+                      width: '50px',
                       height: '40px',
                       border: '2px solid #d1d5db',
                       borderRadius: '0.375rem',
                       cursor: 'pointer',
                       transition: 'all 0.2s',
-                      outline: 'none'
+                      outline: 'none',
+                      flexShrink: 0
                     }}
                     onFocus={(e) => e.target.style.borderColor = '#667eea'}
                     onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
@@ -1393,12 +1396,13 @@ export default function SiteBuilder() {
                     style={{
                       flex: 1,
                       padding: '0.5rem 0.75rem',
-                      border: '1px solid #d1d5db',
+                      border: '2px solid #d1d5db',
                       borderRadius: '0.375rem',
                       fontSize: '0.875rem',
                       fontFamily: 'monospace',
                       transition: 'all 0.2s',
-                      outline: 'none'
+                      outline: 'none',
+                      minWidth: 0
                     }}
                     onFocus={(e) => e.target.style.borderColor = '#667eea'}
                     onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
@@ -1509,19 +1513,20 @@ export default function SiteBuilder() {
               </div>
               <div>
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8125rem', fontWeight: '600', color: '#4b5563' }}>Text Color</label>
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'stretch' }}>
                   <input
                     type="color"
                     value={heroContent.buttonStyle?.color || '#000000'}
                     onChange={(e) => handleStyleChange('buttonStyle', 'color', e.target.value)}
                     style={{
-                      width: '48px',
+                      width: '50px',
                       height: '40px',
                       border: '2px solid #d1d5db',
                       borderRadius: '0.375rem',
                       cursor: 'pointer',
                       transition: 'all 0.2s',
-                      outline: 'none'
+                      outline: 'none',
+                      flexShrink: 0
                     }}
                     onFocus={(e) => e.target.style.borderColor = '#667eea'}
                     onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
@@ -1534,12 +1539,13 @@ export default function SiteBuilder() {
                     style={{
                       flex: 1,
                       padding: '0.5rem 0.75rem',
-                      border: '1px solid #d1d5db',
+                      border: '2px solid #d1d5db',
                       borderRadius: '0.375rem',
                       fontSize: '0.875rem',
                       fontFamily: 'monospace',
                       transition: 'all 0.2s',
-                      outline: 'none'
+                      outline: 'none',
+                      minWidth: 0
                     }}
                     onFocus={(e) => e.target.style.borderColor = '#667eea'}
                     onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
@@ -1550,19 +1556,20 @@ export default function SiteBuilder() {
 
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8125rem', fontWeight: '600', color: '#4b5563' }}>Background Color</label>
-              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'stretch' }}>
                 <input
                   type="color"
                   value={heroContent.buttonStyle?.backgroundColor || '#c9a961'}
                   onChange={(e) => handleStyleChange('buttonStyle', 'backgroundColor', e.target.value)}
                   style={{
-                    width: '48px',
+                    width: '50px',
                     height: '40px',
                     border: '2px solid #d1d5db',
                     borderRadius: '0.375rem',
                     cursor: 'pointer',
                     transition: 'all 0.2s',
-                    outline: 'none'
+                    outline: 'none',
+                    flexShrink: 0
                   }}
                   onFocus={(e) => e.target.style.borderColor = '#667eea'}
                   onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
@@ -1575,12 +1582,13 @@ export default function SiteBuilder() {
                   style={{
                     flex: 1,
                     padding: '0.5rem 0.75rem',
-                    border: '1px solid #d1d5db',
+                    border: '2px solid #d1d5db',
                     borderRadius: '0.375rem',
                     fontSize: '0.875rem',
                     fontFamily: 'monospace',
                     transition: 'all 0.2s',
-                    outline: 'none'
+                    outline: 'none',
+                    minWidth: 0
                   }}
                   onFocus={(e) => e.target.style.borderColor = '#667eea'}
                   onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
