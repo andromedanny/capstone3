@@ -1053,22 +1053,21 @@ export default function SiteBuilder() {
         <div style={{ 
           marginBottom: '2rem', 
           padding: '1.5rem', 
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          borderRadius: '0.75rem', 
-          border: '2px solid #667eea',
-          boxShadow: '0 8px 16px rgba(102, 126, 234, 0.2)'
+          background: 'white',
+          borderRadius: '0.5rem', 
+          border: '1px solid #e5e7eb',
+          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
         }}>
           <h3 style={{ 
-            fontSize: '1.25rem', 
-            fontWeight: '700', 
+            fontSize: '1.125rem', 
+            fontWeight: '600', 
             marginBottom: '1.5rem',
-            color: 'white',
+            color: '#1f2937',
             display: 'flex',
             alignItems: 'center',
-            gap: '0.75rem',
-            letterSpacing: '0.025em'
+            gap: '0.75rem'
           }}>
-            <span style={{ fontSize: '1.5rem' }}>🎨</span> Text Styling
+            <span style={{ fontSize: '1.25rem' }}>🎨</span> Text Styling
           </h3>
 
           {/* Title Styling */}
