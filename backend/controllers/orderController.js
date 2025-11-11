@@ -86,6 +86,18 @@ export const getOrderById = async (req, res) => {
 // Create a new order
 export const createOrder = async (req, res) => {
   const startTime = Date.now();
+  
+  // Test database connection first
+  try {
+    await sequelize.authenticate();
+  } catch (authError) {
+    console.error('Database authentication failed:', authError);
+    return res.status(503).json({ 
+      message: 'Database connection error - please try again',
+      error: 'DATABASE_ERROR'
+    });
+  }
+  
   try {
     const {
       storeId,

@@ -23,11 +23,24 @@ const sequelize = new Sequelize(
     },
     logging: process.env.NODE_ENV === 'development' ? console.log : false,
     pool: {
-      max: 1, // Single connection for serverless to avoid connection overhead
+      max: 5, // Allow more connections for better throughput
       min: 0,
-      acquire: 5000, // 5 second timeout - fail very fast
+      acquire: 30000, // 30 second timeout - give more time for connection
       idle: 10000,
-      evict: 1000 // Check for idle connections every second
+      evict: 1000, // Check for idle connections every second
+      handleDisconnects: true // Automatically reconnect on disconnect
+    },
+    retry: {
+      max: 3, // Retry failed queries up to 3 times
+      match: [
+        /ConnectionError/,
+        /SequelizeConnectionError/,
+        /SequelizeConnectionRefusedError/,
+        /SequelizeHostNotFoundError/,
+        /SequelizeHostNotReachableError/,
+        /SequelizeInvalidConnectionError/,
+        /SequelizeConnectionTimedOutError/
+      ]
     }
   }
 );
