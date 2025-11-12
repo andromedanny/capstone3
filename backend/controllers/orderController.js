@@ -122,7 +122,23 @@ export const createOrder = async (req, res) => {
       return res.status(404).json({ message: 'Store not found or not published' });
     }
 
-    // Validate products and calculate totals with timeout
+    // Validate products and calculate totals - OPTIMIZED: fetch all products in parallel
+    const productIds = items.map(item => item.productId);
+    
+    // Fetch all products in parallel instead of sequentially
+    const products = await Product.findAll({
+      where: { 
+        id: { [Op.in]: productIds },
+        storeId, 
+        isActive: true 
+      },
+      attributes: ['id', 'name', 'price', 'stock']
+    });
+
+    // Create a map for quick lookup
+    const productMap = new Map(products.map(p => [p.id, p]));
+
+    // Validate all items
     let subtotal = 0;
     const orderItems = [];
 
@@ -131,11 +147,7 @@ export const createOrder = async (req, res) => {
         return res.status(400).json({ message: 'Each item must have productId and quantity' });
       }
 
-      const product = await Product.findOne({
-        where: { id: item.productId, storeId, isActive: true },
-        attributes: ['id', 'name', 'price', 'stock']
-      });
-
+      const product = productMap.get(item.productId);
       if (!product) {
         return res.status(404).json({ message: `Product ${item.productId} not found` });
       }
@@ -182,57 +194,75 @@ export const createOrder = async (req, res) => {
         customerPhone: customerPhone || ''
       }, { transaction });
 
-      // Create order items within transaction
-      for (const item of orderItems) {
-        await OrderItem.create({
+      // Create order items in parallel (within transaction) - OPTIMIZED
+      const orderItemPromises = orderItems.map(item => 
+        OrderItem.create({
           orderId: order.id,
           productId: item.productId,
           quantity: item.quantity,
           price: item.price,
           subtotal: item.subtotal
-        }, { transaction });
+        }, { transaction })
+      );
+      
+      await Promise.all(orderItemPromises);
 
-        // Update product stock (non-blocking - don't fail order if stock update fails)
-        try {
-          await Product.decrement('stock', {
-            by: item.quantity,
-            where: { id: item.productId },
-            transaction
-          });
-        } catch (stockError) {
-          console.warn('Stock update failed (non-critical):', stockError.message);
-          // Continue - don't fail the order if stock update fails
-        }
-      }
+      // Update product stock in parallel (non-blocking - don't fail order if stock update fails)
+      const stockUpdatePromises = orderItems.map(item => 
+        Product.decrement('stock', {
+          by: item.quantity,
+          where: { id: item.productId },
+          transaction
+        }).catch(stockError => {
+          console.warn(`Stock update failed for product ${item.productId} (non-critical):`, stockError.message);
+          return null; // Don't fail the order
+        })
+      );
+      
+      await Promise.all(stockUpdatePromises);
 
       // Commit transaction
       await transaction.commit();
 
-      // Fetch complete order with items (outside transaction)
-      const completeOrder = await Order.findOne({
-        where: { id: order.id },
-        attributes: ['id', 'storeId', 'orderNumber', 'status', 'paymentMethod', 
-                     'paymentStatus', 'subtotal', 'shipping', 'total', 
-                     'shippingAddress', 'customerName', 'customerEmail', 
-                     'customerPhone', 'createdAt', 'updatedAt'],
-        include: [
-          {
-            model: OrderItem,
-            attributes: ['id', 'orderId', 'productId', 'quantity', 'price', 'subtotal'],
-            include: [{
-              model: Product,
-              attributes: ['id', 'name', 'price', 'image']
-            }]
-          }
-        ]
-      });
+      // Return order data directly instead of fetching again - OPTIMIZED
+      const orderResponse = {
+        id: order.id,
+        storeId: order.storeId,
+        orderNumber: order.orderNumber,
+        status: order.status,
+        paymentMethod: order.paymentMethod,
+        paymentStatus: order.paymentStatus,
+        subtotal: order.subtotal,
+        shipping: order.shipping,
+        total: order.total,
+        shippingAddress: order.shippingAddress,
+        customerName: order.customerName,
+        customerEmail: order.customerEmail,
+        customerPhone: order.customerPhone,
+        createdAt: order.createdAt,
+        updatedAt: order.updatedAt,
+        OrderItems: orderItems.map(item => ({
+          id: null, // Will be set by database
+          orderId: order.id,
+          productId: item.productId,
+          quantity: item.quantity,
+          price: item.price,
+          subtotal: item.subtotal,
+          Product: productMap.get(item.productId) ? {
+            id: item.productId,
+            name: productMap.get(item.productId).name,
+            price: item.price,
+            image: productMap.get(item.productId).image || null
+          } : null
+        }))
+      };
 
       const duration = Date.now() - startTime;
       if (duration > 3000) {
         console.warn(`Slow order creation: took ${duration}ms`);
       }
 
-      return res.status(201).json(completeOrder);
+      return res.status(201).json(orderResponse);
     } catch (transactionError) {
       // Rollback transaction on error
       await transaction.rollback();
