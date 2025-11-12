@@ -229,7 +229,7 @@ const PublishPage = () => {
                     )}
                     
                     {/* Social Media Sharing Section - Show when published */}
-                    {store && store.status && (store.status.toLowerCase() === 'published' || store.status === 'Published') && getWebsiteUrl() && (
+                    {store && store.status && (store.status.toLowerCase() === 'published' || store.status === 'Published') && (
                       <div 
                         className="social-share-section"
                         style={{ 
@@ -263,11 +263,17 @@ const PublishPage = () => {
                         }}>
                           Share your store on Facebook, Twitter, WhatsApp, and more to reach more customers and increase sales!
                         </p>
-                        <SocialShare 
-                          url={getWebsiteUrl()}
-                          title={store.storeName || 'Check out my store!'}
-                          description={store.description || 'Visit my amazing online store'}
-                        />
+                        {getWebsiteUrl() ? (
+                          <SocialShare 
+                            url={getWebsiteUrl()}
+                            title={store.storeName || 'Check out my store!'}
+                            description={store.description || 'Visit my amazing online store'}
+                          />
+                        ) : (
+                          <p style={{ color: '#ef4444', padding: '1rem', backgroundColor: '#fee2e2', borderRadius: '0.5rem' }}>
+                            ⚠️ Website URL is not available yet. Please ensure your store has a domain name set.
+                          </p>
+                        )}
                       </div>
                     )}
                     
