@@ -235,7 +235,7 @@ const PublishedStore = () => {
             body.style.setProperty('background-size', backgroundSettings.size || 'cover', 'important');
             body.style.setProperty('background-position', backgroundSettings.position || 'center', 'important');
             body.style.setProperty('background-color', backgroundSettings.color || '#0a0a0a', 'important');
-            body.style.setProperty('background-attachment', 'fixed', 'important');
+            body.style.setProperty('background-attachment', 'scroll', 'important');
             
             console.log('✅ Applied image background to body');
             // Verify the style was applied
@@ -248,27 +248,11 @@ const PublishedStore = () => {
           }
         }
 
-        // Also apply to html element
+        // Don't apply to html element - only body should have background
         const html = iframeDoc.documentElement;
         if (html) {
-          if (backgroundSettings.type === 'color') {
-            html.style.backgroundColor = backgroundSettings.color || '#0a0a0a';
-            html.style.backgroundImage = 'none';
-          } else if (backgroundSettings.type === 'image' && backgroundSettings.image) {
-            // Handle both full URLs and relative paths
-            let imageUrl = backgroundSettings.image;
-            if (!imageUrl.startsWith('http') && !imageUrl.startsWith('data:')) {
-              imageUrl = getImageUrl(imageUrl) || imageUrl;
-            }
-            html.style.setProperty('background-image', `url("${imageUrl}")`, 'important');
-            html.style.setProperty('background-repeat', backgroundSettings.repeat || 'no-repeat', 'important');
-            html.style.setProperty('background-size', backgroundSettings.size || 'cover', 'important');
-            html.style.setProperty('background-position', backgroundSettings.position || 'center', 'important');
-            html.style.setProperty('background-color', backgroundSettings.color || '#0a0a0a', 'important');
-            html.style.setProperty('background-attachment', 'fixed', 'important');
-            
-            console.log('✅ Applied image background to html');
-          }
+          html.style.setProperty('background-image', 'none', 'important');
+          html.style.setProperty('background-color', 'transparent', 'important');
         }
         
         // Remove default template background images (like the sunglasses in hero::before)
@@ -303,9 +287,10 @@ const PublishedStore = () => {
             content: none !important;
           }
           
-          /* Remove any default hero background */
+          /* Remove any default hero background - make it transparent */
           .hero {
             background-image: none !important;
+            background: transparent !important;
           }
           
           /* Remove background from any hero children */
@@ -319,46 +304,28 @@ const PublishedStore = () => {
           }
         `;
         
-        // If we have a custom background, ensure it's applied
+        // If we have a custom background, ensure it's applied ONLY to body (not html, not hero)
         if (backgroundSettings.type === 'image' && backgroundSettings.image) {
+          let imageUrl = backgroundSettings.image;
+          if (!imageUrl.startsWith('http') && !imageUrl.startsWith('data:')) {
+            imageUrl = getImageUrl(imageUrl) || imageUrl;
+          }
           overrideStyle.textContent += `
-            /* Ensure custom background is visible */
-            body, html {
-              background-image: url("${backgroundSettings.image.startsWith('http') ? backgroundSettings.image : getImageUrl(backgroundSettings.image) || backgroundSettings.image}") !important;
+            /* Ensure custom background is visible ONLY on body */
+            body {
+              background-image: url("${imageUrl}") !important;
               background-repeat: ${backgroundSettings.repeat || 'no-repeat'} !important;
               background-size: ${backgroundSettings.size || 'cover'} !important;
               background-position: ${backgroundSettings.position || 'center'} !important;
-              background-attachment: fixed !important;
+              background-attachment: scroll !important;
+            }
+            
+            /* Ensure html doesn't have background */
+            html {
+              background-image: none !important;
+              background-color: transparent !important;
             }
           `;
-        }
-        
-        // Apply custom background to hero section if it exists
-        const heroSection = iframeDoc.querySelector('.hero');
-        if (heroSection && backgroundSettings.type === 'image' && backgroundSettings.image) {
-          let imageUrl = backgroundSettings.image;
-          if (!imageUrl.startsWith('http') && !imageUrl.startsWith('data:')) {
-            imageUrl = getImageUrl(imageUrl) || imageUrl;
-          }
-          heroSection.style.setProperty('background-image', `url("${imageUrl}")`, 'important');
-          heroSection.style.setProperty('background-repeat', backgroundSettings.repeat || 'no-repeat', 'important');
-          heroSection.style.setProperty('background-size', backgroundSettings.size || 'cover', 'important');
-          heroSection.style.setProperty('background-position', backgroundSettings.position || 'center', 'important');
-          console.log('✅ Applied image background to hero section');
-        }
-        
-        // Also try applying to the main container/wrapper if it exists
-        const mainContainer = iframeDoc.querySelector('main, .main, .container, .wrapper, #app');
-        if (mainContainer && backgroundSettings.type === 'image' && backgroundSettings.image) {
-          let imageUrl = backgroundSettings.image;
-          if (!imageUrl.startsWith('http') && !imageUrl.startsWith('data:')) {
-            imageUrl = getImageUrl(imageUrl) || imageUrl;
-          }
-          mainContainer.style.setProperty('background-image', `url("${imageUrl}")`, 'important');
-          mainContainer.style.setProperty('background-repeat', backgroundSettings.repeat || 'no-repeat', 'important');
-          mainContainer.style.setProperty('background-size', backgroundSettings.size || 'cover', 'important');
-          mainContainer.style.setProperty('background-position', backgroundSettings.position || 'center', 'important');
-          console.log('✅ Applied image background to main container');
         }
 
         // Update hero section - prioritize store form data over content
