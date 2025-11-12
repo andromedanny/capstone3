@@ -216,7 +216,8 @@ const PublishPage = () => {
                     )}
                     
                     {/* Share Store Button - Always visible when published */}
-                    <div className="mt-4">
+                    <div className="mt-4 mb-4" style={{ display: 'block', visibility: 'visible' }}>
+                      <p className="text-sm font-semibold text-gray-700 mb-2">Share Your Store:</p>
                       <button
                         onClick={() => {
                           const shareUrl = getWebsiteUrl() || (store?.domainName ? `${window.location.origin}/published/${encodeURIComponent(store.domainName)}` : '');
@@ -261,7 +262,7 @@ const PublishPage = () => {
                           });
                         }}
                         className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 font-semibold flex items-center justify-center gap-2 shadow-lg"
-                        style={{ display: 'block' }}
+                        style={{ display: 'block', visibility: 'visible', opacity: 1 }}
                       >
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
                           <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
