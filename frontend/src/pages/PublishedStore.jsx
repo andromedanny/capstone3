@@ -256,17 +256,11 @@ const PublishedStore = () => {
           }
         }
 
-        // Set html element background - use white if no custom background, or transparent if there's a custom image
+        // Don't apply to html element - only body should have background
         const html = iframeDoc.documentElement;
         if (html) {
           html.style.setProperty('background-image', 'none', 'important');
-          // If there's a custom background image, make html transparent so body background shows through
-          // Otherwise, use white opaque background
-          if (backgroundSettings.type === 'image' && backgroundSettings.image) {
-            html.style.setProperty('background-color', 'transparent', 'important');
-          } else {
-            html.style.setProperty('background-color', '#ffffff', 'important');
-          }
+          html.style.setProperty('background-color', 'transparent', 'important');
         }
         
         // Remove default template background images (like the sunglasses in hero::before)
@@ -279,10 +273,6 @@ const PublishedStore = () => {
         }
         
         // Aggressively remove ALL default background images from hero section
-        // But keep backgrounds opaque (white) when there's no custom background image
-        const hasCustomBgImage = backgroundSettings.type === 'image' && backgroundSettings.image;
-        const bgColor = backgroundSettings.color || '#ffffff';
-        
         overrideStyle.textContent = `
           /* Remove hero::before pseudo-element completely */
           .hero::before {
@@ -305,26 +295,25 @@ const PublishedStore = () => {
             content: none !important;
           }
           
-          /* Remove any default hero background images, but keep background color opaque */
+          /* Remove any default hero background - make it transparent */
           .hero {
             background-image: none !important;
-            ${hasCustomBgImage ? 'background: transparent !important;' : `background-color: ${bgColor} !important;`}
+            background: transparent !important;
           }
           
-          /* Remove background images from any hero children, but keep colors opaque */
+          /* Remove background from any hero children */
           .hero > * {
             background-image: none !important;
           }
           
-          /* Remove default background images from body, but keep background color */
+          /* Remove background from body if it has a default image */
           body {
             background-image: none !important;
-            ${!hasCustomBgImage ? `background-color: ${bgColor} !important;` : ''}
           }
         `;
         
-        // If we have a custom background image, ensure it's applied ONLY to body (not html, not hero)
-        if (hasCustomBgImage) {
+        // If we have a custom background, ensure it's applied ONLY to body (not html, not hero)
+        if (backgroundSettings.type === 'image' && backgroundSettings.image) {
           let imageUrl = backgroundSettings.image;
           if (!imageUrl.startsWith('http') && !imageUrl.startsWith('data:')) {
             imageUrl = getImageUrl(imageUrl) || imageUrl;
@@ -339,24 +328,10 @@ const PublishedStore = () => {
               background-attachment: scroll !important;
             }
             
-            /* Ensure html doesn't have background when using custom image */
+            /* Ensure html doesn't have background */
             html {
               background-image: none !important;
               background-color: transparent !important;
-            }
-          `;
-        } else {
-          // No custom background image - ensure white/color backgrounds are opaque
-          overrideStyle.textContent += `
-            /* Ensure html has white opaque background */
-            html {
-              background-image: none !important;
-              background-color: ${bgColor} !important;
-            }
-            
-            /* Ensure body has the background color */
-            body {
-              background-color: ${bgColor} !important;
             }
           `;
         }
