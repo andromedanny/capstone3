@@ -239,6 +239,7 @@ const Dashboard = () => {
       </div>
 
       <div className="grid gap-6" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        {console.log('🔍 Rendering dashboard cards, storeStatus:', storeStatus)}
         <TodoCard
           icon={
             <div className="bg-gradient-to-br from-purple-100 to-pink-100 p-3 rounded-full">
