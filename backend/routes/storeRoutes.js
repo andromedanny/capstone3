@@ -8,7 +8,8 @@ import {
   publishStore,
   getPublishedStoreByDomain,
   uploadBackgroundImage,
-  uploadBackground
+  uploadBackground,
+  deleteStore
 } from '../controllers/storeController.js';
 import { servePublishedStoreHTML } from '../controllers/publicStoreController.js';
 import { authenticateToken } from '../middleware/auth.js';
@@ -65,5 +66,8 @@ router.get('/:id', getStoreById);
 
 // Update a store
 router.put('/:id', updateStore);
+
+// Delete a store
+router.delete('/:id', deleteStore);
 
 export default router; 

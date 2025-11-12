@@ -18,6 +18,7 @@ const MyStores = () => {
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [deletingStoreId, setDeletingStoreId] = useState(null);
 
   useEffect(() => {
     const fetchStores = async () => {
@@ -69,6 +70,25 @@ const MyStores = () => {
 
   const handleCreateStore = () => {
     navigate('/store-templates');
+  };
+
+  const handleDeleteStore = async (storeId, storeName) => {
+    if (!window.confirm(`Are you sure you want to delete "${storeName}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    setDeletingStoreId(storeId);
+    try {
+      await apiClient.delete(`/stores/${storeId}`);
+      // Remove the store from the list
+      setStores(stores.filter(store => store.id !== storeId));
+      setError('');
+    } catch (error) {
+      console.error('Error deleting store:', error);
+      alert(error.response?.data?.message || 'Failed to delete store. Please try again.');
+    } finally {
+      setDeletingStoreId(null);
+    }
   };
 
   const getStatusBadge = (status) => {
@@ -242,9 +262,25 @@ const MyStores = () => {
                   <button
                     onClick={() => handleSelectStore(store)}
                     className="action-button primary"
-                    style={{ width: '100%' }}
+                    style={{ width: '100%', marginBottom: '0.5rem' }}
                   >
                     Open Dashboard
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteStore(store.id, store.storeName);
+                    }}
+                    className="action-button"
+                    style={{
+                      width: '100%',
+                      background: '#ef4444',
+                      color: 'white',
+                      border: 'none'
+                    }}
+                    disabled={deletingStoreId === store.id}
+                  >
+                    {deletingStoreId === store.id ? 'Deleting...' : '🗑️ Delete Store'}
                   </button>
                 </div>
               </div>

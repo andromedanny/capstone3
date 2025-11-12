@@ -283,15 +283,28 @@ export const updateStore = async (req, res) => {
 // Delete a store
 export const deleteStore = async (req, res) => {
   const { id } = req.params;
+  const userId = req.user?.id;
+  
+  if (!userId) {
+    return res.status(401).json({ message: 'User not authenticated' });
+  }
+
   try {
     const store = await Store.findByPk(id);
     if (!store) {
       return res.status(404).json({ message: 'Store not found' });
     }
+
+    // Check if the store belongs to the authenticated user
+    if (store.userId !== userId) {
+      return res.status(403).json({ message: 'Not authorized to delete this store' });
+    }
+
     await store.destroy();
-    res.status(204).send();
+    res.status(200).json({ message: 'Store deleted successfully' });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error('Error deleting store:', error);
+    res.status(500).json({ message: error.message || 'Error deleting store' });
   }
 };
 
