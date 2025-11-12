@@ -269,15 +269,14 @@ const PublishPage = () => {
               </div>
 
               {/* Social Media Sharing Section - Show when published */}
-              {store && store.status && (store.status.toLowerCase() === 'published' || store.status === 'Published') && (
+              {(store.status && store.status.toLowerCase() === 'published') && getWebsiteUrl() && (
                 <div 
+                  className="mt-6"
                   style={{ 
                     display: 'block',
                     visibility: 'visible',
                     opacity: 1,
                     width: '100%',
-                    marginTop: '1.5rem',
-                    marginBottom: '1.5rem',
                     padding: '1.5rem',
                     backgroundColor: '#f3e8ff',
                     background: 'linear-gradient(to right, #f3e8ff, #dbeafe)',
@@ -310,7 +309,7 @@ const PublishPage = () => {
                   </p>
                   <div style={{ width: '100%', display: 'block' }}>
                     <SocialShare 
-                      url={getWebsiteUrl() || (store.domainName ? `${window.location.origin}/published/${encodeURIComponent(store.domainName)}` : window.location.href)}
+                      url={getWebsiteUrl()}
                       title={store.storeName || 'Check out my store!'}
                       description={store.description || 'Visit my amazing online store'}
                     />
