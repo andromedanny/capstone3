@@ -232,9 +232,6 @@ const MyStores = () => {
                 </div>
 
                 <div className="store-card-actions">
-                  {/* DEBUG: Test if this section renders */}
-                  {console.log('🔍 Rendering actions for store:', store.id, store.storeName)}
-                  
                   {store.status === 'published' && (
                     <>
                       <a
@@ -263,62 +260,41 @@ const MyStores = () => {
                     </>
                   )}
                   
-                  {/* TEST: Simple red div to verify rendering */}
-                  <div style={{
-                    width: '100%',
-                    height: '50px',
-                    backgroundColor: '#ff0000',
-                    color: 'white',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: '1rem',
-                    fontSize: '1.2rem',
-                    fontWeight: 'bold'
-                  }}>
-                    TEST RED BOX - IF YOU SEE THIS, RENDERING WORKS
-                  </div>
-                  
-                  {/* DELETE BUTTON - SIMPLIFIED */}
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      console.log('Delete button clicked for store:', store.id);
                       handleDeleteStore(store.id, store.storeName);
                     }}
                     className="delete-store-button"
-                    id={`delete-button-${store.id}`}
+                    disabled={deletingStoreId === store.id}
                     style={{
-                      width: '100%',
-                      padding: '1.5rem 2rem',
-                      background: '#ef4444',
-                      backgroundColor: '#ef4444',
-                      color: 'white',
-                      border: '5px solid #dc2626',
-                      borderRadius: '15px',
-                      fontSize: '1.2rem',
-                      fontWeight: '800',
-                      cursor: deletingStoreId === store.id ? 'not-allowed' : 'pointer',
-                      opacity: deletingStoreId === store.id ? 0.6 : 1,
                       display: 'block',
                       visibility: 'visible',
-                      boxShadow: '0 8px 16px rgba(239, 68, 68, 0.7)',
-                      marginBottom: '1rem',
-                      textTransform: 'uppercase',
-                      letterSpacing: '1px',
-                      textAlign: 'center',
-                      boxSizing: 'border-box'
+                      opacity: deletingStoreId === store.id ? 0.6 : 1,
+                      width: '100%',
+                      padding: '0.75rem 1rem',
+                      backgroundColor: '#ef4444',
+                      color: 'white',
+                      border: '2px solid #dc2626',
+                      borderRadius: '0.5rem',
+                      fontSize: '0.875rem',
+                      fontWeight: '600',
+                      cursor: deletingStoreId === store.id ? 'not-allowed' : 'pointer',
+                      marginBottom: '0.75rem',
+                      position: 'relative',
+                      zIndex: 100
                     }}
-                    disabled={deletingStoreId === store.id}
                   >
-                    {deletingStoreId === store.id ? '⏳ Deleting...' : '🗑️ DELETE STORE'}
+                    {deletingStoreId === store.id ? '⏳ Deleting...' : '🗑️ Delete Store'}
                   </button>
                   
                   <button
+                    type="button"
                     onClick={() => handleSelectStore(store)}
                     className="action-button primary"
-                    style={{ width: '100%', marginBottom: '0.5rem' }}
+                    style={{ width: '100%' }}
                   >
                     Open Dashboard
                   </button>

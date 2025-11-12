@@ -188,11 +188,11 @@
   flex-direction: column;
   gap: 0.75rem;
   margin-top: auto;
-  padding: 1rem 1.5rem 3rem 1.5rem !important;
+  padding: 1rem 1.5rem 1.5rem 1.5rem !important;
   border-top: 1px solid #e5e7eb;
   background: #ffffff;
   position: relative;
-  z-index: 20 !important;
+  z-index: 25 !important;
   box-sizing: border-box;
   border-radius: 0 0 20px 20px;
   margin-bottom: 30px !important;
@@ -250,58 +250,42 @@
   background: #e5e7eb;
 }
 
-/* Delete button - override ALL possible conflicts */
-.delete-store-button,
-button.delete-store-button,
-.store-card-actions .delete-store-button,
-.store-card-actions button.delete-store-button {
+/* Delete button styling */
+.delete-store-button {
   width: 100% !important;
-  min-width: 100% !important;
-  max-width: 100% !important;
-  padding: 1.5rem 2rem !important;
+  padding: 0.75rem 1rem !important;
   background: #ef4444 !important;
   background-color: #ef4444 !important;
   color: white !important;
-  border: 5px solid #dc2626 !important;
-  border-width: 5px !important;
-  border-color: #dc2626 !important;
-  border-style: solid !important;
-  border-radius: 15px !important;
-  font-size: 1.2rem !important;
-  font-weight: 800 !important;
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  box-shadow: 0 8px 16px rgba(239, 68, 68, 0.7) !important;
-  position: relative !important;
-  z-index: 999 !important;
-  margin-top: 0.5rem !important;
-  margin-bottom: 0 !important;
+  border: 2px solid #dc2626 !important;
+  border-radius: 0.5rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
   cursor: pointer !important;
-  flex-shrink: 0 !important;
-  text-transform: uppercase !important;
-  letter-spacing: 1px !important;
-  line-height: 1.5 !important;
+  transition: transform 0.2s, opacity 0.2s, box-shadow 0.2s !important;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3) !important;
   text-align: center !important;
-  text-decoration: none !important;
   outline: none !important;
   box-sizing: border-box !important;
-  -webkit-appearance: none !important;
-  -moz-appearance: none !important;
-  appearance: none !important;
-}
-
-/* Ensure the wrapper div is visible */
-.delete-button-wrapper,
-.store-card-actions .delete-button-wrapper,
-.store-card-actions > div:last-child {
-  width: 100% !important;
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
   position: relative !important;
-  z-index: 999 !important;
-  min-height: 60px !important;
+  z-index: 100 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0.75rem !important;
+}
+
+.delete-store-button:hover:not(:disabled) {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.5) !important;
+  background: #dc2626 !important;
+  background-color: #dc2626 !important;
+}
+
+.delete-store-button:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.6 !important;
 }
 
 /* Responsive design */
