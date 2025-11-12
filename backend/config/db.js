@@ -48,7 +48,7 @@ const sequelize = new Sequelize(databaseUrl, {
   pool: {
     max: 1, // Single connection for serverless to avoid connection overhead
     min: 0,
-    acquire: 8000, // 8 second timeout - fail fast if database is slow
+    acquire: 15000, // 15 second timeout - gives more time for connection in serverless
     idle: 10000,
     evict: 1000, // Check for idle connections every second
     handleDisconnects: true // Automatically reconnect on disconnect

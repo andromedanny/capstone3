@@ -360,6 +360,14 @@ export const uploadBackgroundImage = async (req, res) => {
     });
   } catch (error) {
     console.error('Error uploading background image to Supabase:', error);
+    // If it's a timeout or connection error, provide helpful message
+    if (error.message && (error.message.includes('timeout') || error.message.includes('acquire'))) {
+      return res.status(503).json({
+        message: 'Upload timeout - please try again. The connection is being established.',
+        error: error.message,
+        retry: true
+      });
+    }
     res.status(500).json({
       message: 'Error uploading background image',
       error: error.message
