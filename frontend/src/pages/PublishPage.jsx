@@ -256,10 +256,10 @@ const PublishPage = () => {
               </div>
 
               {/* Social Media Sharing Section - Show when published */}
-              {store && (
+              {store && store.status && (
                 <div className="mt-6">
                   {(() => {
-                    const statusLower = store.status?.toLowerCase();
+                    const statusLower = (store.status || '').toLowerCase();
                     const isPublished = statusLower === 'published';
                     const websiteUrl = getWebsiteUrl();
                     
@@ -296,12 +296,12 @@ const PublishPage = () => {
                     } else {
                       return (
                         <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4">
-                          <p className="text-sm font-semibold text-yellow-900 mb-2">Debug Information:</p>
-                          <ul className="text-xs text-yellow-800 space-y-1">
+                          <p className="text-sm font-semibold text-yellow-900 mb-2">🔍 Debug Information:</p>
+                          <ul className="text-xs text-yellow-800 space-y-1 list-disc list-inside">
                             <li>Store exists: {store ? 'Yes' : 'No'}</li>
                             <li>Status: "{store?.status}" (lowercase: "{statusLower}")</li>
                             <li>Is Published: {isPublished ? 'Yes' : 'No'}</li>
-                            <li>Domain: "{store?.domainName}"</li>
+                            <li>Domain: "{store?.domainName || 'N/A'}"</li>
                             <li>Website URL: {websiteUrl || 'null'}</li>
                           </ul>
                         </div>
