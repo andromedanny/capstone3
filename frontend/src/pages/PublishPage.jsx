@@ -229,63 +229,47 @@ const PublishPage = () => {
                     )}
                     
                     {/* Social Media Sharing Section - Show when published */}
-                    {(() => {
-                      const websiteUrl = getWebsiteUrl();
-                      const isPublished = store && store.status && (store.status.toLowerCase() === 'published' || store.status === 'Published');
-                      
-                      if (!isPublished || !websiteUrl) {
-                        return null;
-                      }
-                      
-                      return (
-                        <div 
-                          className="social-share-section"
-                          style={{ 
-                            padding: '1.5rem',
-                            backgroundColor: '#f3e8ff',
-                            background: 'linear-gradient(to right, #f3e8ff, #dbeafe)',
-                            borderRadius: '0.5rem',
-                            border: '2px solid #a855f7',
-                            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-                            marginTop: '1.5rem',
-                            marginBottom: '1.5rem',
-                            width: '100%',
-                            minHeight: '200px',
-                            position: 'relative',
-                            zIndex: 1000,
-                            display: 'block'
-                          }}
-                        >
-                          <h3 style={{ 
-                            fontSize: '1.125rem', 
-                            fontWeight: 'bold', 
-                            color: '#1f2937', 
-                            marginBottom: '0.75rem',
-                            display: 'block',
-                            visibility: 'visible'
-                          }}>
-                            🌐 Share Your Store on Social Media
-                          </h3>
-                          <p style={{ 
-                            fontSize: '0.875rem', 
-                            color: '#1f2937', 
-                            marginBottom: '1rem',
-                            fontWeight: '500',
-                            display: 'block',
-                            visibility: 'visible'
-                          }}>
-                            Share your store on Facebook, Twitter, WhatsApp, and more to reach more customers and increase sales!
-                          </p>
-                          <div style={{ width: '100%', display: 'block', visibility: 'visible' }}>
-                            <SocialShare 
-                              url={websiteUrl}
-                              title={store.storeName || 'Check out my store!'}
-                              description={store.description || 'Visit my amazing online store'}
-                            />
-                          </div>
-                        </div>
-                      );
-                    })()}
+                    {store && store.status && (store.status.toLowerCase() === 'published' || store.status === 'Published') && getWebsiteUrl() && (
+                      <div 
+                        className="social-share-section"
+                        style={{ 
+                          padding: '1.5rem',
+                          backgroundColor: '#f3e8ff',
+                          background: 'linear-gradient(to right, #f3e8ff, #dbeafe)',
+                          borderRadius: '0.5rem',
+                          border: '2px solid #a855f7',
+                          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                          marginTop: '1.5rem',
+                          marginBottom: '1.5rem',
+                          width: '100%',
+                          minHeight: '200px',
+                          position: 'relative',
+                          zIndex: 1000
+                        }}
+                      >
+                        <h3 style={{ 
+                          fontSize: '1.125rem', 
+                          fontWeight: 'bold', 
+                          color: '#1f2937', 
+                          marginBottom: '0.75rem'
+                        }}>
+                          🌐 Share Your Store on Social Media
+                        </h3>
+                        <p style={{ 
+                          fontSize: '0.875rem', 
+                          color: '#1f2937', 
+                          marginBottom: '1rem',
+                          fontWeight: '500'
+                        }}>
+                          Share your store on Facebook, Twitter, WhatsApp, and more to reach more customers and increase sales!
+                        </p>
+                        <SocialShare 
+                          url={getWebsiteUrl()}
+                          title={store.storeName || 'Check out my store!'}
+                          description={store.description || 'Visit my amazing online store'}
+                        />
+                      </div>
+                    )}
                     
                     <button
                       onClick={() => handlePublish('draft')}
