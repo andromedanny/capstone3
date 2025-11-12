@@ -487,21 +487,54 @@ export const getPublishedStoreByDomain = async (req, res) => {
     // Decode the domain parameter (handles URL encoding like %20 for spaces)
     domain = decodeURIComponent(domain);
     
-    // Normalize domain: lowercase and trim whitespace
-    domain = domain.toLowerCase().trim();
+    // Normalize domain the same way as when creating stores:
+    // lowercase, remove spaces, remove special characters except hyphens
+    let normalizedDomain = domain
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/[^a-z0-9-]/g, '') // Remove special characters except hyphens
+      .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+      .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
     
-    console.log('🔍 Looking for published store with domain:', domain);
-    console.log('🔍 Domain type:', typeof domain);
-    console.log('🔍 Domain length:', domain.length);
+    console.log('🔍 Looking for published store');
+    console.log('🔍 Original domain from URL:', domain);
+    console.log('🔍 Normalized domain:', normalizedDomain);
 
-    // Use case-insensitive search with Sequelize Op.iLike (PostgreSQL)
-    const store = await Store.findOne({
+    // First try exact match with normalized domain
+    let store = await Store.findOne({
       where: { 
-        domainName: {
-          [Op.iLike]: domain  // Case-insensitive match (PostgreSQL)
-        },
+        domainName: normalizedDomain,
         status: 'published'
       },
+      include: [{
+        model: User,
+        attributes: ['email', 'firstName', 'lastName']
+      }],
+      attributes: ['id', 'userId', 'templateId', 'storeName', 'description', 'domainName', 
+                   'region', 'province', 'municipality', 'barangay', 'contactEmail', 'phone', 
+                   'status', 'content', 'createdAt', 'updatedAt']
+    });
+    
+    // If not found, try case-insensitive search as fallback
+    if (!store) {
+      console.log('⚠️ Exact match not found, trying case-insensitive search...');
+      store = await Store.findOne({
+        where: { 
+          domainName: {
+            [Op.iLike]: normalizedDomain  // Case-insensitive match (PostgreSQL)
+          },
+          status: 'published'
+        },
+        include: [{
+          model: User,
+          attributes: ['email', 'firstName', 'lastName']
+        }],
+        attributes: ['id', 'userId', 'templateId', 'storeName', 'description', 'domainName', 
+                     'region', 'province', 'municipality', 'barangay', 'contactEmail', 'phone', 
+                     'status', 'content', 'createdAt', 'updatedAt']
+      });
+    }
       include: [{
         model: User,
         attributes: ['email', 'firstName', 'lastName']
