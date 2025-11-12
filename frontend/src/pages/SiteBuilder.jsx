@@ -45,6 +45,19 @@ export default function SiteBuilder() {
   const iframeRef = useRef(null);
   const [storeId, setStoreId] = useState(null);
   
+  // Products state
+  const [products, setProducts] = useState([]);
+  const [showAddProduct, setShowAddProduct] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [productForm, setProductForm] = useState({
+    name: '',
+    description: '',
+    price: '',
+    stock: '',
+    image: null
+  });
+  const [productImagePreview, setProductImagePreview] = useState(null);
+  
   // Store settings state
   const [storeSettings, setStoreSettings] = useState({
     storeName: '',
@@ -284,7 +297,15 @@ export default function SiteBuilder() {
             });
           }
 
-          // Products are now managed only in the Products page, not in SiteBuilder
+          // Load products
+          try {
+            const productsResponse = await apiClient.get('/products');
+            if (productsResponse.data) {
+              setProducts(productsResponse.data || []);
+            }
+          } catch (productsError) {
+            console.error('Error fetching products:', productsError);
+          }
 
           // Load location dropdowns based on existing data
           if (storeData.region) {
@@ -420,7 +441,34 @@ export default function SiteBuilder() {
           }
         }
 
-        // Products are now managed only in the Products page, not updated here
+        // Update products in real-time
+        const productsSection = iframeDoc.querySelector('.featured-products, .products, .products-section');
+        if (productsSection) {
+          const productsGrid = productsSection.querySelector('.products-grid, .product-grid');
+          if (productsGrid && products.length > 0) {
+            // Clear existing product cards (but keep the structure)
+            const existingCards = productsGrid.querySelectorAll('.product-card');
+            existingCards.forEach(card => card.remove());
+            
+            // Add products dynamically
+            products.filter(p => p.isActive !== false).forEach((product, index) => {
+              const productCard = iframeDoc.createElement('div');
+              productCard.className = 'product-card';
+              productCard.innerHTML = `
+                <div class="product-image">
+                  <img src="${product.image ? (product.image.startsWith('http') ? product.image : getImageUrl(product.image)) : 'https://via.placeholder.com/300'}" alt="${product.name || 'Product'}" />
+                </div>
+                <div class="product-info">
+                  <h3>${product.name || 'Product'}</h3>
+                  <p class="description">${product.description || ''}</p>
+                  <div class="price">₱${parseFloat(product.price || 0).toFixed(2)}</div>
+                  <button class="add-to-cart" type="button">Order</button>
+                </div>
+              `;
+              productsGrid.appendChild(productCard);
+            });
+          }
+        }
 
         // If iframe hasn't loaded the content yet, write it first
         if (!iframeDoc.body || iframeDoc.body.children.length === 0) {
@@ -450,10 +498,27 @@ export default function SiteBuilder() {
       }
     };
 
-    // Small delay to ensure iframe is loaded
-    const timer = setTimeout(updateIframe, 100);
-    return () => clearTimeout(timer);
-  }, [htmlContent, heroContent, backgroundSettings]);
+    // Immediate update for real-time preview
+    const updateImmediately = () => {
+      if (iframeRef.current?.contentDocument?.body) {
+        updateIframe();
+      } else {
+        // If iframe not ready, wait a bit
+        setTimeout(updateIframe, 50);
+      }
+    };
+    
+    updateImmediately();
+    
+    // Also listen for iframe load events
+    const iframe = iframeRef.current;
+    if (iframe) {
+      iframe.addEventListener('load', updateIframe);
+      return () => {
+        iframe.removeEventListener('load', updateIframe);
+      };
+    }
+  }, [htmlContent, heroContent, backgroundSettings, products]);
 
   const handleStyleChange = (element, property, value) => {
     setHeroContent(prev => ({
@@ -467,6 +532,94 @@ export default function SiteBuilder() {
 
   const handleHeroChange = (field, value) => {
     setHeroContent(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Product management functions
+  const fetchProducts = async () => {
+    try {
+      const response = await apiClient.get('/products');
+      setProducts(response.data || []);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    }
+  };
+
+  const handleProductImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image size should be less than 5MB');
+        return;
+      }
+      setProductForm(prev => ({ ...prev, image: file }));
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProductImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleProductSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const formData = new FormData();
+      formData.append('name', productForm.name);
+      formData.append('description', productForm.description);
+      formData.append('price', productForm.price);
+      formData.append('stock', productForm.stock || 0);
+      if (productForm.image) {
+        formData.append('image', productForm.image);
+      }
+
+      if (editingProduct) {
+        await apiClient.put(`/products/${editingProduct.id}`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        setStatus('Product updated successfully!');
+      } else {
+        await apiClient.post('/products', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        setStatus('Product added successfully!');
+      }
+      
+      await fetchProducts();
+      setShowAddProduct(false);
+      setEditingProduct(null);
+      setProductForm({ name: '', description: '', price: '', stock: '', image: null });
+      setProductImagePreview(null);
+      setTimeout(() => setStatus(''), 3000);
+    } catch (error) {
+      setStatus('Error: ' + (error.response?.data?.message || error.message));
+      setTimeout(() => setStatus(''), 5000);
+    }
+  };
+
+  const handleEditProduct = (product) => {
+    setEditingProduct(product);
+    setProductForm({
+      name: product.name || '',
+      description: product.description || '',
+      price: product.price || '',
+      stock: product.stock || '',
+      image: null
+    });
+    setProductImagePreview(product.image ? getImageUrl(product.image) : null);
+    setShowAddProduct(true);
+  };
+
+  const handleDeleteProduct = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this product?')) return;
+    try {
+      await apiClient.delete(`/products/${id}`);
+      await fetchProducts();
+      setStatus('Product deleted successfully!');
+      setTimeout(() => setStatus(''), 3000);
+    } catch (error) {
+      setStatus('Error: ' + (error.response?.data?.message || error.message));
+      setTimeout(() => setStatus(''), 5000);
+    }
   };
 
 
@@ -1657,6 +1810,26 @@ export default function SiteBuilder() {
                         setBackgroundSettings(prev => {
                           const updated = { ...prev, image: newImageUrl, type: 'image' };
                           console.log('📸 Updated background settings:', updated);
+                          // Trigger immediate preview update
+                          setTimeout(() => {
+                            if (iframeRef.current?.contentDocument) {
+                              const iframeDoc = iframeRef.current.contentDocument;
+                              const body = iframeDoc.body;
+                              const html = iframeDoc.documentElement;
+                              if (body) {
+                                body.style.backgroundImage = `url(${getImageUrl(newImageUrl)})`;
+                                body.style.backgroundRepeat = updated.repeat || 'no-repeat';
+                                body.style.backgroundSize = updated.size || 'cover';
+                                body.style.backgroundPosition = updated.position || 'center';
+                              }
+                              if (html) {
+                                html.style.backgroundImage = `url(${getImageUrl(newImageUrl)})`;
+                                html.style.backgroundRepeat = updated.repeat || 'no-repeat';
+                                html.style.backgroundSize = updated.size || 'cover';
+                                html.style.backgroundPosition = updated.position || 'center';
+                              }
+                            }
+                          }, 100);
                           return updated;
                         });
                         setStatus('Background image uploaded successfully!');
@@ -1816,6 +1989,257 @@ export default function SiteBuilder() {
           )}
         </div>
 
+        {/* Products Management Section */}
+        <div style={{ marginBottom: '2rem', padding: '1rem', background: '#f9fafb', borderRadius: '0.5rem', border: '1px solid #e5e7eb' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: '600' }}>
+              Products ({products.length})
+            </h3>
+            <button
+              onClick={() => {
+                setShowAddProduct(!showAddProduct);
+                if (showAddProduct) {
+                  setEditingProduct(null);
+                  setProductForm({ name: '', description: '', price: '', stock: '', image: null });
+                  setProductImagePreview(null);
+                }
+              }}
+              style={{
+                padding: '0.375rem 0.75rem',
+                background: '#8b5cf6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '0.375rem',
+                fontSize: '0.75rem',
+                cursor: 'pointer',
+                fontWeight: '500'
+              }}
+            >
+              {showAddProduct ? 'Cancel' : '+ Add Product'}
+            </button>
+          </div>
+
+          {/* Add/Edit Product Form */}
+          {showAddProduct && (
+            <form onSubmit={handleProductSubmit} style={{ marginBottom: '1rem', padding: '1rem', background: 'white', borderRadius: '0.5rem', border: '1px solid #e5e7eb' }}>
+              <h4 style={{ fontSize: '0.875rem', fontWeight: '600', marginBottom: '0.75rem' }}>
+                {editingProduct ? 'Edit Product' : 'Add New Product'}
+              </h4>
+              
+              <div style={{ marginBottom: '0.75rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>
+                  Product Name
+                </label>
+                <input
+                  type="text"
+                  value={productForm.name}
+                  onChange={(e) => setProductForm(prev => ({ ...prev, name: e.target.value }))}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '0.375rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.25rem',
+                    fontSize: '0.875rem'
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '0.75rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>
+                  Description
+                </label>
+                <textarea
+                  value={productForm.description}
+                  onChange={(e) => setProductForm(prev => ({ ...prev, description: e.target.value }))}
+                  required
+                  rows={2}
+                  style={{
+                    width: '100%',
+                    padding: '0.375rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.25rem',
+                    fontSize: '0.875rem',
+                    resize: 'vertical'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>
+                    Price (₱)
+                  </label>
+                  <input
+                    type="number"
+                    value={productForm.price}
+                    onChange={(e) => setProductForm(prev => ({ ...prev, price: e.target.value }))}
+                    required
+                    min="0"
+                    step="0.01"
+                    style={{
+                      width: '100%',
+                      padding: '0.375rem',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '0.25rem',
+                      fontSize: '0.875rem'
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>
+                    Stock
+                  </label>
+                  <input
+                    type="number"
+                    value={productForm.stock}
+                    onChange={(e) => setProductForm(prev => ({ ...prev, stock: e.target.value }))}
+                    required
+                    min="0"
+                    style={{
+                      width: '100%',
+                      padding: '0.375rem',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '0.25rem',
+                      fontSize: '0.875rem'
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '0.75rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '500' }}>
+                  Product Image
+                </label>
+                {productImagePreview && (
+                  <img
+                    src={productImagePreview}
+                    alt="Preview"
+                    style={{
+                      width: '100%',
+                      maxHeight: '120px',
+                      objectFit: 'cover',
+                      borderRadius: '0.25rem',
+                      marginBottom: '0.5rem'
+                    }}
+                  />
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleProductImageChange}
+                  required={!editingProduct}
+                  style={{
+                    width: '100%',
+                    padding: '0.375rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.25rem',
+                    fontSize: '0.75rem'
+                  }}
+                />
+              </div>
+
+              <button
+                type="submit"
+                style={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  background: '#8b5cf6',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '0.375rem',
+                  fontSize: '0.875rem',
+                  cursor: 'pointer',
+                  fontWeight: '500'
+                }}
+              >
+                {editingProduct ? 'Update Product' : 'Add Product'}
+              </button>
+            </form>
+          )}
+
+          {/* Products List */}
+          <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+            {products.length === 0 ? (
+              <p style={{ fontSize: '0.75rem', color: '#6b7280', textAlign: 'center', padding: '1rem' }}>
+                No products yet. Add your first product!
+              </p>
+            ) : (
+              products.map((product) => (
+                <div
+                  key={product.id}
+                  style={{
+                    padding: '0.75rem',
+                    background: 'white',
+                    borderRadius: '0.375rem',
+                    border: '1px solid #e5e7eb',
+                    marginBottom: '0.5rem',
+                    display: 'flex',
+                    gap: '0.75rem',
+                    alignItems: 'center'
+                  }}
+                >
+                  <img
+                    src={product.image ? (product.image.startsWith('http') ? product.image : getImageUrl(product.image)) : 'https://via.placeholder.com/60'}
+                    alt={product.name}
+                    style={{
+                      width: '60px',
+                      height: '60px',
+                      objectFit: 'cover',
+                      borderRadius: '0.25rem'
+                    }}
+                  />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <h4 style={{ fontSize: '0.875rem', fontWeight: '600', marginBottom: '0.25rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {product.name}
+                    </h4>
+                    <p style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.25rem' }}>
+                      ₱{parseFloat(product.price || 0).toFixed(2)}
+                    </p>
+                    <span style={{
+                      fontSize: '0.65rem',
+                      padding: '0.125rem 0.375rem',
+                      borderRadius: '0.25rem',
+                      background: product.isActive !== false ? '#d1fae5' : '#fee2e2',
+                      color: product.isActive !== false ? '#065f46' : '#dc2626'
+                    }}>
+                      {product.isActive !== false ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <button
+                      onClick={() => handleEditProduct(product)}
+                      style={{
+                        padding: '0.25rem 0.5rem',
+                        background: '#f3f4f6',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '0.25rem',
+                        fontSize: '0.65rem',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteProduct(product.id)}
+                      style={{
+                        padding: '0.25rem 0.5rem',
+                        background: '#fee2e2',
+                        border: '1px solid #fca5a5',
+                        borderRadius: '0.25rem',
+                        fontSize: '0.65rem',
+                        cursor: 'pointer',
+                        color: '#dc2626'
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
 
         {/* Save Button */}
         <div>
