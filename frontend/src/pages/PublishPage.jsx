@@ -152,12 +152,12 @@ const PublishPage = () => {
                     <p className="text-sm text-gray-500">Status</p>
                     <span
                       className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                        store.status === 'published'
+                        store.status && store.status.toLowerCase() === 'published'
                           ? 'bg-green-100 text-green-800'
                           : 'bg-gray-100 text-gray-800'
                       }`}
                     >
-                      {store.status === 'published' ? 'Published' : 'Draft'}
+                      {store.status && store.status.toLowerCase() === 'published' ? 'Published' : 'Draft'}
                     </span>
                   </div>
                 </div>
@@ -166,7 +166,7 @@ const PublishPage = () => {
               {/* Publish Status */}
               <div className="bg-gray-50 rounded-lg p-6">
                 <h3 className="text-lg font-semibold mb-4">Publication Status</h3>
-                {store.status === 'published' ? (
+                {(store.status && store.status.toLowerCase() === 'published') ? (
                   <div className="space-y-4">
                     <div className="flex items-center space-x-2 text-green-700">
                       <svg
