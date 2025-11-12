@@ -381,7 +381,29 @@ export default function SiteBuilder() {
         }
 
         // Update hero subtitle/paragraph with styles - try multiple selectors
-        const heroP = iframeDoc.querySelector('.hero p, .hero-content p, .hero .hero-content p');
+        let heroP = iframeDoc.querySelector('.hero p, .hero-content p, .hero .hero-content p');
+        
+        // If no paragraph exists, create one (some templates don't have it)
+        if (!heroP) {
+          const heroContentDiv = iframeDoc.querySelector('.hero-content, .hero');
+          const heroH1 = iframeDoc.querySelector('.hero h1');
+          if (heroContentDiv && heroH1) {
+            heroP = iframeDoc.createElement('p');
+            // Insert after h1, before button or hero-line
+            const heroLine = heroContentDiv.querySelector('.hero-line');
+            if (heroLine) {
+              heroContentDiv.insertBefore(heroP, heroLine);
+            } else {
+              const ctaButton = heroContentDiv.querySelector('.cta-button');
+              if (ctaButton) {
+                heroContentDiv.insertBefore(heroP, ctaButton);
+              } else {
+                heroH1.insertAdjacentElement('afterend', heroP);
+              }
+            }
+          }
+        }
+        
         if (heroP) {
           // Remove wrapping <p> tags from Quill content if present
           let subtitleText = heroContent.subtitle || '';
