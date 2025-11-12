@@ -256,22 +256,14 @@ const PublishPage = () => {
               </div>
 
               {/* Social Media Sharing Section - Show when published */}
-              {store && store.status && (
+              {store && (
                 <div className="mt-6">
                   {(() => {
                     const statusLower = (store.status || '').toLowerCase();
                     const isPublished = statusLower === 'published';
                     const websiteUrl = getWebsiteUrl();
                     
-                    console.log('🔍 Social Share Check:', {
-                      hasStore: !!store,
-                      status: store.status,
-                      statusLower,
-                      isPublished,
-                      domainName: store.domainName,
-                      websiteUrl
-                    });
-                    
+                    // Always show social sharing if published, otherwise show debug
                     if (isPublished && websiteUrl) {
                       return (
                         <div className="bg-gradient-to-r from-purple-100 to-blue-100 rounded-lg p-6 border-2 border-purple-400 shadow-lg">
@@ -294,6 +286,7 @@ const PublishPage = () => {
                         </div>
                       );
                     } else {
+                      // Show debug info if not published or URL missing
                       return (
                         <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4">
                           <p className="text-sm font-semibold text-yellow-900 mb-2">🔍 Debug Information:</p>
