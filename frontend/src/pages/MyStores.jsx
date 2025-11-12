@@ -232,6 +232,9 @@ const MyStores = () => {
                 </div>
 
                 <div className="store-card-actions">
+                  {/* DEBUG: Test if this section renders */}
+                  {console.log('🔍 Rendering actions for store:', store.id, store.storeName)}
+                  
                   {store.status === 'published' && (
                     <>
                       <a
@@ -259,90 +262,59 @@ const MyStores = () => {
                       </div>
                     </>
                   )}
-                  {/* DELETE BUTTON - MOVED ABOVE OPEN DASHBOARD - ALWAYS VISIBLE */}
-                  <div 
-                    className="delete-button-wrapper"
-                    style={{ 
-                      width: '100%', 
-                      padding: '0',
-                      margin: '0 0 1rem 0',
+                  
+                  {/* TEST: Simple red div to verify rendering */}
+                  <div style={{
+                    width: '100%',
+                    height: '50px',
+                    backgroundColor: '#ff0000',
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: '1rem',
+                    fontSize: '1.2rem',
+                    fontWeight: 'bold'
+                  }}>
+                    TEST RED BOX - IF YOU SEE THIS, RENDERING WORKS
+                  </div>
+                  
+                  {/* DELETE BUTTON - SIMPLIFIED */}
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      console.log('Delete button clicked for store:', store.id);
+                      handleDeleteStore(store.id, store.storeName);
+                    }}
+                    className="delete-store-button"
+                    id={`delete-button-${store.id}`}
+                    style={{
+                      width: '100%',
+                      padding: '1.5rem 2rem',
+                      background: '#ef4444',
+                      backgroundColor: '#ef4444',
+                      color: 'white',
+                      border: '5px solid #dc2626',
+                      borderRadius: '15px',
+                      fontSize: '1.2rem',
+                      fontWeight: '800',
+                      cursor: deletingStoreId === store.id ? 'not-allowed' : 'pointer',
+                      opacity: deletingStoreId === store.id ? 0.6 : 1,
                       display: 'block',
                       visibility: 'visible',
-                      opacity: 1,
-                      position: 'relative',
-                      zIndex: 999,
-                      minHeight: '60px',
-                      backgroundColor: 'transparent'
+                      boxShadow: '0 8px 16px rgba(239, 68, 68, 0.7)',
+                      marginBottom: '1rem',
+                      textTransform: 'uppercase',
+                      letterSpacing: '1px',
+                      textAlign: 'center',
+                      boxSizing: 'border-box'
                     }}
+                    disabled={deletingStoreId === store.id}
                   >
-                    {/* TEST: Yellow background to verify this div renders */}
-                    <div style={{
-                      width: '100%',
-                      height: '5px',
-                      backgroundColor: '#ffeb3b',
-                      marginBottom: '0.5rem',
-                      display: 'block'
-                    }}></div>
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        console.log('Delete button clicked for store:', store.id);
-                        handleDeleteStore(store.id, store.storeName);
-                      }}
-                      className="delete-store-button"
-                      id={`delete-button-${store.id}`}
-                      style={{
-                        width: '100%',
-                        padding: '1.5rem 2rem',
-                        background: '#ef4444',
-                        backgroundColor: '#ef4444',
-                        color: 'white',
-                        border: '5px solid #dc2626',
-                        borderWidth: '5px',
-                        borderColor: '#dc2626',
-                        borderStyle: 'solid',
-                        borderRadius: '15px',
-                        fontSize: '1.2rem',
-                        fontWeight: '800',
-                        cursor: deletingStoreId === store.id ? 'not-allowed' : 'pointer',
-                        opacity: deletingStoreId === store.id ? 0.6 : 1,
-                        display: 'block',
-                        visibility: 'visible',
-                        boxShadow: '0 8px 16px rgba(239, 68, 68, 0.7)',
-                        transition: 'all 0.2s',
-                        position: 'relative',
-                        zIndex: 999,
-                        marginTop: '0',
-                        marginBottom: '0',
-                        flexShrink: 0,
-                        textTransform: 'uppercase',
-                        letterSpacing: '1px',
-                        lineHeight: '1.5',
-                        textAlign: 'center',
-                        boxSizing: 'border-box'
-                      }}
-                      disabled={deletingStoreId === store.id}
-                      onMouseEnter={(e) => {
-                        if (deletingStoreId !== store.id) {
-                          e.target.style.background = '#dc2626';
-                          e.target.style.backgroundColor = '#dc2626';
-                          e.target.style.transform = 'translateY(-2px) scale(1.02)';
-                          e.target.style.boxShadow = '0 10px 20px rgba(239, 68, 68, 0.8)';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (deletingStoreId !== store.id) {
-                          e.target.style.background = '#ef4444';
-                          e.target.style.backgroundColor = '#ef4444';
-                          e.target.style.transform = 'translateY(0) scale(1)';
-                          e.target.style.boxShadow = '0 8px 16px rgba(239, 68, 68, 0.7)';
-                        }
-                      }}
-                    >
-                      {deletingStoreId === store.id ? '⏳ Deleting...' : '🗑️ DELETE STORE'}
-                    </button>
-                  </div>
+                    {deletingStoreId === store.id ? '⏳ Deleting...' : '🗑️ DELETE STORE'}
+                  </button>
+                  
                   <button
                     onClick={() => handleSelectStore(store)}
                     className="action-button primary"
