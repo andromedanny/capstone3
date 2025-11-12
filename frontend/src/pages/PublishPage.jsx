@@ -216,10 +216,14 @@ const PublishPage = () => {
                     )}
                     
                     {/* Share Store Button - Always visible when published */}
-                    <div className="mt-4 mb-4" style={{ display: 'block', visibility: 'visible' }}>
+                    {console.log('🔍 Rendering Share Store button section', { storeStatus: store?.status, isPublished: store?.status?.toLowerCase() === 'published' })}
+                    <div className="mt-4 mb-4" style={{ display: 'block', visibility: 'visible', minHeight: '60px', backgroundColor: '#f9fafb', padding: '12px', borderRadius: '8px', border: '2px solid #e5e7eb' }}>
                       <p className="text-sm font-semibold text-gray-700 mb-2">Share Your Store:</p>
                       <button
+                        id="share-store-button"
+                        type="button"
                         onClick={() => {
+                          console.log('🔍 Share Store button clicked');
                           const shareUrl = getWebsiteUrl() || (store?.domainName ? `${window.location.origin}/published/${encodeURIComponent(store.domainName)}` : '');
                           if (!shareUrl) {
                             alert('Please publish your store first before sharing!');
