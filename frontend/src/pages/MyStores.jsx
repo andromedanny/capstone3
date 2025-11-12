@@ -259,23 +259,16 @@ const MyStores = () => {
                       </div>
                     </>
                   )}
-                  <button
-                    onClick={() => handleSelectStore(store)}
-                    className="action-button primary"
-                    style={{ width: '100%', marginBottom: '1rem' }}
-                  >
-                    Open Dashboard
-                  </button>
-                  {/* DELETE BUTTON - ALWAYS VISIBLE - TEST ELEMENT */}
+                  {/* DELETE BUTTON - MOVED ABOVE OPEN DASHBOARD - ALWAYS VISIBLE */}
                   <div 
                     className="delete-button-wrapper"
                     style={{ 
                       width: '100%', 
                       padding: '0',
-                      margin: '0',
-                      display: 'block !important',
-                      visibility: 'visible !important',
-                      opacity: '1 !important',
+                      margin: '0 0 1rem 0',
+                      display: 'block',
+                      visibility: 'visible',
+                      opacity: 1,
                       position: 'relative',
                       zIndex: 999,
                       minHeight: '60px',
@@ -350,6 +343,13 @@ const MyStores = () => {
                       {deletingStoreId === store.id ? '⏳ Deleting...' : '🗑️ DELETE STORE'}
                     </button>
                   </div>
+                  <button
+                    onClick={() => handleSelectStore(store)}
+                    className="action-button primary"
+                    style={{ width: '100%', marginBottom: '0.5rem' }}
+                  >
+                    Open Dashboard
+                  </button>
                 </div>
               </div>
             ))}
