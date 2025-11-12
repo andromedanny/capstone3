@@ -237,11 +237,10 @@ const PublishPage = () => {
                     )}
                     
                     {/* Social Media Sharing Buttons */}
-                    {(() => {
-                      const websiteUrl = getWebsiteUrl() || (store?.domainName ? `${window.location.origin}/published/${encodeURIComponent(store.domainName)}` : null);
+                    {store?.domainName && (() => {
+                      // Construct URL directly from store.domainName since we're in published block
+                      const websiteUrl = `${window.location.origin}/published/${encodeURIComponent(store.domainName)}`;
                       const shareTitle = store?.storeName || 'Check out my store!';
-                      
-                      if (!websiteUrl) return null;
                       
                       const shareToFacebook = () => {
                         const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(websiteUrl)}`;
@@ -343,7 +342,7 @@ const PublishPage = () => {
                               )}
                             </button>
                           </div>
-                        </div>
+                      </div>
                       );
                     })()}
                     
