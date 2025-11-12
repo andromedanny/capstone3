@@ -3,7 +3,6 @@ import { useParams } from 'react-router-dom';
 import apiClient from '../utils/axios';
 import { getImageUrl } from '../utils/imageUrl';
 import { regions, getProvincesByRegion, getCityMunByProvince, getBarangayByMun } from 'phil-reg-prov-mun-brgy';
-import SocialShare from '../components/SocialShare';
 
 // Template mapping
 const templateFileMap = {
@@ -36,7 +35,9 @@ const PublishedStore = () => {
     province: '',
     municipality: '',
     barangay: '',
-    shipping: 0
+    shipping: 0,
+    shippingMin: 0,
+    shippingMax: 0
   });
   const [regionsList] = useState(regions);
   const [provincesList, setProvincesList] = useState([]);
@@ -1348,20 +1349,39 @@ const PublishedStore = () => {
         shipping: parseFloat(orderData.shipping) || 0
       };
 
-      const response = await apiClient.post('/orders', orderPayload);
-
-      setOrderSuccess(true);
-      setOrderError('');
+      // Add timeout to prevent 503 errors
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 25000); // 25 second timeout
       
-      // Close modal after 3 seconds
-      setTimeout(() => {
-        setShowOrderModal(false);
-        setOrderSuccess(false);
-        setSelectedProduct(null);
-      }, 3000);
+      try {
+        const response = await apiClient.post('/orders', orderPayload, {
+          signal: controller.signal,
+          timeout: 25000
+        });
+        clearTimeout(timeoutId);
+
+        setOrderSuccess(true);
+        setOrderError('');
+        
+        // Close modal after 3 seconds
+        setTimeout(() => {
+          setShowOrderModal(false);
+          setOrderSuccess(false);
+          setSelectedProduct(null);
+        }, 3000);
+      } catch (apiError) {
+        clearTimeout(timeoutId);
+        throw apiError;
+      }
     } catch (err) {
       console.error('Error creating order:', err);
-      setOrderError(err.response?.data?.message || 'Failed to create order. Please try again.');
+      if (err.name === 'AbortError' || err.code === 'ECONNABORTED') {
+        setOrderError('Request timed out. Please check your connection and try again.');
+      } else if (err.response?.status === 503) {
+        setOrderError('Service temporarily unavailable. Please try again in a moment.');
+      } else {
+        setOrderError(err.response?.data?.message || 'Failed to create order. Please try again.');
+      }
     } finally {
       setOrderLoading(false);
     }
@@ -1540,17 +1560,74 @@ const PublishedStore = () => {
                     </div>
                   </div>
 
-                  {/* Shipping Fee */}
+                  {/* Shipping Fee Range */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Shipping Fee (₱)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={orderData.shipping}
-                      onChange={(e) => handleOrderChange('shipping', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    />
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-4">
+                        <div className="flex-1">
+                          <label className="block text-xs text-gray-500 mb-1">Minimum</label>
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={orderData.shippingMin || orderData.shipping || 0}
+                            onChange={(e) => {
+                              const min = parseFloat(e.target.value) || 0;
+                              handleOrderChange('shippingMin', min);
+                              if (!orderData.shippingMax || min > orderData.shippingMax) {
+                                handleOrderChange('shipping', min);
+                              }
+                            }}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            placeholder="0.00"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <label className="block text-xs text-gray-500 mb-1">Maximum</label>
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={orderData.shippingMax || orderData.shipping || 0}
+                            onChange={(e) => {
+                              const max = parseFloat(e.target.value) || 0;
+                              handleOrderChange('shippingMax', max);
+                              if (!orderData.shippingMin || max < orderData.shippingMin) {
+                                handleOrderChange('shipping', max);
+                              }
+                            }}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            placeholder="0.00"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">Enter Your Shipping Fee</label>
+                        <input
+                          type="number"
+                          min={orderData.shippingMin || 0}
+                          max={orderData.shippingMax || 999999}
+                          step="0.01"
+                          value={orderData.shipping}
+                          onChange={(e) => {
+                            const value = parseFloat(e.target.value) || 0;
+                            const min = parseFloat(orderData.shippingMin) || 0;
+                            const max = parseFloat(orderData.shippingMax) || 999999;
+                            if (value >= min && value <= max) {
+                              handleOrderChange('shipping', value);
+                            }
+                          }}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          placeholder="Enter amount within range"
+                        />
+                        {(orderData.shippingMin || orderData.shippingMax) && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            Range: ₱{parseFloat(orderData.shippingMin || 0).toFixed(2)} - ₱{parseFloat(orderData.shippingMax || 0).toFixed(2)}
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </div>
 
                   {/* Payment Method */}
@@ -1709,30 +1786,6 @@ const PublishedStore = () => {
           }
         }}
       >
-        {/* Social Share Button - Fixed Position */}
-        {store && (
-          <div style={{
-            position: 'fixed',
-            bottom: '20px',
-            right: '20px',
-            zIndex: 1000,
-            background: 'white',
-            borderRadius: '12px',
-            padding: '1rem',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-            border: '1px solid #e5e7eb'
-          }}>
-            <div style={{ marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
-              Share Store
-            </div>
-            <SocialShare 
-              url={window.location.href}
-              title={store.storeName || 'Check out this store!'}
-              description={store.description || 'Visit this amazing online store'}
-              image={store.content?.background?.image ? getImageUrl(store.content.background.image) : ''}
-            />
-          </div>
-        )}
         
         <iframe
           ref={iframeRef}
