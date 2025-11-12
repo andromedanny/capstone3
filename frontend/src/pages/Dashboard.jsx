@@ -52,6 +52,7 @@ const Dashboard = () => {
           const selectedStore = location.state.selectedStore;
           setStoreName(selectedStore.storeName || 'Your Store');
           setTemplateId(selectedStore.templateId);
+          setStoreStatus(selectedStore.status);
           setError(null);
           setLoading(false);
           return;
