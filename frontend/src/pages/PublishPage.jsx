@@ -412,9 +412,8 @@ const PublishPage = () => {
                   {/* Share Store Button - Always Visible */}
                   <button
                     onClick={() => {
-                      // Check if store is published
                       const isPublished = store && store.status && (store.status.toLowerCase() === 'published');
-                      const shareUrl = getWebsiteUrl();
+                      const shareUrl = getWebsiteUrl() || (store?.domainName ? `${window.location.origin}/published/${encodeURIComponent(store.domainName)}` : '');
                       
                       if (!isPublished || !shareUrl) {
                         alert('Please publish your store first before sharing!');
@@ -457,19 +456,13 @@ const PublishPage = () => {
                         if (e.target === modal) modal.remove();
                       });
                     }}
-                    className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-all ${
-                      store && store.status && (store.status.toLowerCase() === 'published') && getWebsiteUrl()
-                        ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 cursor-pointer'
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
+                    className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 ${
+                      store && store.status && (store.status.toLowerCase() === 'published')
+                        ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
-                    style={{ 
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                      display: 'flex',
-                      visibility: 'visible',
-                      opacity: store && store.status && (store.status.toLowerCase() === 'published') && getWebsiteUrl() ? 1 : 0.6
-                    }}
-                    disabled={!store || !store.status || (store.status.toLowerCase() !== 'published') || !getWebsiteUrl()}
-                    title={store && store.status && (store.status.toLowerCase() === 'published') && getWebsiteUrl() ? 'Share your store on social media' : 'Publish your store first to share'}
+                    style={{ display: 'block' }}
+                    disabled={!store || !store.status || (store.status.toLowerCase() !== 'published')}
                   >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
