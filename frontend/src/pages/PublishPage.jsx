@@ -132,56 +132,6 @@ const PublishPage = () => {
             Make your website live or take it offline
           </p>
 
-          {/* Social Media Sharing Section - Always visible */}
-          <div 
-            style={{ 
-              display: 'block',
-              visibility: 'visible',
-              opacity: 1,
-              width: '100%',
-              marginTop: '0',
-              marginBottom: '2rem',
-              padding: '1.5rem',
-              backgroundColor: '#f3e8ff',
-              background: 'linear-gradient(to right, #f3e8ff, #dbeafe)',
-              borderRadius: '0.5rem',
-              border: '2px solid #a855f7',
-              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-              position: 'relative',
-              zIndex: 10
-            }}
-          >
-            <h3 style={{ 
-              fontSize: '1.125rem', 
-              fontWeight: 'bold', 
-              color: '#1f2937', 
-              marginBottom: '0.75rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }}>
-              <span>🌐</span>
-              Share Your Store on Social Media
-            </h3>
-            <p style={{ 
-              fontSize: '0.875rem', 
-              color: '#1f2937', 
-              marginBottom: '1rem',
-              fontWeight: '500'
-            }}>
-              Share your store on Facebook, Twitter, WhatsApp, and more to reach more customers and increase sales!
-            </p>
-            {store && (
-              <div style={{ width: '100%', display: 'block' }}>
-                <SocialShare 
-                  url={getWebsiteUrl() || (store.domainName ? `${window.location.origin}/published/${encodeURIComponent(store.domainName)}` : window.location.href)}
-                  title={store.storeName || 'Check out my store!'}
-                  description={store.description || 'Visit my amazing online store'}
-                />
-              </div>
-            )}
-          </div>
-
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
               {error}
