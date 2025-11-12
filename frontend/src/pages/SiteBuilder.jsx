@@ -418,7 +418,11 @@ export default function SiteBuilder() {
             body.style.backgroundColor = backgroundSettings.color || '#0a0a0a';
             body.style.backgroundImage = 'none';
           } else if (backgroundSettings.type === 'image' && backgroundSettings.image) {
-            body.style.backgroundImage = `url(${backgroundSettings.image})`;
+            // Use getImageUrl to convert relative paths to full URLs
+            const imageUrl = backgroundSettings.image.startsWith('http') 
+              ? backgroundSettings.image 
+              : getImageUrl(backgroundSettings.image);
+            body.style.backgroundImage = `url(${imageUrl})`;
             body.style.backgroundRepeat = backgroundSettings.repeat || 'no-repeat';
             body.style.backgroundSize = backgroundSettings.size || 'cover';
             body.style.backgroundPosition = backgroundSettings.position || 'center';
@@ -433,7 +437,11 @@ export default function SiteBuilder() {
             html.style.backgroundColor = backgroundSettings.color || '#0a0a0a';
             html.style.backgroundImage = 'none';
           } else if (backgroundSettings.type === 'image' && backgroundSettings.image) {
-            html.style.backgroundImage = `url(${backgroundSettings.image})`;
+            // Use getImageUrl to convert relative paths to full URLs
+            const imageUrl = backgroundSettings.image.startsWith('http') 
+              ? backgroundSettings.image 
+              : getImageUrl(backgroundSettings.image);
+            html.style.backgroundImage = `url(${imageUrl})`;
             html.style.backgroundRepeat = backgroundSettings.repeat || 'no-repeat';
             html.style.backgroundSize = backgroundSettings.size || 'cover';
             html.style.backgroundPosition = backgroundSettings.position || 'center';
