@@ -26,6 +26,7 @@ import Products from './pages/Products';
 import Orders from './pages/Orders';
 import SalesAnalytics from './pages/SalesAnalytics';
 import MyStores from './pages/MyStores';
+import ShareSocial from './pages/ShareSocial';
 import BladesmithStore from './pages/stores/BladesmithStore';
 import PotteryStore from './pages/stores/PotteryStore';
 import BalisongStore from './pages/stores/BalisongStore';
@@ -85,6 +86,7 @@ function App() {
             <Route path="payment" element={<Payment />} />
             <Route path="shipping" element={<Shipping />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="share-social" element={<ShareSocial />} />
           </Route>
 
           {/* Site Builder route */}

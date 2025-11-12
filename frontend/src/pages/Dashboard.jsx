@@ -29,6 +29,7 @@ const Payment = () => (
 const Dashboard = () => {
   const [storeName, setStoreName] = useState('');
   const [templateId, setTemplateId] = useState(null);
+  const [storeStatus, setStoreStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showCreateStorePrompt, setShowCreateStorePrompt] = useState(false);
@@ -71,6 +72,7 @@ const Dashboard = () => {
           const firstStore = response.data[0];
           setStoreName(firstStore.storeName || 'Your Store');
           setTemplateId(firstStore.templateId);
+          setStoreStatus(firstStore.status);
         } else {
           console.log('No store data found');
           setStoreName('Your Store');
@@ -340,6 +342,24 @@ const Dashboard = () => {
           actionText="Publish Site"
           actionLink="/publish"
           variant="solid"
+        />
+        <TodoCard
+          icon={
+            <div className="bg-pink-100 p-3 rounded-full">
+              <svg className="w-6 h-6 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                <polyline points="16 6 12 2 8 6" />
+                <line x1="12" y1="2" x2="12" y2="15" />
+              </svg>
+            </div>
+          }
+          title="Share Social"
+          description="Share your store on social media."
+          subDescription="Enable multi-channel selling by sharing your store on Facebook, Twitter, WhatsApp, and more to reach more customers."
+          actionText={storeStatus && storeStatus.toLowerCase() === 'published' ? "Share Store" : "Publish First"}
+          actionLink={storeStatus && storeStatus.toLowerCase() === 'published' ? "/dashboard/share-social" : "/publish"}
+          variant={storeStatus && storeStatus.toLowerCase() === 'published' ? "solid" : "outline"}
+          disabled={!storeStatus || storeStatus.toLowerCase() !== 'published'}
         />
       </div>
     </div>

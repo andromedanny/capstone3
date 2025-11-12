@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const TodoCard = ({ icon, title, description, subDescription, actionText, actionLink, variant = 'outline' }) => (
+const TodoCard = ({ icon, title, description, subDescription, actionText, actionLink, variant = 'outline', disabled = false }) => (
   <div style={{
     background: 'rgba(255, 255, 255, 0.95)',
     borderRadius: '15px',
@@ -54,6 +54,9 @@ const TodoCard = ({ icon, title, description, subDescription, actionText, action
           textDecoration: 'none',
           fontWeight: '600',
           fontSize: '0.875rem',
+          opacity: disabled ? 0.5 : 1,
+          cursor: disabled ? 'not-allowed' : 'pointer',
+          pointerEvents: disabled ? 'none' : 'auto',
           ...(variant === 'outline' 
             ? {
                 background: 'white',
