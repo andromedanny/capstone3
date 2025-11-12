@@ -271,16 +271,39 @@ const MyStores = () => {
                       e.stopPropagation();
                       handleDeleteStore(store.id, store.storeName);
                     }}
-                    className="action-button"
                     style={{
                       width: '100%',
+                      padding: '0.75rem 1rem',
                       background: '#ef4444',
                       color: 'white',
-                      border: 'none'
+                      border: '2px solid #dc2626',
+                      borderRadius: '8px',
+                      fontSize: '0.875rem',
+                      fontWeight: '600',
+                      cursor: deletingStoreId === store.id ? 'not-allowed' : 'pointer',
+                      opacity: deletingStoreId === store.id ? 0.6 : 1,
+                      display: 'block',
+                      visibility: 'visible',
+                      boxShadow: '0 2px 4px rgba(239, 68, 68, 0.3)',
+                      transition: 'all 0.2s'
                     }}
                     disabled={deletingStoreId === store.id}
+                    onMouseEnter={(e) => {
+                      if (deletingStoreId !== store.id) {
+                        e.target.style.background = '#dc2626';
+                        e.target.style.transform = 'translateY(-1px)';
+                        e.target.style.boxShadow = '0 4px 6px rgba(239, 68, 68, 0.4)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (deletingStoreId !== store.id) {
+                        e.target.style.background = '#ef4444';
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = '0 2px 4px rgba(239, 68, 68, 0.3)';
+                      }
+                    }}
                   >
-                    {deletingStoreId === store.id ? 'Deleting...' : '🗑️ Delete Store'}
+                    {deletingStoreId === store.id ? '⏳ Deleting...' : '🗑️ Delete Store'}
                   </button>
                 </div>
               </div>
