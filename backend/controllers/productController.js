@@ -156,6 +156,14 @@ export const createProduct = async (req, res) => {
         imagePath = uploadResult.path;
       } catch (fileError) {
         console.error('Error uploading file:', fileError.message);
+        // If it's a timeout or connection error, provide helpful message
+        if (fileError.message && (fileError.message.includes('timeout') || fileError.message.includes('acquire'))) {
+          return res.status(503).json({ 
+            message: 'Upload timeout - please try again. The connection is being established.', 
+            error: fileError.message,
+            retry: true
+          });
+        }
         return res.status(500).json({ 
           message: 'Error uploading product image', 
           error: fileError.message 
