@@ -83,11 +83,19 @@ const PublishedStore = () => {
   useEffect(() => {
     const fetchStore = async () => {
       try {
-        // URL encode the domain to handle spaces and special characters
-        const encodedDomain = encodeURIComponent(domain);
+        // Decode the domain from URL params first (React Router may have encoded it)
+        const decodedDomain = decodeURIComponent(domain || '');
+        // Then encode it for the API call to handle spaces and special characters
+        const encodedDomain = encodeURIComponent(decodedDomain);
+        
+        console.log('🔍 Fetching store with domain:', decodedDomain);
+        console.log('🔍 Encoded domain for API:', encodedDomain);
+        
         const response = await apiClient.get(
           `/stores/public/${encodedDomain}`
         );
+        
+        console.log('✅ Store fetched:', response.data?.storeName, 'Domain:', response.data?.domainName);
 
         setStore(response.data);
         

@@ -482,7 +482,14 @@ export const publishStore = async (req, res) => {
 // Get published store by domain (public route - no auth required)
 export const getPublishedStoreByDomain = async (req, res) => {
   try {
-    const { domain } = req.params;
+    let { domain } = req.params;
+    
+    // Decode the domain parameter (handles URL encoding like %20 for spaces)
+    domain = decodeURIComponent(domain);
+    
+    console.log('🔍 Looking for published store with domain:', domain);
+    console.log('🔍 Domain type:', typeof domain);
+    console.log('🔍 Domain length:', domain.length);
 
     const store = await Store.findOne({
       where: { 
@@ -492,12 +499,29 @@ export const getPublishedStoreByDomain = async (req, res) => {
       include: [{
         model: User,
         attributes: ['email', 'firstName', 'lastName']
-      }]
+      }],
+      attributes: ['id', 'userId', 'templateId', 'storeName', 'description', 'domainName', 
+                   'region', 'province', 'municipality', 'barangay', 'contactEmail', 'phone', 
+                   'status', 'content', 'createdAt', 'updatedAt']
     });
 
     if (!store) {
-      return res.status(404).json({ message: 'Store not found or not published' });
+      console.log('❌ Store not found with domain:', domain);
+      // Try to find all published stores to help debug
+      const allPublished = await Store.findAll({
+        where: { status: 'published' },
+        attributes: ['id', 'storeName', 'domainName'],
+        raw: true
+      });
+      console.log('📋 All published stores:', allPublished);
+      return res.status(404).json({ 
+        message: 'Store not found or not published',
+        searchedDomain: domain,
+        availableDomains: allPublished.map(s => s.domainName)
+      });
     }
+    
+    console.log('✅ Found store:', store.storeName, 'with domain:', store.domainName);
 
     // Parse content if it's a string (Sequelize might return it as string)
     const storeData = store.toJSON();
