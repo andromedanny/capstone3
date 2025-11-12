@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../utils/axios';
 import Header from '../components/Header';
-import SocialShare from '../components/SocialShare';
 import '../styles/MyStores.css';
 
 const templateNames = {
@@ -196,13 +195,6 @@ const MyStores = () => {
                         >
                           🔗 View Store: {window.location.origin}/published/{store.domainName}
                         </a>
-                        <div onClick={(e) => e.stopPropagation()} style={{ marginTop: '0.5rem' }}>
-                          <SocialShare 
-                            url={`${window.location.origin}/published/${encodeURIComponent(store.domainName)}`}
-                            title={store.storeName || 'Check out my store!'}
-                            description={store.description || 'Visit my amazing online store'}
-                          />
-                        </div>
                       </div>
                     )}
                   </div>
@@ -250,13 +242,6 @@ const MyStores = () => {
                       >
                         🌐 Visit Store
                       </a>
-                      <div onClick={(e) => e.stopPropagation()} style={{ marginBottom: '0.5rem' }}>
-                        <SocialShare 
-                          url={`${window.location.origin}/published/${encodeURIComponent(store.domainName)}`}
-                          title={store.storeName || 'Check out my store!'}
-                          description={store.description || 'Visit my amazing online store'}
-                        />
-                      </div>
                     </>
                   )}
                   
