@@ -274,36 +274,38 @@ const MyStores = () => {
                     className="delete-store-button"
                     style={{
                       width: '100%',
-                      padding: '1rem 1.5rem',
+                      padding: '1.25rem 1.5rem',
                       background: '#ef4444',
                       color: 'white',
-                      border: '3px solid #dc2626',
-                      borderRadius: '10px',
-                      fontSize: '1rem',
+                      border: '4px solid #dc2626',
+                      borderRadius: '12px',
+                      fontSize: '1.1rem',
                       fontWeight: '700',
                       cursor: deletingStoreId === store.id ? 'not-allowed' : 'pointer',
                       opacity: deletingStoreId === store.id ? 0.6 : 1,
                       display: 'block',
                       visibility: 'visible',
-                      boxShadow: '0 4px 8px rgba(239, 68, 68, 0.5)',
+                      boxShadow: '0 6px 12px rgba(239, 68, 68, 0.6)',
                       transition: 'all 0.2s',
                       position: 'relative',
-                      zIndex: 100,
-                      marginTop: '0.5rem'
+                      zIndex: 200,
+                      marginTop: '1rem',
+                      marginBottom: '0',
+                      flexShrink: 0
                     }}
                     disabled={deletingStoreId === store.id}
                     onMouseEnter={(e) => {
                       if (deletingStoreId !== store.id) {
                         e.target.style.background = '#dc2626';
                         e.target.style.transform = 'translateY(-2px)';
-                        e.target.style.boxShadow = '0 6px 12px rgba(239, 68, 68, 0.6)';
+                        e.target.style.boxShadow = '0 8px 16px rgba(239, 68, 68, 0.7)';
                       }
                     }}
                     onMouseLeave={(e) => {
                       if (deletingStoreId !== store.id) {
                         e.target.style.background = '#ef4444';
                         e.target.style.transform = 'translateY(0)';
-                        e.target.style.boxShadow = '0 4px 8px rgba(239, 68, 68, 0.5)';
+                        e.target.style.boxShadow = '0 6px 12px rgba(239, 68, 68, 0.6)';
                       }
                     }}
                   >

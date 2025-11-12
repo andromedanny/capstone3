@@ -64,16 +64,17 @@
   background: #ffffff;
   border-radius: 20px;
   padding: 0;
+  padding-bottom: 0 !important;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   transition: transform 0.3s, box-shadow 0.3s;
   display: flex;
   flex-direction: column;
   position: relative;
-  overflow: visible;
+  overflow: visible !important;
   border: 3px solid #e5e7eb;
   min-height: 400px;
   margin-top: 80px;
-  margin-bottom: 20px;
+  margin-bottom: 40px !important;
   z-index: 1;
 }
 
@@ -187,13 +188,14 @@
   flex-direction: column;
   gap: 0.75rem;
   margin-top: auto;
-  padding: 1rem 1.5rem 1.5rem 1.5rem;
+  padding: 1rem 1.5rem 2.5rem 1.5rem !important;
   border-top: 1px solid #e5e7eb;
   background: #ffffff;
   position: relative;
-  z-index: 10 !important;
+  z-index: 20 !important;
   box-sizing: border-box;
   border-radius: 0 0 20px 20px;
+  margin-bottom: 20px !important;
 }
 
 /* Store platform/base at bottom with rounded ends */
@@ -209,8 +211,9 @@
   border-radius: 50px;
   border: 3px solid #000000;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 5;
+  z-index: 1 !important;
   transition: transform 0.3s, box-shadow 0.3s;
+  pointer-events: none;
 }
 
 .action-button {
@@ -259,9 +262,11 @@
   opacity: 1 !important;
   box-shadow: 0 4px 8px rgba(239, 68, 68, 0.5) !important;
   position: relative !important;
-  z-index: 100 !important;
+  z-index: 200 !important;
   margin-top: 0.5rem !important;
+  margin-bottom: 0 !important;
   cursor: pointer !important;
+  flex-shrink: 0 !important;
 }
 
 /* Responsive design */
