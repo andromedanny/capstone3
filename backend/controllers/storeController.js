@@ -535,14 +535,6 @@ export const getPublishedStoreByDomain = async (req, res) => {
                      'status', 'content', 'createdAt', 'updatedAt']
       });
     }
-      include: [{
-        model: User,
-        attributes: ['email', 'firstName', 'lastName']
-      }],
-      attributes: ['id', 'userId', 'templateId', 'storeName', 'description', 'domainName', 
-                   'region', 'province', 'municipality', 'barangay', 'contactEmail', 'phone', 
-                   'status', 'content', 'createdAt', 'updatedAt']
-    });
 
     if (!store) {
       console.log('❌ Store not found with domain:', domain);
