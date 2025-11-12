@@ -194,29 +194,33 @@ const PublishPage = () => {
                           </button>
                         </div>
                         
-                        {/* Social Media Sharing Section */}
-                        <div className="mt-4 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200">
-                          <h4 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
-                              <polyline points="16 6 12 2 8 6"/>
-                              <line x1="12" y1="2" x2="12" y2="15"/>
-                            </svg>
-                            Share Your Store on Social Media
-                          </h4>
-                          <p className="text-xs text-gray-600 mb-3">
-                            Share your store on Facebook, Twitter, WhatsApp, and more to reach more customers!
-                          </p>
+                        <p className="text-xs text-gray-500 mt-2 mb-4">
+                          💡 <strong>Tip:</strong> This URL is free and works immediately. Customers can visit and buy products right away!
+                        </p>
+                      </div>
+                    )}
+                    
+                    {/* Social Media Sharing Section - Always show when published */}
+                    {store.status === 'published' && getWebsiteUrl() && (
+                      <div className="mt-6 p-5 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border-2 border-purple-300 shadow-sm">
+                        <h4 className="text-base font-bold text-gray-900 mb-2 flex items-center gap-2">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                            <polyline points="16 6 12 2 8 6"/>
+                            <line x1="12" y1="2" x2="12" y2="15"/>
+                          </svg>
+                          Share Your Store on Social Media (Multi-Channel Selling)
+                        </h4>
+                        <p className="text-sm text-gray-700 mb-4">
+                          Share your store on Facebook, Twitter, WhatsApp, and more to reach more customers and increase sales!
+                        </p>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
                           <SocialShare 
                             url={getWebsiteUrl()}
                             title={store.storeName || 'Check out my store!'}
                             description={store.description || 'Visit my amazing online store'}
                           />
                         </div>
-                        
-                        <p className="text-xs text-gray-500 mt-2">
-                          💡 <strong>Tip:</strong> This URL is free and works immediately. Customers can visit and buy products right away!
-                        </p>
                       </div>
                     )}
                     <button
