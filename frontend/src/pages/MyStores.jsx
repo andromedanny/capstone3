@@ -159,7 +159,7 @@ const MyStores = () => {
                     </p>
                     {store.status === 'published' && (
                       <a
-                        href={`${window.location.origin}/published/${store.domainName}`}
+                        href={`${window.location.origin}/published/${encodeURIComponent(store.domainName)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{
@@ -204,7 +204,7 @@ const MyStores = () => {
                 <div className="store-card-actions">
                   {store.status === 'published' && (
                     <a
-                      href={`${window.location.origin}/published/${store.domainName}`}
+                      href={`${window.location.origin}/published/${encodeURIComponent(store.domainName)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="action-button"
