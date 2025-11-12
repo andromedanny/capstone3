@@ -487,13 +487,19 @@ export const getPublishedStoreByDomain = async (req, res) => {
     // Decode the domain parameter (handles URL encoding like %20 for spaces)
     domain = decodeURIComponent(domain);
     
+    // Normalize domain: lowercase and trim whitespace
+    domain = domain.toLowerCase().trim();
+    
     console.log('🔍 Looking for published store with domain:', domain);
     console.log('🔍 Domain type:', typeof domain);
     console.log('🔍 Domain length:', domain.length);
 
+    // Use case-insensitive search with Sequelize Op.iLike (PostgreSQL)
     const store = await Store.findOne({
       where: { 
-        domainName: domain,
+        domainName: {
+          [Op.iLike]: domain  // Case-insensitive match (PostgreSQL)
+        },
         status: 'published'
       },
       include: [{
