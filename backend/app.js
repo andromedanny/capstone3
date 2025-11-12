@@ -187,7 +187,7 @@ app.use((req, res) => {
     originalUrl: req.originalUrl,
     message: `Cannot ${req.method} ${req.path}` 
   });
-});
+}); 
 
 // Test DB connection & sync
 sequelize.sync({ alter: true })

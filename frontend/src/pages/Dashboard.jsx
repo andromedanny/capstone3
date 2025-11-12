@@ -345,7 +345,7 @@ const Dashboard = () => {
           actionLink="/publish"
           variant="solid"
         />
-        {/* Share Social Card - Always visible - TEST CARD */}
+        {/* Share Social Card - Always visible */}
         <div style={{ 
           background: 'rgba(255, 255, 255, 0.95)',
           borderRadius: '15px',
@@ -353,8 +353,12 @@ const Dashboard = () => {
           padding: '1.5rem',
           display: 'flex',
           alignItems: 'flex-start',
-          border: '3px solid #ec4899',
-          minHeight: '150px'
+          border: '4px solid #ec4899',
+          minHeight: '150px',
+          visibility: 'visible',
+          opacity: 1,
+          position: 'relative',
+          zIndex: 10
         }}>
           <div style={{ marginRight: '1rem' }}>
             <div className="bg-pink-100 p-3 rounded-full">

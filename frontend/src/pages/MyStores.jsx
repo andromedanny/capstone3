@@ -271,39 +271,43 @@ const MyStores = () => {
                       e.stopPropagation();
                       handleDeleteStore(store.id, store.storeName);
                     }}
+                    className="delete-store-button"
                     style={{
                       width: '100%',
-                      padding: '0.75rem 1rem',
+                      padding: '1rem 1.5rem',
                       background: '#ef4444',
                       color: 'white',
-                      border: '2px solid #dc2626',
-                      borderRadius: '8px',
-                      fontSize: '0.875rem',
-                      fontWeight: '600',
+                      border: '3px solid #dc2626',
+                      borderRadius: '10px',
+                      fontSize: '1rem',
+                      fontWeight: '700',
                       cursor: deletingStoreId === store.id ? 'not-allowed' : 'pointer',
                       opacity: deletingStoreId === store.id ? 0.6 : 1,
                       display: 'block',
                       visibility: 'visible',
-                      boxShadow: '0 2px 4px rgba(239, 68, 68, 0.3)',
-                      transition: 'all 0.2s'
+                      boxShadow: '0 4px 8px rgba(239, 68, 68, 0.5)',
+                      transition: 'all 0.2s',
+                      position: 'relative',
+                      zIndex: 100,
+                      marginTop: '0.5rem'
                     }}
                     disabled={deletingStoreId === store.id}
                     onMouseEnter={(e) => {
                       if (deletingStoreId !== store.id) {
                         e.target.style.background = '#dc2626';
-                        e.target.style.transform = 'translateY(-1px)';
-                        e.target.style.boxShadow = '0 4px 6px rgba(239, 68, 68, 0.4)';
+                        e.target.style.transform = 'translateY(-2px)';
+                        e.target.style.boxShadow = '0 6px 12px rgba(239, 68, 68, 0.6)';
                       }
                     }}
                     onMouseLeave={(e) => {
                       if (deletingStoreId !== store.id) {
                         e.target.style.background = '#ef4444';
                         e.target.style.transform = 'translateY(0)';
-                        e.target.style.boxShadow = '0 2px 4px rgba(239, 68, 68, 0.3)';
+                        e.target.style.boxShadow = '0 4px 8px rgba(239, 68, 68, 0.5)';
                       }
                     }}
                   >
-                    {deletingStoreId === store.id ? '⏳ Deleting...' : '🗑️ Delete Store'}
+                    {deletingStoreId === store.id ? '⏳ Deleting...' : '🗑️ DELETE STORE'}
                   </button>
                 </div>
               </div>

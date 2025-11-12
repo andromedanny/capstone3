@@ -95,8 +95,18 @@ export const servePublishedStoreHTML = async (req, res) => {
       ? heroContent.subtitle.replace(/^<p>|<\/p>$/g, '').trim()
       : (store.description || '');
 
-    // Get background settings
-    const backgroundSettings = storeData.content?.background || { type: 'color', color: '#0a0a0a' };
+    // Template-specific default background colors
+    const templateDefaultColors = {
+      bladesmith: '#0a0a0a', // Dark black
+      pottery: '#faf8f3', // Warm beige
+      balisong: '#0f0f23', // Dark blue
+      weavery: '#ffffff', // White
+      woodcarving: '#f5efe6' // Light beige
+    };
+
+    // Get background settings with template-specific default
+    const defaultColor = templateDefaultColors[store.templateId] || '#0a0a0a';
+    const backgroundSettings = storeData.content?.background || { type: 'color', color: defaultColor };
 
     // Replace placeholders in HTML
     htmlContent = htmlContent.replace(/<h1[^>]*>[\s\S]*?<\/h1>/i, `<h1>${heroTitle}</h1>`);
