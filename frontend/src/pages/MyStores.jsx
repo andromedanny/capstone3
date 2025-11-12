@@ -266,30 +266,49 @@ const MyStores = () => {
                   >
                     Open Dashboard
                   </button>
-                  {/* DELETE BUTTON - ALWAYS VISIBLE */}
-                  <div style={{ 
-                    width: '100%', 
-                    padding: '0',
-                    margin: '0',
-                    display: 'block',
-                    visibility: 'visible',
-                    opacity: 1,
-                    position: 'relative',
-                    zIndex: 999
-                  }}>
+                  {/* DELETE BUTTON - ALWAYS VISIBLE - TEST ELEMENT */}
+                  <div 
+                    className="delete-button-wrapper"
+                    style={{ 
+                      width: '100%', 
+                      padding: '0',
+                      margin: '0',
+                      display: 'block !important',
+                      visibility: 'visible !important',
+                      opacity: '1 !important',
+                      position: 'relative',
+                      zIndex: 999,
+                      minHeight: '60px',
+                      backgroundColor: 'transparent'
+                    }}
+                  >
+                    {/* TEST: Yellow background to verify this div renders */}
+                    <div style={{
+                      width: '100%',
+                      height: '5px',
+                      backgroundColor: '#ffeb3b',
+                      marginBottom: '0.5rem',
+                      display: 'block'
+                    }}></div>
                     <button
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
+                        console.log('Delete button clicked for store:', store.id);
                         handleDeleteStore(store.id, store.storeName);
                       }}
                       className="delete-store-button"
+                      id={`delete-button-${store.id}`}
                       style={{
                         width: '100%',
                         padding: '1.5rem 2rem',
                         background: '#ef4444',
+                        backgroundColor: '#ef4444',
                         color: 'white',
                         border: '5px solid #dc2626',
+                        borderWidth: '5px',
+                        borderColor: '#dc2626',
+                        borderStyle: 'solid',
                         borderRadius: '15px',
                         fontSize: '1.2rem',
                         fontWeight: '800',
@@ -301,16 +320,20 @@ const MyStores = () => {
                         transition: 'all 0.2s',
                         position: 'relative',
                         zIndex: 999,
-                        marginTop: '0.5rem',
+                        marginTop: '0',
                         marginBottom: '0',
                         flexShrink: 0,
                         textTransform: 'uppercase',
-                        letterSpacing: '1px'
+                        letterSpacing: '1px',
+                        lineHeight: '1.5',
+                        textAlign: 'center',
+                        boxSizing: 'border-box'
                       }}
                       disabled={deletingStoreId === store.id}
                       onMouseEnter={(e) => {
                         if (deletingStoreId !== store.id) {
                           e.target.style.background = '#dc2626';
+                          e.target.style.backgroundColor = '#dc2626';
                           e.target.style.transform = 'translateY(-2px) scale(1.02)';
                           e.target.style.boxShadow = '0 10px 20px rgba(239, 68, 68, 0.8)';
                         }
@@ -318,6 +341,7 @@ const MyStores = () => {
                       onMouseLeave={(e) => {
                         if (deletingStoreId !== store.id) {
                           e.target.style.background = '#ef4444';
+                          e.target.style.backgroundColor = '#ef4444';
                           e.target.style.transform = 'translateY(0) scale(1)';
                           e.target.style.boxShadow = '0 8px 16px rgba(239, 68, 68, 0.7)';
                         }
