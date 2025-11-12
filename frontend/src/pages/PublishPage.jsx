@@ -269,7 +269,7 @@ const PublishPage = () => {
               </div>
 
               {/* Social Media Sharing Section - Show when published */}
-              {store && store.status && store.status.toLowerCase() === 'published' && (
+              {store && store.status && (store.status.toLowerCase() === 'published' || store.status === 'Published') && (
                 <div 
                   style={{ 
                     display: 'block',
