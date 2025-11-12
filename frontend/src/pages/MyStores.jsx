@@ -262,55 +262,70 @@ const MyStores = () => {
                   <button
                     onClick={() => handleSelectStore(store)}
                     className="action-button primary"
-                    style={{ width: '100%', marginBottom: '0.5rem' }}
+                    style={{ width: '100%', marginBottom: '1rem' }}
                   >
                     Open Dashboard
                   </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteStore(store.id, store.storeName);
-                    }}
-                    className="delete-store-button"
-                    style={{
-                      width: '100%',
-                      padding: '1.25rem 1.5rem',
-                      background: '#ef4444',
-                      color: 'white',
-                      border: '4px solid #dc2626',
-                      borderRadius: '12px',
-                      fontSize: '1.1rem',
-                      fontWeight: '700',
-                      cursor: deletingStoreId === store.id ? 'not-allowed' : 'pointer',
-                      opacity: deletingStoreId === store.id ? 0.6 : 1,
-                      display: 'block',
-                      visibility: 'visible',
-                      boxShadow: '0 6px 12px rgba(239, 68, 68, 0.6)',
-                      transition: 'all 0.2s',
-                      position: 'relative',
-                      zIndex: 200,
-                      marginTop: '1rem',
-                      marginBottom: '0',
-                      flexShrink: 0
-                    }}
-                    disabled={deletingStoreId === store.id}
-                    onMouseEnter={(e) => {
-                      if (deletingStoreId !== store.id) {
-                        e.target.style.background = '#dc2626';
-                        e.target.style.transform = 'translateY(-2px)';
-                        e.target.style.boxShadow = '0 8px 16px rgba(239, 68, 68, 0.7)';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (deletingStoreId !== store.id) {
-                        e.target.style.background = '#ef4444';
-                        e.target.style.transform = 'translateY(0)';
-                        e.target.style.boxShadow = '0 6px 12px rgba(239, 68, 68, 0.6)';
-                      }
-                    }}
-                  >
-                    {deletingStoreId === store.id ? '⏳ Deleting...' : '🗑️ DELETE STORE'}
-                  </button>
+                  {/* DELETE BUTTON - ALWAYS VISIBLE */}
+                  <div style={{ 
+                    width: '100%', 
+                    padding: '0',
+                    margin: '0',
+                    display: 'block',
+                    visibility: 'visible',
+                    opacity: 1,
+                    position: 'relative',
+                    zIndex: 999
+                  }}>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleDeleteStore(store.id, store.storeName);
+                      }}
+                      className="delete-store-button"
+                      style={{
+                        width: '100%',
+                        padding: '1.5rem 2rem',
+                        background: '#ef4444',
+                        color: 'white',
+                        border: '5px solid #dc2626',
+                        borderRadius: '15px',
+                        fontSize: '1.2rem',
+                        fontWeight: '800',
+                        cursor: deletingStoreId === store.id ? 'not-allowed' : 'pointer',
+                        opacity: deletingStoreId === store.id ? 0.6 : 1,
+                        display: 'block',
+                        visibility: 'visible',
+                        boxShadow: '0 8px 16px rgba(239, 68, 68, 0.7)',
+                        transition: 'all 0.2s',
+                        position: 'relative',
+                        zIndex: 999,
+                        marginTop: '0.5rem',
+                        marginBottom: '0',
+                        flexShrink: 0,
+                        textTransform: 'uppercase',
+                        letterSpacing: '1px'
+                      }}
+                      disabled={deletingStoreId === store.id}
+                      onMouseEnter={(e) => {
+                        if (deletingStoreId !== store.id) {
+                          e.target.style.background = '#dc2626';
+                          e.target.style.transform = 'translateY(-2px) scale(1.02)';
+                          e.target.style.boxShadow = '0 10px 20px rgba(239, 68, 68, 0.8)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (deletingStoreId !== store.id) {
+                          e.target.style.background = '#ef4444';
+                          e.target.style.transform = 'translateY(0) scale(1)';
+                          e.target.style.boxShadow = '0 8px 16px rgba(239, 68, 68, 0.7)';
+                        }
+                      }}
+                    >
+                      {deletingStoreId === store.id ? '⏳ Deleting...' : '🗑️ DELETE STORE'}
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
