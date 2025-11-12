@@ -1,6 +1,6 @@
 // src/pages/Dashboard.jsx
 import React, { useState, useEffect } from 'react';
-import { Route, Routes, useNavigate, useLocation } from 'react-router-dom';
+import { Route, Routes, useNavigate, useLocation, Link } from 'react-router-dom';
 import apiClient from '../utils/axios';
 import TodoCard from '../components/TodoCard';
 
@@ -345,9 +345,18 @@ const Dashboard = () => {
           actionLink="/publish"
           variant="solid"
         />
-        {/* Share Social Card - Always visible */}
-        <TodoCard
-          icon={
+        {/* Share Social Card - Always visible - TEST CARD */}
+        <div style={{ 
+          background: 'rgba(255, 255, 255, 0.95)',
+          borderRadius: '15px',
+          boxShadow: '0 5px 15px rgba(0, 0, 0, 0.3)',
+          padding: '1.5rem',
+          display: 'flex',
+          alignItems: 'flex-start',
+          border: '3px solid #ec4899',
+          minHeight: '150px'
+        }}>
+          <div style={{ marginRight: '1rem' }}>
             <div className="bg-pink-100 p-3 rounded-full">
               <svg className="w-6 h-6 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
@@ -355,15 +364,62 @@ const Dashboard = () => {
                 <line x1="12" y1="2" x2="12" y2="15" />
               </svg>
             </div>
-          }
-          title="Share Social"
-          description="Share your store on social media."
-          subDescription="Enable multi-channel selling by sharing your store on Facebook, Twitter, WhatsApp, and more to reach more customers."
-          actionText={(storeStatus && storeStatus.toLowerCase() === 'published') ? "Share Store" : "Publish First"}
-          actionLink={(storeStatus && storeStatus.toLowerCase() === 'published') ? "/dashboard/share-social" : "/publish"}
-          variant={(storeStatus && storeStatus.toLowerCase() === 'published') ? "solid" : "outline"}
-          disabled={!storeStatus || storeStatus.toLowerCase() !== 'published'}
-        />
+          </div>
+          <div style={{ flexGrow: 1 }}>
+            <h2 style={{ 
+              fontSize: '1.25rem', 
+              fontWeight: '600', 
+              marginBottom: '0.5rem',
+              color: '#333'
+            }}>
+              Share Social
+            </h2>
+            <p style={{ 
+              color: '#666', 
+              marginBottom: '0.5rem',
+              fontSize: '0.875rem',
+              fontWeight: '500'
+            }}>
+              Share your store on social media.
+            </p>
+            <p style={{ 
+              color: '#666',
+              fontSize: '0.875rem'
+            }}>
+              Enable multi-channel selling by sharing your store on Facebook, Twitter, WhatsApp, and more to reach more customers.
+            </p>
+          </div>
+          <div style={{ marginLeft: '1rem' }}>
+            <Link 
+              to={(storeStatus && storeStatus.toLowerCase() === 'published') ? "/dashboard/share-social" : "/publish"}
+              style={{
+                display: 'inline-block',
+                padding: '0.5rem 1rem',
+                borderRadius: '0.5rem',
+                transition: 'all 0.2s',
+                textDecoration: 'none',
+                fontWeight: '600',
+                fontSize: '0.875rem',
+                opacity: (!storeStatus || storeStatus.toLowerCase() !== 'published') ? 0.5 : 1,
+                cursor: (!storeStatus || storeStatus.toLowerCase() !== 'published') ? 'not-allowed' : 'pointer',
+                ...((storeStatus && storeStatus.toLowerCase() === 'published') 
+                  ? {
+                      background: 'linear-gradient(45deg, #8B5CF6, #4C1D95)',
+                      color: 'white',
+                      border: 'none',
+                      boxShadow: '0 2px 4px rgba(139, 92, 246, 0.3)'
+                    }
+                  : {
+                      background: 'white',
+                      color: '#8B5CF6',
+                      border: '2px solid #8B5CF6'
+                    })
+              }}
+            >
+              {(storeStatus && storeStatus.toLowerCase() === 'published') ? "Share Store" : "Publish First"}
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );
