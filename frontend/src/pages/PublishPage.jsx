@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import apiClient from '../utils/axios';
 import Header from '../components/Header';
 import { useNavigate } from 'react-router-dom';
+import SocialShare from '../components/SocialShare';
 
 const PublishPage = () => {
   const [store, setStore] = useState(null);
@@ -192,6 +193,27 @@ const PublishPage = () => {
                             📋 Copy
                           </button>
                         </div>
+                        
+                        {/* Social Media Sharing Section */}
+                        <div className="mt-4 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200">
+                          <h4 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                              <polyline points="16 6 12 2 8 6"/>
+                              <line x1="12" y1="2" x2="12" y2="15"/>
+                            </svg>
+                            Share Your Store on Social Media
+                          </h4>
+                          <p className="text-xs text-gray-600 mb-3">
+                            Share your store on Facebook, Twitter, WhatsApp, and more to reach more customers!
+                          </p>
+                          <SocialShare 
+                            url={getWebsiteUrl()}
+                            title={store.storeName || 'Check out my store!'}
+                            description={store.description || 'Visit my amazing online store'}
+                          />
+                        </div>
+                        
                         <p className="text-xs text-gray-500 mt-2">
                           💡 <strong>Tip:</strong> This URL is free and works immediately. Customers can visit and buy products right away!
                         </p>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../utils/axios';
 import Header from '../components/Header';
+import SocialShare from '../components/SocialShare';
 import '../styles/MyStores.css';
 
 const templateNames = {
@@ -158,22 +159,31 @@ const MyStores = () => {
                       Domain: {store.domainName}
                     </p>
                     {store.status === 'published' && (
-                      <a
-                        href={`${window.location.origin}/published/${encodeURIComponent(store.domainName)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                          display: 'inline-block',
-                          marginTop: '0.5rem',
-                          fontSize: '0.75rem',
-                          color: '#8b5cf6',
-                          textDecoration: 'none',
-                          fontWeight: '500'
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        🔗 View Store: {window.location.origin}/published/{store.domainName}
-                      </a>
+                      <div style={{ marginTop: '0.5rem' }}>
+                        <a
+                          href={`${window.location.origin}/published/${encodeURIComponent(store.domainName)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            display: 'inline-block',
+                            fontSize: '0.75rem',
+                            color: '#8b5cf6',
+                            textDecoration: 'none',
+                            fontWeight: '500',
+                            marginBottom: '0.5rem'
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          🔗 View Store: {window.location.origin}/published/{store.domainName}
+                        </a>
+                        <div onClick={(e) => e.stopPropagation()} style={{ marginTop: '0.5rem' }}>
+                          <SocialShare 
+                            url={`${window.location.origin}/published/${encodeURIComponent(store.domainName)}`}
+                            title={store.storeName || 'Check out my store!'}
+                            description={store.description || 'Visit my amazing online store'}
+                          />
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -203,22 +213,31 @@ const MyStores = () => {
 
                 <div className="store-card-actions">
                   {store.status === 'published' && (
-                    <a
-                      href={`${window.location.origin}/published/${encodeURIComponent(store.domainName)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="action-button"
-                      style={{
-                        width: '100%',
-                        marginBottom: '0.5rem',
-                        textAlign: 'center',
-                        textDecoration: 'none',
-                        display: 'block'
-                      }}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      🌐 Visit Store
-                    </a>
+                    <>
+                      <a
+                        href={`${window.location.origin}/published/${encodeURIComponent(store.domainName)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="action-button"
+                        style={{
+                          width: '100%',
+                          marginBottom: '0.5rem',
+                          textAlign: 'center',
+                          textDecoration: 'none',
+                          display: 'block'
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        🌐 Visit Store
+                      </a>
+                      <div onClick={(e) => e.stopPropagation()} style={{ marginBottom: '0.5rem' }}>
+                        <SocialShare 
+                          url={`${window.location.origin}/published/${encodeURIComponent(store.domainName)}`}
+                          title={store.storeName || 'Check out my store!'}
+                          description={store.description || 'Visit my amazing online store'}
+                        />
+                      </div>
+                    </>
                   )}
                   <button
                     onClick={() => handleSelectStore(store)}

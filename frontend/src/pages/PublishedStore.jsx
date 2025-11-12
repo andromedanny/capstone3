@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import apiClient from '../utils/axios';
 import { getImageUrl } from '../utils/imageUrl';
 import { regions, getProvincesByRegion, getCityMunByProvince, getBarangayByMun } from 'phil-reg-prov-mun-brgy';
+import SocialShare from '../components/SocialShare';
 
 // Template mapping
 const templateFileMap = {
@@ -98,6 +99,41 @@ const PublishedStore = () => {
         console.log('✅ Store fetched:', response.data?.storeName, 'Domain:', response.data?.domainName);
 
         setStore(response.data);
+        
+        // Update Open Graph meta tags for social media sharing
+        const storeUrl = window.location.href;
+        const storeTitle = response.data?.storeName || 'Check out this store!';
+        const storeDescription = response.data?.description || 'Visit this amazing online store';
+        const storeImage = response.data?.content?.background?.image 
+          ? getImageUrl(response.data.content.background.image) 
+          : `${window.location.origin}/logoweb.png`;
+        
+        // Update or create Open Graph meta tags
+        const updateMetaTag = (property, content) => {
+          let meta = document.querySelector(`meta[property="${property}"]`);
+          if (!meta) {
+            meta = document.createElement('meta');
+            meta.setAttribute('property', property);
+            document.head.appendChild(meta);
+          }
+          meta.setAttribute('content', content);
+        };
+        
+        // Standard meta tags
+        updateMetaTag('og:title', storeTitle);
+        updateMetaTag('og:description', storeDescription);
+        updateMetaTag('og:image', storeImage);
+        updateMetaTag('og:url', storeUrl);
+        updateMetaTag('og:type', 'website');
+        
+        // Twitter Card meta tags
+        updateMetaTag('twitter:card', 'summary_large_image');
+        updateMetaTag('twitter:title', storeTitle);
+        updateMetaTag('twitter:description', storeDescription);
+        updateMetaTag('twitter:image', storeImage);
+        
+        // Update page title
+        document.title = storeTitle;
         
         console.log('📦 Store loaded:', response.data);
         console.log('📦 Store content:', response.data.content);
@@ -1673,6 +1709,31 @@ const PublishedStore = () => {
           }
         }}
       >
+        {/* Social Share Button - Fixed Position */}
+        {store && (
+          <div style={{
+            position: 'fixed',
+            bottom: '20px',
+            right: '20px',
+            zIndex: 1000,
+            background: 'white',
+            borderRadius: '12px',
+            padding: '1rem',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            border: '1px solid #e5e7eb'
+          }}>
+            <div style={{ marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
+              Share Store
+            </div>
+            <SocialShare 
+              url={window.location.href}
+              title={store.storeName || 'Check out this store!'}
+              description={store.description || 'Visit this amazing online store'}
+              image={store.content?.background?.image ? getImageUrl(store.content.background.image) : ''}
+            />
+          </div>
+        )}
+        
         <iframe
           ref={iframeRef}
           src={`/templates/${templateFileMap[store.templateId] || 'struvaris.html'}`}
