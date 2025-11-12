@@ -364,9 +364,11 @@ export default function SiteBuilder() {
         const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
         
         // Update hero section with styles
+        // Use store name if hero title is empty, otherwise use hero title
+        const displayTitle = heroContent.title || storeSettings.storeName || '';
         const heroH1 = iframeDoc.querySelector('.hero h1');
         if (heroH1) {
-          heroH1.textContent = heroContent.title;
+          heroH1.textContent = displayTitle;
           // Apply title styles
           if (heroContent.titleStyle) {
             heroH1.style.fontFamily = heroContent.titleStyle.fontFamily || 'Arial, sans-serif';
@@ -378,11 +380,17 @@ export default function SiteBuilder() {
           }
         }
 
-        // Update hero subtitle/paragraph with styles
-        const heroP = iframeDoc.querySelector('.hero .hero-content p');
+        // Update hero subtitle/paragraph with styles - try multiple selectors
+        const heroP = iframeDoc.querySelector('.hero p, .hero-content p, .hero .hero-content p');
         if (heroP) {
           // Remove wrapping <p> tags from Quill content if present
-          const subtitleText = heroContent.subtitle.replace(/^<p>|<\/p>$/g, '').trim();
+          let subtitleText = heroContent.subtitle || '';
+          // If subtitle is empty, use store description
+          if (!subtitleText || subtitleText.trim() === '' || subtitleText === '<p></p>') {
+            subtitleText = storeSettings.description || '';
+          } else {
+            subtitleText = subtitleText.replace(/^<p>|<\/p>$/g, '').trim();
+          }
           heroP.innerHTML = subtitleText || '';
           // Apply subtitle styles
           if (heroContent.subtitleStyle) {
@@ -526,7 +534,7 @@ export default function SiteBuilder() {
         iframe.removeEventListener('load', updateIframe);
       };
     }
-  }, [htmlContent, heroContent, backgroundSettings, products]);
+  }, [htmlContent, heroContent, backgroundSettings, products, storeSettings]);
 
   const handleStyleChange = (element, property, value) => {
     setHeroContent(prev => ({
@@ -653,6 +661,16 @@ export default function SiteBuilder() {
       setStoreSettings(prev => ({ ...prev, [field]: value, barangay: '' }));
     } else {
       setStoreSettings(prev => ({ ...prev, [field]: value }));
+      
+      // Sync store name with hero title in real-time if hero title is empty
+      if (field === 'storeName' && (!heroContent.title || heroContent.title.trim() === '')) {
+        setHeroContent(prev => ({ ...prev, title: value }));
+      }
+      
+      // Sync store description with hero subtitle in real-time if subtitle is empty
+      if (field === 'description' && (!heroContent.subtitle || heroContent.subtitle.trim() === '' || heroContent.subtitle === '<p></p>')) {
+        setHeroContent(prev => ({ ...prev, subtitle: `<p>${value}</p>` }));
+      }
     }
   };
 
@@ -1818,26 +1836,7 @@ export default function SiteBuilder() {
                         setBackgroundSettings(prev => {
                           const updated = { ...prev, image: newImageUrl, type: 'image' };
                           console.log('📸 Updated background settings:', updated);
-                          // Trigger immediate preview update
-                          setTimeout(() => {
-                            if (iframeRef.current?.contentDocument) {
-                              const iframeDoc = iframeRef.current.contentDocument;
-                              const body = iframeDoc.body;
-                              const html = iframeDoc.documentElement;
-                              if (body) {
-                                body.style.backgroundImage = `url(${getImageUrl(newImageUrl)})`;
-                                body.style.backgroundRepeat = updated.repeat || 'no-repeat';
-                                body.style.backgroundSize = updated.size || 'cover';
-                                body.style.backgroundPosition = updated.position || 'center';
-                              }
-                              if (html) {
-                                html.style.backgroundImage = `url(${getImageUrl(newImageUrl)})`;
-                                html.style.backgroundRepeat = updated.repeat || 'no-repeat';
-                                html.style.backgroundSize = updated.size || 'cover';
-                                html.style.backgroundPosition = updated.position || 'center';
-                              }
-                            }
-                          }, 100);
+                          // The useEffect will automatically update the preview when backgroundSettings changes
                           return updated;
                         });
                         setStatus('Background image uploaded successfully!');
