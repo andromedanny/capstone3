@@ -72,8 +72,18 @@ const PublishPage = () => {
   };
 
   const getWebsiteUrl = () => {
-    if (!store || store.status !== 'published') {
-      console.log('🔍 getWebsiteUrl: returning null', { store: !!store, status: store?.status });
+    if (!store) {
+      console.log('🔍 getWebsiteUrl: no store');
+      return null;
+    }
+    // Check for both lowercase and capitalized status
+    const isPublished = store.status === 'published' || store.status === 'Published';
+    if (!isPublished) {
+      console.log('🔍 getWebsiteUrl: not published', { status: store?.status });
+      return null;
+    }
+    if (!store.domainName) {
+      console.log('🔍 getWebsiteUrl: no domainName');
       return null;
     }
     // URL encode the domain name to handle spaces and special characters
@@ -246,20 +256,19 @@ const PublishPage = () => {
               </div>
 
               {/* Social Media Sharing Section - Show when published */}
-              {(() => {
-                const isPublished = store && store.status === 'published';
+              {store && (store.status === 'published' || store.status === 'Published') && (() => {
                 const websiteUrl = getWebsiteUrl();
                 console.log('🔍 Social Share Debug:', {
                   store: !!store,
                   status: store?.status,
-                  isPublished,
+                  statusLower: store?.status?.toLowerCase(),
                   websiteUrl,
-                  shouldShow: isPublished && websiteUrl
+                  domainName: store?.domainName
                 });
                 
-                if (isPublished && websiteUrl) {
+                if (websiteUrl) {
                   return (
-                    <div className="bg-gradient-to-r from-purple-100 to-blue-100 rounded-lg p-6 border-2 border-purple-400 shadow-lg" style={{ marginTop: '1.5rem' }}>
+                    <div className="bg-gradient-to-r from-purple-100 to-blue-100 rounded-lg p-6 border-2 border-purple-400 shadow-lg" style={{ marginTop: '1.5rem', marginBottom: '1.5rem' }}>
                       <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                           <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
@@ -278,8 +287,15 @@ const PublishPage = () => {
                       />
                     </div>
                   );
+                } else {
+                  return (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4">
+                      <p className="text-sm text-yellow-800">
+                        ⚠️ URL not available. Store status: {store?.status}, Domain: {store?.domainName}
+                      </p>
+                    </div>
+                  );
                 }
-                return null;
               })()}
 
               {/* Instructions */}
