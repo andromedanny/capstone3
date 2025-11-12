@@ -332,6 +332,8 @@ const PublishPage = () => {
                 >
                   Edit Content
                 </button>
+                
+                {/* Share Store Button - Always Visible */}
                 <button
                   onClick={() => {
                     // Check if store is published
@@ -379,10 +381,10 @@ const PublishPage = () => {
                       if (e.target === modal) modal.remove();
                     });
                   }}
-                  className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 ${
+                  className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-all ${
                     store && store.status && (store.status.toLowerCase() === 'published') && getWebsiteUrl()
-                      ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 cursor-pointer'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
                   }`}
                   style={{ boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
                   disabled={!store || !store.status || (store.status.toLowerCase() !== 'published') || !getWebsiteUrl()}
@@ -395,6 +397,7 @@ const PublishPage = () => {
                   </svg>
                   Share Store
                 </button>
+                
                 <button
                   onClick={() => navigate('/dashboard')}
                   className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
