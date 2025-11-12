@@ -95,10 +95,27 @@ const StoreSetup = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
+    // Normalize domain name: lowercase, remove spaces, remove special characters except hyphens
+    let processedValue = value;
+    if (name === 'domainName') {
+      processedValue = value
+        .toLowerCase()
+        .replace(/\s+/g, '-') // Replace spaces with hyphens
+        .replace(/[^a-z0-9-]/g, '') // Remove special characters except hyphens
+        .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+        .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+    }
+    
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: processedValue
     }));
+    
+    // Clear error when user starts typing in domain name field
+    if (name === 'domainName' && error) {
+      setError('');
+    }
     if (name === 'region') {
       setProvincesList(getProvincesByRegion(value));
       setMunicipalitiesList([]);
@@ -165,20 +182,26 @@ const StoreSetup = () => {
         navigate('/my-stores');
       }
     } catch (error) {
-      console.error('Error details:', error.response?.data || error.message);
+      console.error('❌ Error creating/updating store:', error);
+      console.error('   Error response:', error.response?.data);
+      console.error('   Error status:', error.response?.status);
       
       const errorData = error.response?.data;
       let errorMessage = 'An error occurred while saving your store. Please try again.';
       
-      if (errorData?.details) {
-        // Check for duplicate domain name error
-        if (errorData.details.includes('Duplicate entry') && errorData.details.includes('domainName')) {
-          errorMessage = `A store with the domain name "${formData.domainName}" already exists. Please choose a different domain name or update your existing store.`;
-        } else {
-          errorMessage = errorData.details || errorData.message || errorMessage;
-        }
+      // Check for duplicate domain name error
+      if (errorData?.message && errorData.message.includes('domain name already exists')) {
+        errorMessage = `⚠️ The domain name "${formData.domainName}" is already taken. Please choose a different domain name.`;
+      } else if (errorData?.details && (
+        errorData.details.includes('duplicate key') || 
+        errorData.details.includes('domainName') ||
+        errorData.details.includes('Duplicate entry')
+      )) {
+        errorMessage = `⚠️ The domain name "${formData.domainName}" is already taken. Please choose a different domain name.`;
       } else if (errorData?.message) {
         errorMessage = errorData.message;
+      } else if (errorData?.details) {
+        errorMessage = errorData.details;
       }
       
       setError(errorMessage);
@@ -254,11 +277,31 @@ const StoreSetup = () => {
                 value={formData.domainName}
                 onChange={handleChange}
                 required
-                placeholder="Enter your domain name"
+                placeholder="Enter your domain name (e.g., my-store)"
                 style={{ width: '70%' }}
+                pattern="[a-z0-9-]+"
+                title="Domain name can only contain lowercase letters, numbers, and hyphens"
               />
-              <span className="domain-suffix">.structura.com</span>
+              <span className="domain-suffix" style={{ color: '#6b7280' }}> (your unique identifier)</span>
             </div>
+            <small style={{ 
+              display: 'block', 
+              marginTop: '0.25rem', 
+              color: '#6b7280', 
+              fontSize: '0.75rem' 
+            }}>
+              Your store will be accessible at: <code style={{ background: '#f3f4f6', padding: '2px 4px', borderRadius: '3px' }}>
+                {window.location.origin}/published/[your-domain-name]
+              </code>
+            </small>
+            <small style={{ 
+              display: 'block', 
+              marginTop: '0.25rem', 
+              color: '#6b7280', 
+              fontSize: '0.75rem' 
+            }}>
+              Domain names are automatically converted to lowercase. Only letters, numbers, and hyphens are allowed.
+            </small>
           </div>
           <div className="form-group">
             <label htmlFor="region">Region</label>

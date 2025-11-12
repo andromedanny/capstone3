@@ -127,7 +127,10 @@ const PublishPage = () => {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Domain</p>
-                    <p className="font-medium">{store.domainName}.structura.com</p>
+                    <p className="font-medium">{store.domainName}</p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Access at: {window.location.origin}/published/{store.domainName}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Status</p>
@@ -167,15 +170,31 @@ const PublishPage = () => {
                     </div>
                     {getWebsiteUrl() && (
                       <div className="mt-4">
-                        <p className="text-sm text-gray-600 mb-2">Your website URL:</p>
-                        <a
-                          href={getWebsiteUrl()}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-purple-600 hover:text-purple-700 font-medium break-all"
-                        >
-                          {getWebsiteUrl()}
-                        </a>
+                        <p className="text-sm text-gray-600 mb-2">Your website URL (share this with customers):</p>
+                        <div className="flex items-center gap-2 bg-white border border-gray-300 rounded-lg p-3">
+                          <a
+                            href={getWebsiteUrl()}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-purple-600 hover:text-purple-700 font-medium break-all flex-1"
+                          >
+                            {getWebsiteUrl()}
+                          </a>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(getWebsiteUrl());
+                              setSuccess('URL copied to clipboard!');
+                              setTimeout(() => setSuccess('Your website has been published successfully!'), 2000);
+                            }}
+                            className="px-3 py-1 bg-purple-100 text-purple-700 rounded hover:bg-purple-200 text-sm font-medium"
+                            title="Copy URL"
+                          >
+                            📋 Copy
+                          </button>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-2">
+                          💡 <strong>Tip:</strong> This URL is free and works immediately. Customers can visit and buy products right away!
+                        </p>
                       </div>
                     )}
                     <button
@@ -221,14 +240,21 @@ const PublishPage = () => {
               {/* Instructions */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
                 <h3 className="text-lg font-semibold mb-2 text-blue-900">
-                  How to Publish
+                  How to Publish & Share Your Store
                 </h3>
                 <ol className="list-decimal list-inside space-y-2 text-sm text-blue-800">
                   <li>Make sure you've saved all your content in the Site Builder</li>
                   <li>Review your store settings and information</li>
                   <li>Click "Publish Website" to make your site live</li>
-                  <li>Share your website URL with customers</li>
+                  <li>Copy and share your website URL with customers - it's free and works immediately!</li>
                 </ol>
+                <div className="mt-4 p-3 bg-white rounded border border-blue-200">
+                  <p className="text-xs text-blue-900 font-semibold mb-1">💡 Want a Custom Domain?</p>
+                  <p className="text-xs text-blue-700">
+                    You can add your own custom domain (like mystore.com) to Vercel for free if you own a domain. 
+                    See <code className="bg-blue-100 px-1 rounded">CUSTOM_DOMAIN_SETUP.md</code> in the project for instructions.
+                  </p>
+                </div>
               </div>
 
               {/* Quick Actions */}

@@ -38,7 +38,13 @@ const MyStores = () => {
           setError('No stores found. Create your first store to get started!');
         }
       } catch (error) {
-        console.error('Error fetching stores:', error.response?.data || error.message);
+        console.error('❌ Error fetching stores:', error);
+        console.error('   Error response:', error.response?.data);
+        console.error('   Error status:', error.response?.status);
+        console.error('   Error message:', error.message);
+        if (error.response?.data) {
+          console.error('   Error details:', JSON.stringify(error.response.data, null, 2));
+        }
         if (error.response?.status === 401) {
           localStorage.removeItem('token');
           window.location.href = '/login';
@@ -148,7 +154,27 @@ const MyStores = () => {
                 <div className="store-card-header">
                   <div>
                     <h2>{store.storeName}</h2>
-                    <p className="store-domain">{store.domainName}.structura.com</p>
+                    <p className="store-domain" style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                      Domain: {store.domainName}
+                    </p>
+                    {store.status === 'published' && (
+                      <a
+                        href={`${window.location.origin}/published/${store.domainName}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: 'inline-block',
+                          marginTop: '0.5rem',
+                          fontSize: '0.75rem',
+                          color: '#8b5cf6',
+                          textDecoration: 'none',
+                          fontWeight: '500'
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        🔗 View Store: {window.location.origin}/published/{store.domainName}
+                      </a>
+                    )}
                   </div>
                 </div>
 
@@ -176,6 +202,24 @@ const MyStores = () => {
                 </div>
 
                 <div className="store-card-actions">
+                  {store.status === 'published' && (
+                    <a
+                      href={`${window.location.origin}/published/${store.domainName}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="action-button"
+                      style={{
+                        width: '100%',
+                        marginBottom: '0.5rem',
+                        textAlign: 'center',
+                        textDecoration: 'none',
+                        display: 'block'
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      🌐 Visit Store
+                    </a>
+                  )}
                   <button
                     onClick={() => handleSelectStore(store)}
                     className="action-button primary"
