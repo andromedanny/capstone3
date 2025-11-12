@@ -39,6 +39,19 @@ const PublishPage = () => {
     fetchStore();
   }, [navigate]);
 
+  // Debug: Log store status
+  useEffect(() => {
+    if (store) {
+      console.log('🔍 Store status debug:', {
+        status: store.status,
+        statusType: typeof store.status,
+        statusLower: store.status?.toLowerCase(),
+        isPublished: store.status?.toLowerCase() === 'published',
+        domainName: store.domainName
+      });
+    }
+  }, [store]);
+
   const handlePublish = async (status) => {
     if (!store) return;
 
@@ -216,7 +229,6 @@ const PublishPage = () => {
                     )}
                     
                     {/* Share Store Button - Always visible when published */}
-                    {console.log('🔍 Rendering Share Store button section', { storeStatus: store?.status, isPublished: store?.status?.toLowerCase() === 'published' })}
                     <div className="mt-4 mb-4" style={{ display: 'block', visibility: 'visible', minHeight: '60px', backgroundColor: '#f9fafb', padding: '12px', borderRadius: '8px', border: '2px solid #e5e7eb' }}>
                       <p className="text-sm font-semibold text-gray-700 mb-2">Share Your Store:</p>
                       <button
