@@ -48,16 +48,24 @@ const SocialShare = ({ url, title, description, image }) => {
   };
 
   return (
-    <div className="social-share-container">
+    <div className="social-share-container" style={{ width: '100%', position: 'relative', zIndex: 10 }}>
       <div className="social-share-buttons" style={{
         display: 'flex',
         gap: '0.75rem',
         flexWrap: 'wrap',
-        alignItems: 'center'
+        alignItems: 'center',
+        width: '100%',
+        position: 'relative',
+        zIndex: 10
       }}>
         {/* Facebook Share Button */}
         <button
-          onClick={shareToFacebook}
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            shareToFacebook();
+          }}
           className="social-share-btn facebook"
           style={{
             display: 'flex',
@@ -72,7 +80,9 @@ const SocialShare = ({ url, title, description, image }) => {
             fontWeight: '600',
             cursor: 'pointer',
             transition: 'all 0.2s ease',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+            position: 'relative',
+            zIndex: 10
           }}
           onMouseOver={(e) => {
             e.currentTarget.style.background = '#166FE5';
@@ -94,7 +104,12 @@ const SocialShare = ({ url, title, description, image }) => {
 
         {/* Twitter Share Button */}
         <button
-          onClick={shareToTwitter}
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            shareToTwitter();
+          }}
           className="social-share-btn twitter"
           style={{
             display: 'flex',
@@ -109,7 +124,9 @@ const SocialShare = ({ url, title, description, image }) => {
             fontWeight: '600',
             cursor: 'pointer',
             transition: 'all 0.2s ease',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+            position: 'relative',
+            zIndex: 10
           }}
           onMouseOver={(e) => {
             e.currentTarget.style.background = '#1a91da';
@@ -131,7 +148,12 @@ const SocialShare = ({ url, title, description, image }) => {
 
         {/* WhatsApp Share Button */}
         <button
-          onClick={shareToWhatsApp}
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            shareToWhatsApp();
+          }}
           className="social-share-btn whatsapp"
           style={{
             display: 'flex',
@@ -146,7 +168,9 @@ const SocialShare = ({ url, title, description, image }) => {
             fontWeight: '600',
             cursor: 'pointer',
             transition: 'all 0.2s ease',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+            position: 'relative',
+            zIndex: 10
           }}
           onMouseOver={(e) => {
             e.currentTarget.style.background = '#22C55E';
@@ -168,7 +192,12 @@ const SocialShare = ({ url, title, description, image }) => {
 
         {/* Copy Link Button */}
         <button
-          onClick={copyToClipboard}
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            copyToClipboard();
+          }}
           className="social-share-btn copy"
           style={{
             display: 'flex',
@@ -183,7 +212,9 @@ const SocialShare = ({ url, title, description, image }) => {
             fontWeight: '600',
             cursor: 'pointer',
             transition: 'all 0.2s ease',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+            position: 'relative',
+            zIndex: 10
           }}
           onMouseOver={(e) => {
             if (!copied) {
