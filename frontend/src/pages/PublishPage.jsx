@@ -256,26 +256,39 @@ const PublishPage = () => {
               </div>
 
               {/* Social Media Sharing Section - Show when published */}
-              {store && (store.status === 'published' || store.status === 'Published') && getWebsiteUrl() && (
-                <div className="bg-gradient-to-r from-purple-100 to-blue-100 rounded-lg p-6 border-2 border-purple-400 shadow-lg" style={{ marginTop: '1.5rem', marginBottom: '1.5rem' }}>
-                  <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
-                      <polyline points="16 6 12 2 8 6"/>
-                      <line x1="12" y1="2" x2="12" y2="15"/>
-                    </svg>
-                    🌐 Share Your Store on Social Media (Multi-Channel Selling)
-                  </h3>
-                  <p className="text-sm text-gray-800 mb-4 font-medium">
-                    Share your store on Facebook, Twitter, WhatsApp, and more to reach more customers and increase sales!
-                  </p>
-                  <SocialShare 
-                    url={getWebsiteUrl()}
-                    title={store.storeName || 'Check out my store!'}
-                    description={store.description || 'Visit my amazing online store'}
-                  />
-                </div>
-              )}
+              {store && store.status && store.status.toLowerCase() === 'published' && (() => {
+                const websiteUrl = getWebsiteUrl();
+                if (!websiteUrl) {
+                  // Show debug info if URL is not available
+                  return (
+                    <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4 mt-4">
+                      <p className="text-sm text-yellow-800">
+                        Debug: Store status is "{store.status}", Domain: "{store.domainName}", URL: {websiteUrl || 'null'}
+                      </p>
+                    </div>
+                  );
+                }
+                return (
+                  <div className="bg-gradient-to-r from-purple-100 to-blue-100 rounded-lg p-6 border-2 border-purple-400 shadow-lg" style={{ marginTop: '1.5rem', marginBottom: '1.5rem' }}>
+                    <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                        <polyline points="16 6 12 2 8 6"/>
+                        <line x1="12" y1="2" x2="12" y2="15"/>
+                      </svg>
+                      🌐 Share Your Store on Social Media (Multi-Channel Selling)
+                    </h3>
+                    <p className="text-sm text-gray-800 mb-4 font-medium">
+                      Share your store on Facebook, Twitter, WhatsApp, and more to reach more customers and increase sales!
+                    </p>
+                    <SocialShare 
+                      url={websiteUrl}
+                      title={store.storeName || 'Check out my store!'}
+                      description={store.description || 'Visit my amazing online store'}
+                    />
+                  </div>
+                );
+              })()}
 
               {/* Instructions */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
