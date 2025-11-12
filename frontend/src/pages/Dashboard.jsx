@@ -344,6 +344,7 @@ const Dashboard = () => {
           actionLink="/publish"
           variant="solid"
         />
+        {/* Share Social Card - Always visible */}
         <TodoCard
           icon={
             <div className="bg-pink-100 p-3 rounded-full">
@@ -357,9 +358,9 @@ const Dashboard = () => {
           title="Share Social"
           description="Share your store on social media."
           subDescription="Enable multi-channel selling by sharing your store on Facebook, Twitter, WhatsApp, and more to reach more customers."
-          actionText={storeStatus && storeStatus.toLowerCase() === 'published' ? "Share Store" : "Publish First"}
-          actionLink={storeStatus && storeStatus.toLowerCase() === 'published' ? "/dashboard/share-social" : "/publish"}
-          variant={storeStatus && storeStatus.toLowerCase() === 'published' ? "solid" : "outline"}
+          actionText={(storeStatus && storeStatus.toLowerCase() === 'published') ? "Share Store" : "Publish First"}
+          actionLink={(storeStatus && storeStatus.toLowerCase() === 'published') ? "/dashboard/share-social" : "/publish"}
+          variant={(storeStatus && storeStatus.toLowerCase() === 'published') ? "solid" : "outline"}
           disabled={!storeStatus || storeStatus.toLowerCase() !== 'published'}
         />
       </div>
